@@ -57,7 +57,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             onClick={() => setIsMobileDrawerOpen(false)}
             aria-hidden="true"
           />
-          <div className="relative flex-1 max-w-xs w-full bg-[#231712] h-full shadow-2xl z-10 animate-in slide-in-from-left duration-200">
+          <div className="relative w-72 max-w-[85vw] h-full shadow-2xl z-10 animate-in slide-in-from-left duration-200 flex flex-col">
             <Sidebar
               activeTab={activeTab}
               onSelectTab={onSelectTab}
