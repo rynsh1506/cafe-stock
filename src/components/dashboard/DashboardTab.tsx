@@ -156,92 +156,100 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
       </div>
 
       {/* 4 Kartu KPI Metrik Utama */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Total Master Produk */}
         <div
           onClick={() => onNavigate("products")}
-          className="bg-white p-4 sm:p-5 rounded-2xl border border-[#EDE4D8] shadow-xs hover:border-[#D5C5B5] transition cursor-pointer flex items-center justify-between group"
+          className="bg-white p-3.5 sm:p-5 rounded-2xl border border-[#EDE4D8] shadow-xs hover:border-[#D5C5B5] transition cursor-pointer flex flex-col justify-between group"
         >
-          <div>
-            <div className="text-[11px] font-bold text-[#8C7665] uppercase tracking-wider">
+          <div className="flex items-start justify-between gap-2">
+            <div className="text-[10px] sm:text-[11px] font-bold text-[#8C7665] uppercase tracking-wider leading-tight">
               Total Master Produk
             </div>
-            <div className="text-xl sm:text-2xl font-bold text-[#2E1F16] mt-1 group-hover:text-[#5A3825] transition">
-              {totalProducts} SKU
-            </div>
-            <div className="text-[10px] text-[#2E7D32] flex items-center gap-1 mt-1 font-medium">
-              <CheckCircle2 className="w-3 h-3" />
-              <span>Semua aktif di transaksi</span>
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#F7F2EB] text-[#5A3825] flex items-center justify-center shrink-0 group-hover:scale-105 transition">
+              <Package className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <div className="w-11 h-11 rounded-xl bg-[#F7F2EB] text-[#5A3825] flex items-center justify-center shrink-0 group-hover:scale-105 transition">
-            <Package className="w-5 h-5" />
+          <div className="mt-2.5">
+            <div className="text-lg sm:text-2xl font-bold text-[#2E1F16] group-hover:text-[#5A3825] transition truncate">
+              {totalProducts} SKU
+            </div>
+            <div className="text-[10px] sm:text-[11px] text-[#2E7D32] flex items-center gap-1 mt-1 font-medium truncate">
+              <CheckCircle2 className="w-3 h-3 shrink-0" />
+              <span className="truncate">Semua aktif di transaksi</span>
+            </div>
           </div>
         </div>
 
         {/* PR Perlu Review */}
         <div
           onClick={() => onNavigate("purchase-requests")}
-          className="bg-white p-4 sm:p-5 rounded-2xl border border-[#EDE4D8] shadow-xs hover:border-[#D5C5B5] transition cursor-pointer flex items-center justify-between group"
+          className="bg-white p-3.5 sm:p-5 rounded-2xl border border-[#EDE4D8] shadow-xs hover:border-[#D5C5B5] transition cursor-pointer flex flex-col justify-between group"
         >
-          <div>
-            <div className="text-[11px] font-bold text-[#8C7665] uppercase tracking-wider">
+          <div className="flex items-start justify-between gap-2">
+            <div className="text-[10px] sm:text-[11px] font-bold text-[#8C7665] uppercase tracking-wider leading-tight">
               PR Perlu Review
             </div>
-            <div className="text-xl sm:text-2xl font-bold text-[#2E1F16] mt-1 group-hover:text-[#B45309] transition">
-              {pendingPRs} Pengajuan
-            </div>
-            <div className="text-[10px] text-[#D97706] flex items-center gap-1 mt-1 font-medium">
-              <Clock className="w-3 h-3" />
-              <span>Status SUBMITTED</span>
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#FFF8E1] text-[#D97706] flex items-center justify-center shrink-0 group-hover:scale-105 transition">
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <div className="w-11 h-11 rounded-xl bg-[#FFF8E1] text-[#D97706] flex items-center justify-center shrink-0 group-hover:scale-105 transition">
-            <FileText className="w-5 h-5" />
+          <div className="mt-2.5">
+            <div className="text-lg sm:text-2xl font-bold text-[#2E1F16] group-hover:text-[#B45309] transition truncate">
+              {pendingPRs} Pengajuan
+            </div>
+            <div className="text-[10px] sm:text-[11px] text-[#D97706] flex items-center gap-1 mt-1 font-medium truncate">
+              <Clock className="w-3 h-3 shrink-0" />
+              <span className="truncate">Status SUBMITTED</span>
+            </div>
           </div>
         </div>
 
         {/* PO Aktif / Menunggu GR */}
         <div
           onClick={() => onNavigate("purchase-orders")}
-          className="bg-white p-4 sm:p-5 rounded-2xl border border-[#EDE4D8] shadow-xs hover:border-[#D5C5B5] transition cursor-pointer flex items-center justify-between group"
+          className="bg-white p-3.5 sm:p-5 rounded-2xl border border-[#EDE4D8] shadow-xs hover:border-[#D5C5B5] transition cursor-pointer flex flex-col justify-between group"
         >
-          <div>
-            <div className="text-[11px] font-bold text-[#8C7665] uppercase tracking-wider">
+          <div className="flex items-start justify-between gap-2">
+            <div className="text-[10px] sm:text-[11px] font-bold text-[#8C7665] uppercase tracking-wider leading-tight">
               PO Aktif / Penerimaan
             </div>
-            <div className="text-xl sm:text-2xl font-bold text-[#2E1F16] mt-1 group-hover:text-[#5A3825] transition">
-              {activePOs} Pesanan
-            </div>
-            <div className="text-[10px] text-[#5A3825] flex items-center gap-1 mt-1 font-medium">
-              <Truck className="w-3 h-3" />
-              <span>ORDERED / PARTIAL</span>
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#F7F2EB] text-[#5A3825] flex items-center justify-center shrink-0 group-hover:scale-105 transition">
+              <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <div className="w-11 h-11 rounded-xl bg-[#F7F2EB] text-[#5A3825] flex items-center justify-center shrink-0 group-hover:scale-105 transition">
-            <ShoppingCart className="w-5 h-5" />
+          <div className="mt-2.5">
+            <div className="text-lg sm:text-2xl font-bold text-[#2E1F16] group-hover:text-[#5A3825] transition truncate">
+              {activePOs} Pesanan
+            </div>
+            <div className="text-[10px] sm:text-[11px] text-[#5A3825] flex items-center gap-1 mt-1 font-medium truncate">
+              <Truck className="w-3 h-3 shrink-0" />
+              <span className="truncate">ORDERED / PARTIAL</span>
+            </div>
           </div>
         </div>
 
         {/* Stok Kritis Gudang */}
         <div
           onClick={() => onNavigate("inventory")}
-          className="bg-white p-4 sm:p-5 rounded-2xl border border-[#EDE4D8] shadow-xs hover:border-[#D5C5B5] transition cursor-pointer flex items-center justify-between group"
+          className="bg-white p-3.5 sm:p-5 rounded-2xl border border-[#EDE4D8] shadow-xs hover:border-[#D5C5B5] transition cursor-pointer flex flex-col justify-between group"
         >
-          <div>
-            <div className="text-[11px] font-bold text-[#8C7665] uppercase tracking-wider">
+          <div className="flex items-start justify-between gap-2">
+            <div className="text-[10px] sm:text-[11px] font-bold text-[#8C7665] uppercase tracking-wider leading-tight">
               Stok Kritis Gudang
             </div>
-            <div className="text-xl sm:text-2xl font-bold text-[#C62828] mt-1">
-              {criticalItems.length} Item
-            </div>
-            <div className="text-[10px] text-[#C62828] flex items-center gap-1 mt-1 font-medium">
-              <AlertTriangle className="w-3 h-3" />
-              <span>Saldo di bawah batas min</span>
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#FFEBEE] text-[#C62828] flex items-center justify-center shrink-0 group-hover:scale-105 transition">
+              <Boxes className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <div className="w-11 h-11 rounded-xl bg-[#FFEBEE] text-[#C62828] flex items-center justify-center shrink-0 group-hover:scale-105 transition">
-            <Boxes className="w-5 h-5" />
+          <div className="mt-2.5">
+            <div className="text-lg sm:text-2xl font-bold text-[#C62828] truncate">
+              {criticalItems.length} Item
+            </div>
+            <div className="text-[10px] sm:text-[11px] text-[#C62828] flex items-center gap-1 mt-1 font-medium truncate">
+              <AlertTriangle className="w-3 h-3 shrink-0" />
+              <span className="truncate">Saldo di bawah min</span>
+            </div>
           </div>
         </div>
       </div>
@@ -250,22 +258,24 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Kolom Kiri: Visual Grafik Penerimaan Bahan Baku Mingguan (2 Kolom) */}
         <div className="lg:col-span-2 bg-white rounded-2xl border border-[#EDE4D8] p-5 sm:p-6 shadow-xs">
-          <div className="flex items-center justify-between border-b border-[#F0E7DD] pb-4 mb-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#F0E7DD] pb-4 mb-5">
             <div>
-              <div className="text-xs font-bold uppercase tracking-wider text-[#8C7665]">
+              <div className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#8C7665]">
                 Aktivitas Pengadaan
               </div>
-              <h2 className="text-base font-bold text-[#2E1F16] flex items-center gap-2 mt-0.5">
-                Volume Bahan Baku Masuk
-                <span className="text-xs font-normal text-[#8A7566]">
+              <h2 className="text-sm sm:text-base font-bold text-[#2E1F16] mt-0.5">
+                Volume Bahan Baku Masuk{" "}
+                <span className="text-xs font-normal text-[#8A7566] whitespace-nowrap">
                   (Minggu Ini)
                 </span>
               </h2>
             </div>
-            <div className="text-right">
-              <div className="text-lg font-bold text-[#2E1F16]">101.9 KG</div>
-              <div className="text-[10px] text-[#2E7D32] flex items-center gap-1 justify-end font-semibold">
-                <TrendingUp className="w-3 h-3" />
+            <div className="flex items-baseline sm:flex-col sm:items-end justify-between sm:justify-center gap-1.5 sm:gap-0">
+              <div className="text-lg sm:text-xl font-bold text-[#2E1F16] whitespace-nowrap">
+                101.9 KG
+              </div>
+              <div className="text-[10px] sm:text-xs text-[#2E7D32] flex items-center gap-1 font-semibold whitespace-nowrap">
+                <TrendingUp className="w-3.5 h-3.5" />
                 <span>+14% vs minggu lalu</span>
               </div>
             </div>
@@ -375,8 +385,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
             </h3>
           </div>
           <div className="text-xs text-[#8C7665]">
-            Siklus: PR $\rightarrow$ Approval $\rightarrow$ PO $\rightarrow$
-            Goods Receipt
+            Siklus: PR → Approval → PO → Goods Receipt
           </div>
         </div>
 
