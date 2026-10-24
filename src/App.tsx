@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { NavigationTab } from "@/types";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { LoginPage } from "@/components/auth/LoginPage";
 import {
   Boxes,
   Package,
@@ -15,7 +16,11 @@ import {
 
 const AppContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<NavigationTab>("dashboard");
-  const { currentUser } = useAuth();
+  const { currentUser, isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
 
   return (
     <AppLayout activeTab={activeTab} onSelectTab={setActiveTab}>

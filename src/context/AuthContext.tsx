@@ -34,7 +34,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [currentUser, setCurrentUser] = useState<UserProfile>(
     DEFAULT_USERS.USER,
   );
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   const switchRole = (newRole: UserRole): void => {
     setCurrentUser(DEFAULT_USERS[newRole]);
