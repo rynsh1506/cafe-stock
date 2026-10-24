@@ -26,12 +26,12 @@ const AppContent: React.FC = () => {
     <AppLayout activeTab={activeTab} onSelectTab={setActiveTab}>
       <div className="space-y-6">
         {/* Welcome Banner */}
-        <div className="bg-gradient-to-r from-[#2C1E18] to-[#45281A] rounded-2xl p-6 text-white shadow-lg border border-[#523323] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="bg-gradient-to-r from-[#2C1E18] to-[#45281A] rounded-2xl p-5 sm:p-6 text-white shadow-lg border border-[#523323] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#D8A57A] mb-1">
-              <span>Sistem Manajemen Pengadaan & Stok</span>
-              <span>•</span>
-              <span className="px-2 py-0.5 rounded bg-[#5A3825] text-white">
+            <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-[#D8A57A] mb-1.5">
+              <span>Sistem Pengadaan & Stok</span>
+              <span className="opacity-60">•</span>
+              <span className="px-2 py-0.5 rounded-full bg-[#5A3825] text-white text-[10px] font-bold border border-[#7A4D33] whitespace-nowrap shrink-0">
                 Role: {currentUser.role}
               </span>
             </div>
@@ -136,8 +136,8 @@ const AppContent: React.FC = () => {
         </div>
 
         {/* Content Tab Details */}
-        <div className="bg-white rounded-2xl border border-[#EDE4D8] p-6 shadow-xs">
-          <div className="flex items-center justify-between border-b border-[#F0E7DD] pb-4 mb-4">
+        <div className="bg-white rounded-2xl border border-[#EDE4D8] p-5 sm:p-6 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#F0E7DD] pb-4 mb-4">
             <div>
               <h2 className="text-base font-bold text-[#2E1F16]">
                 Navigasi Aktif: {activeTab.toUpperCase()}
@@ -147,7 +147,7 @@ const AppContent: React.FC = () => {
                 Tablet, maupun Mobile.
               </p>
             </div>
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#FAF3EC] text-[#7A4D33] border border-[#E8DACB]">
+            <span className="self-start sm:self-center text-xs font-semibold px-2.5 py-1 rounded-full bg-[#FAF3EC] text-[#7A4D33] border border-[#E8DACB] shrink-0 whitespace-nowrap">
               Figma Design Aligned
             </span>
           </div>
