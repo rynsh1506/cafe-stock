@@ -53,6 +53,12 @@ interface CustomLocaleEntry {
 
 const DEFAULT_DB_CONNECTION: DatabaseConnectionConfig = {
   mode: "LOCAL_EMBEDDED",
+  engine: "SQLITE",
+  sqliteFilePath: "./data/cafestock_ledger.sqlite",
+  dbHost: "127.0.0.1",
+  dbPort: 5432,
+  dbName: "cafestock_db",
+  dbUser: "postgres",
   remoteEndpointUrl: "http://192.168.1.50:3000",
   instanceToken: "kr_live_node_99482a",
   autoSyncIntervalSec: 15,
@@ -193,11 +199,13 @@ export const KernelProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   const [dbConnection, setDbConnection] = useState<DatabaseConnectionConfig>(
-    () =>
-      readPersistedJson<DatabaseConnectionConfig>(
+    () => ({
+      ...DEFAULT_DB_CONNECTION,
+      ...readPersistedJson<Partial<DatabaseConnectionConfig>>(
         STORAGE_KEYS.DB_CONN,
         DEFAULT_DB_CONNECTION,
       ),
+    }),
   );
 
   const [emailConfig, setEmailConfig] = useState<EmailNotificationConfig>(() =>

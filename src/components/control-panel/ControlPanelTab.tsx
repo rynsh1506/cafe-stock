@@ -19,18 +19,26 @@ import {
   ShieldAlert,
   Sliders,
   Trash2,
+  Users,
+  UserPlus,
 } from "lucide-react";
 import { useKernel } from "@/kernel/KernelContext";
-import { IndustryPresetId, ThemeColors } from "@/kernel/types";
+import { useAuth } from "@/context/AuthContext";
+import {
+  DatabaseEngineType,
+  IndustryPresetId,
+  ThemeColors,
+} from "@/kernel/types";
 import {
   BUILTIN_LOCALES,
   BuiltInLocaleCode,
   TranslationKey,
 } from "@/kernel/i18n";
-import { NavigationTab } from "@/types";
+import { NavigationTab, UserRole } from "@/types";
 
 type AdminSectionId =
   | "status"
+  | "users"
   | "identity"
   | "i18n"
   | "database"
@@ -115,13 +123,29 @@ export const ControlPanelTab: React.FC = () => {
     storageMetrics,
     resetKernelToDefaults,
   } = useKernel();
+  const {
+    currentUser,
+    accounts,
+    registerAccount,
+    deleteAccount,
+    updateAccountRole,
+  } = useAuth();
 
-  const [activeSection, setActiveSection] = useState<AdminSectionId>("i18n");
+  const [activeSection, setActiveSection] =
+    useState<AdminSectionId>("database");
   const [dictFilter, setDictFilter] = useState<string>("");
   const [newLangCode, setNewLangCode] = useState<string>("");
   const [newLangName, setNewLangName] = useState<string>("");
   const [newLangBase, setNewLangBase] = useState<BuiltInLocaleCode>("id");
   const [testSentBanner, setTestSentBanner] = useState<boolean>(false);
+
+  // User Manager State
+  const [usrFullName, setUsrFullName] = useState<string>("");
+  const [usrUsername, setUsrUsername] = useState<string>("");
+  const [usrEmail, setUsrEmail] = useState<string>("");
+  const [usrPassword, setUsrPassword] = useState<string>("");
+  const [usrRole, setUsrRole] = useState<UserRole>("USER");
+  const [usrMessage, setUsrMessage] = useState<string>("");
 
   const customOverrideCount = Object.values(customTranslations).filter(
     (v) => v && v.trim().length > 0,
@@ -140,6 +164,13 @@ export const ControlPanelTab: React.FC = () => {
       label: t("cp.nav.status"),
       icon: Activity,
       badge: "ONLINE",
+    },
+    {
+      id: "users",
+      code: "ADM-USR",
+      label: "Manajemen Akun & Role",
+      icon: Users,
+      badge: `${accounts.length} AKUN`,
     },
     {
       id: "identity",
@@ -242,6 +273,32 @@ export const ControlPanelTab: React.FC = () => {
     setTimeout(() => {
       setTestSentBanner(false);
     }, 3000);
+  };
+
+  const handleAdminCreateUser = (e: React.FormEvent): void => {
+    e.preventDefault();
+    const res = registerAccount(
+      {
+        name: usrFullName,
+        username: usrUsername,
+        email: usrEmail,
+        password: usrPassword,
+        role: usrRole,
+      },
+      false,
+    );
+    if (!res.ok) {
+      setUsrMessage(
+        res.errorKey ? t(res.errorKey as TranslationKey) : "Gagal membuat akun",
+      );
+      return;
+    }
+    setUsrFullName("");
+    setUsrUsername("");
+    setUsrEmail("");
+    setUsrPassword("");
+    setUsrMessage("✓ Akun baru berhasil didaftarkan ke sistem.");
+    setTimeout(() => setUsrMessage(""), 3500);
   };
 
   const filteredDictItems = CUSTOMIZABLE_DICT_KEYS.filter((item) => {
@@ -1044,6 +1101,249 @@ export const ControlPanelTab: React.FC = () => {
             </div>
           )}
 
+          {/* SECTION: MANAJEMEN AKUN PENGGUNA (ADM-USR) */}
+          {activeSection === "users" && (
+            <div className="space-y-6">
+              <div
+                style={{ borderColor: "var(--kr-border)" }}
+                className="border-b pb-4"
+              >
+                <div
+                  style={{ color: "var(--kr-text-muted)" }}
+                  className="font-mono text-[10px] uppercase tracking-widest"
+                >
+                  ADM-USR // OPERATOR &amp; APPROVER ACCOUNT REGISTRY
+                </div>
+                <h2 className="font-serif text-xl font-normal mt-0.5">
+                  Manajemen Akun Pengguna &amp; Otorisasi Role
+                </h2>
+                <p
+                  style={{ color: "var(--kr-text-muted)" }}
+                  className="text-xs mt-1"
+                >
+                  Tambahkan akun karyawan gudang (USER) atau manajer pemeriksa
+                  (APPROVER) baru langsung dari Panel Kontrol tanpa perlu keluar
+                  (logout) dari sesi Anda.
+                </p>
+              </div>
+
+              {usrMessage && (
+                <div className="p-3 border border-[#1D593B] bg-[#E7F2EC] text-[#1D593B] font-mono text-xs">
+                  {usrMessage}
+                </div>
+              )}
+
+              {/* Form Tambah Akun Baru */}
+              <form
+                onSubmit={handleAdminCreateUser}
+                style={{
+                  backgroundColor: "var(--kr-bg-main)",
+                  borderColor: "var(--kr-border)",
+                }}
+                className="p-4 border space-y-3.5"
+              >
+                <div className="font-mono text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5">
+                  <UserPlus
+                    style={{ color: "var(--kr-accent)" }}
+                    className="w-3.5 h-3.5"
+                  />
+                  <span>TAMBAH AKUN PETUGAS / APPROVER BARU</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-mono text-[10px] uppercase mb-1">
+                      {t("login.fullNameLabel")}
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={usrFullName}
+                      onChange={(e) => setUsrFullName(e.target.value)}
+                      placeholder="cth: Riko Toni"
+                      style={{
+                        backgroundColor: "var(--kr-bg-surface)",
+                        borderColor: "var(--kr-border)",
+                        color: "var(--kr-text-main)",
+                      }}
+                      className="w-full px-3 py-2 border text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-mono text-[10px] uppercase mb-1">
+                      {t("login.usernameLabel")}
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={usrUsername}
+                      onChange={(e) => setUsrUsername(e.target.value)}
+                      placeholder="cth: riko_approver"
+                      style={{
+                        backgroundColor: "var(--kr-bg-surface)",
+                        borderColor: "var(--kr-border)",
+                        color: "var(--kr-text-main)",
+                      }}
+                      className="w-full px-3 py-2 border font-mono text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-mono text-[10px] uppercase mb-1">
+                      {t("login.emailLabel")}
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={usrEmail}
+                      onChange={(e) => setUsrEmail(e.target.value)}
+                      placeholder="riko@perusahaan.id"
+                      style={{
+                        backgroundColor: "var(--kr-bg-surface)",
+                        borderColor: "var(--kr-border)",
+                        color: "var(--kr-text-main)",
+                      }}
+                      className="w-full px-3 py-2 border font-mono text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-mono text-[10px] uppercase mb-1">
+                      {t("login.passwordLabel")}
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      value={usrPassword}
+                      onChange={(e) => setUsrPassword(e.target.value)}
+                      placeholder="••••••••"
+                      style={{
+                        backgroundColor: "var(--kr-bg-surface)",
+                        borderColor: "var(--kr-border)",
+                        color: "var(--kr-text-main)",
+                      }}
+                      className="w-full px-3 py-2 border font-mono text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-[10px] uppercase">
+                      {t("login.roleLabel")}:
+                    </span>
+                    <select
+                      value={usrRole}
+                      onChange={(e) => setUsrRole(e.target.value as UserRole)}
+                      style={{
+                        backgroundColor: "var(--kr-bg-surface)",
+                        borderColor: "var(--kr-border)",
+                        color: "var(--kr-text-main)",
+                      }}
+                      className="px-3 py-1.5 border font-mono text-xs cursor-pointer"
+                    >
+                      <option value="USER">USER (Staff Gudang)</option>
+                      <option value="APPROVER">
+                        APPROVER (Manajer / Admin)
+                      </option>
+                    </select>
+                  </div>
+
+                  <button
+                    type="submit"
+                    style={{
+                      backgroundColor: "var(--kr-bg-sidebar)",
+                      color: "var(--kr-text-sidebar)",
+                    }}
+                    className="px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider cursor-pointer"
+                  >
+                    + Simpan Akun Baru
+                  </button>
+                </div>
+              </form>
+
+              {/* Tabel Daftar Akun Terdaftar */}
+              <div
+                style={{ borderColor: "var(--kr-border)" }}
+                className="border overflow-x-auto"
+              >
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr
+                      style={{
+                        backgroundColor: "var(--kr-bg-elevated)",
+                        borderColor: "var(--kr-border)",
+                      }}
+                      className="border-b font-mono text-[10px] uppercase"
+                    >
+                      <th className="py-2.5 px-4">Nama Lengkap</th>
+                      <th className="py-2.5 px-4">Username</th>
+                      <th className="py-2.5 px-4">Email</th>
+                      <th className="py-2.5 px-4">Role Otorisasi</th>
+                      <th className="py-2.5 px-4 text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {accounts.map((acc) => {
+                      const isSelf = acc.id === currentUser.id;
+                      return (
+                        <tr
+                          key={acc.id}
+                          style={{ borderColor: "var(--kr-border)" }}
+                        >
+                          <td className="py-3 px-4 font-semibold">
+                            {acc.name}{" "}
+                            {isSelf && (
+                              <span className="font-mono text-[9px] px-1.5 py-0.5 bg-[#E7F2EC] text-[#1D593B] border border-[#B2D3C1] ml-1">
+                                SESI AKTIF
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 font-mono">
+                            {acc.username}
+                          </td>
+                          <td className="py-3 px-4 font-mono text-[11px]">
+                            {acc.email}
+                          </td>
+                          <td className="py-3 px-4">
+                            <select
+                              value={acc.role}
+                              onChange={(e) =>
+                                updateAccountRole(
+                                  acc.id,
+                                  e.target.value as UserRole,
+                                )
+                              }
+                              style={{
+                                backgroundColor: "var(--kr-bg-main)",
+                                borderColor: "var(--kr-border)",
+                                color: "var(--kr-text-main)",
+                              }}
+                              className="px-2 py-1 border font-mono text-[10px] font-bold uppercase cursor-pointer"
+                            >
+                              <option value="APPROVER">APPROVER</option>
+                              <option value="USER">USER</option>
+                            </select>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            {!isSelf && accounts.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => deleteAccount(acc.id)}
+                                className="p-1.5 text-[#9E2A20] hover:opacity-80 cursor-pointer"
+                                title={t("common.delete")}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
           {/* SECTION 4: KONEKSI DATABASE & SERVER NODE */}
           {activeSection === "database" && (
             <div className="space-y-6">
@@ -1068,10 +1368,16 @@ export const ControlPanelTab: React.FC = () => {
                 </p>
               </div>
 
+              {/* 1. Pilih Mode Topologi */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <button
                   type="button"
-                  onClick={() => updateDbConnection({ mode: "LOCAL_EMBEDDED" })}
+                  onClick={() =>
+                    updateDbConnection({
+                      mode: "LOCAL_EMBEDDED",
+                      engine: "SQLITE",
+                    })
+                  }
                   style={{
                     backgroundColor:
                       dbConnection.mode === "LOCAL_EMBEDDED"
@@ -1104,7 +1410,13 @@ export const ControlPanelTab: React.FC = () => {
                 <button
                   type="button"
                   onClick={() =>
-                    updateDbConnection({ mode: "REMOTE_SERVER_NODE" })
+                    updateDbConnection({
+                      mode: "REMOTE_SERVER_NODE",
+                      engine:
+                        dbConnection.engine === "SQLITE"
+                          ? "POSTGRESQL"
+                          : dbConnection.engine,
+                    })
                   }
                   style={{
                     backgroundColor:
@@ -1136,7 +1448,117 @@ export const ControlPanelTab: React.FC = () => {
                 </button>
               </div>
 
-              {dbConnection.mode === "REMOTE_SERVER_NODE" && (
+              {/* 2. Pilih Engine Database (Bring Your Own Database ala Gitea) */}
+              <div className="space-y-3">
+                <div className="font-mono text-[10px] font-bold uppercase tracking-widest">
+                  PILIH ENGINE DATABASE (KOMPATIBILITAS SQLITE vs POSTGRESQL vs
+                  MARIADB/MYSQL)
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {(
+                    [
+                      {
+                        id: "SQLITE" as DatabaseEngineType,
+                        title: "SQLite 3 (Embedded)",
+                        badge: "ZERO-CONFIG",
+                        desc: "Tersimpan dalam 1 file lokal (.sqlite). Dialek SQL & tipe datanya 98% identik dengan PostgreSQL.",
+                        defaultPort: 0,
+                      },
+                      {
+                        id: "POSTGRESQL" as DatabaseEngineType,
+                        title: "PostgreSQL 16+",
+                        badge: "DIREKOMENDASIKAN",
+                        desc: "Standar utama PRD & paling serasi dengan SQLite (mendukung RETURNING, UPSERT ON CONFLICT, & Row Lock).",
+                        defaultPort: 5432,
+                      },
+                      {
+                        id: "MYSQL_MARIADB" as DatabaseEngineType,
+                        title: "MySQL / MariaDB",
+                        badge: "BYOD OPSIONAL",
+                        desc: "Gunakan jika kantor Anda sudah memiliki server database MariaDB / MySQL / XAMPP yang berjalan.",
+                        defaultPort: 3306,
+                      },
+                    ] as const
+                  ).map((eng) => {
+                    const isSelected = dbConnection.engine === eng.id;
+                    return (
+                      <button
+                        key={eng.id}
+                        type="button"
+                        onClick={() =>
+                          updateDbConnection({
+                            engine: eng.id,
+                            dbPort:
+                              eng.defaultPort > 0
+                                ? eng.defaultPort
+                                : dbConnection.dbPort,
+                          })
+                        }
+                        style={{
+                          backgroundColor: isSelected
+                            ? "var(--kr-bg-elevated)"
+                            : "var(--kr-bg-main)",
+                          borderColor: isSelected
+                            ? "var(--kr-accent)"
+                            : "var(--kr-border)",
+                        }}
+                        className="p-3.5 text-left border transition cursor-pointer flex flex-col justify-between"
+                      >
+                        <div>
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="font-mono text-xs font-bold">
+                              {eng.title}
+                            </span>
+                            <span className="font-mono text-[9px] px-1.5 py-0.5 border font-semibold">
+                              {eng.badge}
+                            </span>
+                          </div>
+                          <p
+                            style={{ color: "var(--kr-text-muted)" }}
+                            className="text-[11px] mt-2 leading-relaxed"
+                          >
+                            {eng.desc}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 3. Detail Koneksi Database */}
+              {dbConnection.engine === "SQLITE" ? (
+                <div
+                  style={{
+                    backgroundColor: "var(--kr-bg-main)",
+                    borderColor: "var(--kr-border)",
+                  }}
+                  className="p-4 border space-y-3"
+                >
+                  <div className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#1D593B]">
+                    ● LOKASI FILE DATABASE SQLITE3 LOKAL (EMBEDDED)
+                  </div>
+                  <div>
+                    <label className="block font-mono text-[10px] uppercase mb-1">
+                      Path File SQLite (.sqlite / .db)
+                    </label>
+                    <input
+                      type="text"
+                      value={dbConnection.sqliteFilePath}
+                      onChange={(e) =>
+                        updateDbConnection({ sqliteFilePath: e.target.value })
+                      }
+                      style={{
+                        backgroundColor: "var(--kr-bg-surface)",
+                        borderColor: "var(--kr-border)",
+                        color: "var(--kr-text-main)",
+                      }}
+                      className="w-full px-3 py-2 border font-mono text-xs"
+                    />
+                  </div>
+                </div>
+              ) : (
                 <div
                   style={{
                     backgroundColor: "var(--kr-bg-main)",
@@ -1144,52 +1566,216 @@ export const ControlPanelTab: React.FC = () => {
                   }}
                   className="p-4 border space-y-4"
                 >
-                  <div className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#1D593B]">
-                    {t("cp.db.remoteHeader")}
+                  <div className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#1E4A6D]">
+                    ● PARAMETER KONEKSI DATABASE EXTERNAL ({dbConnection.engine}
+                    )
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block font-mono text-[10px] font-semibold uppercase tracking-widest mb-1.5">
-                        {t("cp.db.hostUrlLabel")}
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    <div className="sm:col-span-2">
+                      <label className="block font-mono text-[10px] uppercase mb-1">
+                        DB Host / IP Address
                       </label>
                       <input
                         type="text"
-                        value={dbConnection.remoteEndpointUrl}
+                        value={dbConnection.dbHost}
                         onChange={(e) =>
-                          updateDbConnection({
-                            remoteEndpointUrl: e.target.value,
-                          })
+                          updateDbConnection({ dbHost: e.target.value })
                         }
-                        placeholder="http://192.168.1.50:3000"
                         style={{
                           backgroundColor: "var(--kr-bg-surface)",
                           borderColor: "var(--kr-border)",
                           color: "var(--kr-text-main)",
                         }}
-                        className="w-full px-3 py-2 border font-mono text-xs focus:outline-none"
+                        className="w-full px-3 py-2 border font-mono text-xs"
                       />
                     </div>
                     <div>
-                      <label className="block font-mono text-[10px] font-semibold uppercase tracking-widest mb-1.5">
-                        {t("cp.db.tokenLabel")}
+                      <label className="block font-mono text-[10px] uppercase mb-1">
+                        Port
                       </label>
                       <input
-                        type="text"
-                        value={dbConnection.instanceToken}
+                        type="number"
+                        value={dbConnection.dbPort}
                         onChange={(e) =>
-                          updateDbConnection({ instanceToken: e.target.value })
+                          updateDbConnection({
+                            dbPort: Number(e.target.value) || 5432,
+                          })
                         }
                         style={{
                           backgroundColor: "var(--kr-bg-surface)",
                           borderColor: "var(--kr-border)",
                           color: "var(--kr-text-main)",
                         }}
-                        className="w-full px-3 py-2 border font-mono text-xs focus:outline-none"
+                        className="w-full px-3 py-2 border font-mono text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-mono text-[10px] uppercase mb-1">
+                        Nama Database
+                      </label>
+                      <input
+                        type="text"
+                        value={dbConnection.dbName}
+                        onChange={(e) =>
+                          updateDbConnection({ dbName: e.target.value })
+                        }
+                        style={{
+                          backgroundColor: "var(--kr-bg-surface)",
+                          borderColor: "var(--kr-border)",
+                          color: "var(--kr-text-main)",
+                        }}
+                        className="w-full px-3 py-2 border font-mono text-xs"
                       />
                     </div>
                   </div>
                 </div>
               )}
+
+              {/* 4. Konfigurasi Endpoint Shared Server & Panduan Setup Multi-Device */}
+              <div
+                style={{
+                  backgroundColor: "var(--kr-bg-main)",
+                  borderColor: "var(--kr-border)",
+                }}
+                className="p-4 border space-y-4"
+              >
+                <div className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#1D593B]">
+                  {t("cp.db.remoteHeader")} (UNTUK SINKRONISASI .EXE &amp; .APK)
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-mono text-[10px] font-semibold uppercase tracking-widest mb-1.5">
+                      {t("cp.db.hostUrlLabel")}
+                    </label>
+                    <input
+                      type="text"
+                      value={dbConnection.remoteEndpointUrl}
+                      onChange={(e) =>
+                        updateDbConnection({
+                          remoteEndpointUrl: e.target.value,
+                        })
+                      }
+                      placeholder="http://192.168.1.50:3000"
+                      style={{
+                        backgroundColor: "var(--kr-bg-surface)",
+                        borderColor: "var(--kr-border)",
+                        color: "var(--kr-text-main)",
+                      }}
+                      className="w-full px-3 py-2 border font-mono text-xs focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-mono text-[10px] font-semibold uppercase tracking-widest mb-1.5">
+                      {t("cp.db.tokenLabel")}
+                    </label>
+                    <input
+                      type="text"
+                      value={dbConnection.instanceToken}
+                      onChange={(e) =>
+                        updateDbConnection({ instanceToken: e.target.value })
+                      }
+                      style={{
+                        backgroundColor: "var(--kr-bg-surface)",
+                        borderColor: "var(--kr-border)",
+                        color: "var(--kr-text-main)",
+                      }}
+                      className="w-full px-3 py-2 border font-mono text-xs focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Panduan Cara Setup Shared Server (Otomatis Menyesuaikan Engine DB) */}
+                <div
+                  style={{ borderColor: "var(--kr-border)" }}
+                  className="pt-4 border-t space-y-3"
+                >
+                  <div className="font-mono text-[10px] font-bold uppercase tracking-widest">
+                    PANDUAN CARA SETUP SHARED SERVER (MULTI-DEVICE DESKTOP .EXE
+                    &amp; MOBILE .APK)
+                  </div>
+                  <div className="text-xs space-y-2 leading-relaxed">
+                    <p>
+                      <strong>
+                        Langkah 1 — Siapkan Database di Komputer Server / VPS:
+                      </strong>{" "}
+                      Salin konfigurasi <code>docker-compose.yml</code> di bawah
+                      ini (otomatis disesuaikan dengan pilihan engine{" "}
+                      <strong>{dbConnection.engine}</strong> Anda) lalu jalankan{" "}
+                      <code>docker compose up -d</code>:
+                    </p>
+                    <pre
+                      style={{
+                        backgroundColor: "var(--kr-bg-sidebar)",
+                        color: "var(--kr-text-sidebar)",
+                      }}
+                      className="p-3 font-mono text-[11px] overflow-x-auto"
+                    >
+                      {dbConnection.engine === "MYSQL_MARIADB"
+                        ? `services:
+  cafestock-mariadb:
+    image: mariadb:11
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: secret_password
+      MARIADB_DATABASE: ${dbConnection.dbName}
+    ports:
+      - "${dbConnection.dbPort}:3306"
+    volumes:
+      - ./db_data:/var/lib/mysql`
+                        : `services:
+  cafestock-postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${dbConnection.dbUser}
+      POSTGRES_PASSWORD: secret_password
+      POSTGRES_DB: ${dbConnection.dbName}
+    ports:
+      - "${dbConnection.dbPort}:5432"
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data`}
+                    </pre>
+                    <p>
+                      <strong>
+                        Langkah 2 — Jalankan Node API Server (ElysiaJS):
+                      </strong>{" "}
+                      Masukkan <code>DATABASE_URL</code> berikut pada file{" "}
+                      <code>.env</code> server Anda:
+                    </p>
+                    <pre
+                      style={{
+                        backgroundColor: "var(--kr-bg-sidebar)",
+                        color: "var(--kr-text-sidebar)",
+                      }}
+                      className="p-3 font-mono text-[11px] overflow-x-auto"
+                    >
+                      {dbConnection.engine === "SQLITE"
+                        ? `DATABASE_ENGINE="sqlite"
+DATABASE_URL="file:${dbConnection.sqliteFilePath}"
+INSTANCE_TOKEN="${dbConnection.instanceToken}"`
+                        : dbConnection.engine === "MYSQL_MARIADB"
+                          ? `DATABASE_ENGINE="mysql"
+DATABASE_URL="mysql://root:secret_password@${dbConnection.dbHost}:${dbConnection.dbPort}/${dbConnection.dbName}"
+INSTANCE_TOKEN="${dbConnection.instanceToken}"`
+                          : `DATABASE_ENGINE="postgresql"
+DATABASE_URL="postgres://${dbConnection.dbUser}:secret_password@${dbConnection.dbHost}:${dbConnection.dbPort}/${dbConnection.dbName}"
+INSTANCE_TOKEN="${dbConnection.instanceToken}"`}
+                    </pre>
+                    <p>
+                      <strong>
+                        Langkah 3 — Hubungkan HP (.apk) &amp; Laptop (.exe)
+                        Karyawan:
+                      </strong>{" "}
+                      Karyawan cukup meng-install file <code>.exe</code> atau{" "}
+                      <code>.apk</code>, buka{" "}
+                      <strong>Panel Kontrol → ADM-04</strong>, pilih{" "}
+                      <strong>Shared Server Node</strong>, lalu isi URL Server{" "}
+                      <code>{dbConnection.remoteEndpointUrl}</code> dan Token{" "}
+                      <code>{dbConnection.instanceToken}</code>.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 

@@ -100,8 +100,16 @@ export interface KernelStorageMetrics {
 
 export type DatabaseConnectionMode = "LOCAL_EMBEDDED" | "REMOTE_SERVER_NODE";
 
+export type DatabaseEngineType = "SQLITE" | "POSTGRESQL" | "MYSQL_MARIADB";
+
 export interface DatabaseConnectionConfig {
   mode: DatabaseConnectionMode;
+  engine: DatabaseEngineType;
+  sqliteFilePath: string;
+  dbHost: string;
+  dbPort: number;
+  dbName: string;
+  dbUser: string;
   remoteEndpointUrl: string;
   instanceToken: string;
   autoSyncIntervalSec: number;
