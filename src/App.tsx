@@ -18,7 +18,7 @@ import {
 const AppContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<NavigationTab>("dashboard");
   const { isAuthenticated } = useAuth();
-  const { branding } = useKernel();
+  const { branding, t } = useKernel();
 
   if (!isAuthenticated) {
     return <LoginPage />;
@@ -67,44 +67,44 @@ const AppContent: React.FC = () => {
         return <ControlPanelTab />;
       case "products":
         return renderLedgerPlaceholder(
-          "MODUL 02 // MASTER DATA",
-          `Katalog ${branding.itemTerm}, Pemasok & Gudang`,
-          "Pencatatan spesifikasi SKU item, satuan takar, batas stok minimum, serta daftar pemasok resmi dan titik gudang sesuai PRD Bagian 4.2.",
+          "MOD-02 // MASTER",
+          t("plugin.products.name"),
+          t("mod.products.desc"),
           Package,
         );
       case "purchase-requests":
         return renderLedgerPlaceholder(
-          `MODUL 03 // TIKET ${branding.documentPrefixPR}`,
-          `Buku Dokumen Purchase Request (${branding.documentPrefixPR})`,
-          "Penyusunan permintaan pengadaan menggunakan payload agregat (header + daftar item), mulai dari status DRAFT, SUBMITTED, hingga otorisasi APPROVE / REJECT.",
+          `MOD-03 // ${branding.documentPrefixPR}`,
+          `${t("plugin.purchaseRequests.name")} (${branding.documentPrefixPR})`,
+          t("mod.pr.desc"),
           FileText,
         );
       case "purchase-orders":
         return renderLedgerPlaceholder(
-          `MODUL 04 // PESANAN ${branding.documentPrefixPO}`,
-          `Buku Dokumen Purchase Order (${branding.documentPrefixPO})`,
-          "Penerbitan pesanan resmi dari permintaan berstatus APPROVED, penunjukan pemasok aktif, penomoran otomatis, dan pengiriman status ORDERED.",
+          `MOD-04 // ${branding.documentPrefixPO}`,
+          `${t("plugin.purchaseOrders.name")} (${branding.documentPrefixPO})`,
+          t("mod.po.desc"),
           ShoppingCart,
         );
       case "goods-receipts":
         return renderLedgerPlaceholder(
-          `MODUL 05 // PENERIMAAN ${branding.documentPrefixGR}`,
-          `Bukti Timbang Terima (${branding.documentPrefixGR})`,
-          "Verifikasi fisik kedatangan barang terhadap dokumen PO dengan validasi ketat kuantitas sisa pesanan serta pembaruan saldo gudang secara transaksional.",
+          `MOD-05 // ${branding.documentPrefixGR}`,
+          `${t("plugin.goodsReceipts.name")} (${branding.documentPrefixGR})`,
+          t("mod.gr.desc"),
           Truck,
         );
       case "inventory":
         return renderLedgerPlaceholder(
-          "MODUL 06 // KARTU STOK",
-          "Saldo Gudang & Jurnal Mutasi",
-          "Pemisahan tegas antara tabel saldo berjalan (inventory_balances) dan buku riwayat mutasi (append-only inventory_movements) per lokasi gudang.",
+          "MOD-06 // LEDGER",
+          t("plugin.inventory.name"),
+          t("mod.inventory.desc"),
           Boxes,
         );
       case "audit-logs":
         return renderLedgerPlaceholder(
-          "MODUL 07 // KEPATUHAN",
-          "Jurnal Jejak Audit (Audit Trail)",
-          "Rekaman permanen setiap tindakan krusial (Create, Submit, Approve, Reject, PO Ordered, GR Received) lengkap dengan identitas petugas dan waktu kejadian.",
+          "MOD-07 // AUDIT",
+          t("plugin.auditLogs.name"),
+          t("mod.audit.desc"),
           ShieldCheck,
         );
       default:
