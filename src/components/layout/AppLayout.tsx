@@ -2,15 +2,27 @@ import React, { useState } from "react";
 import { NavigationTab } from "@/types";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { MobileHeader } from "@/components/layout/MobileHeader";
-import { Search, Sliders } from "lucide-react";
+import { Globe, Search, Sliders } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useKernel } from "@/kernel/KernelContext";
+import { SUPPORTED_LOCALES, TranslationKey } from "@/kernel/i18n";
 
 interface AppLayoutProps {
   activeTab: NavigationTab;
   onSelectTab: (tab: NavigationTab) => void;
   children: React.ReactNode;
 }
+
+const PLUGIN_NAME_KEY_MAP: Record<NavigationTab, TranslationKey> = {
+  dashboard: "plugin.dashboard.name",
+  products: "plugin.products.name",
+  "purchase-requests": "plugin.purchaseRequests.name",
+  "purchase-orders": "plugin.purchaseOrders.name",
+  "goods-receipts": "plugin.goodsReceipts.name",
+  inventory: "plugin.inventory.name",
+  "audit-logs": "plugin.auditLogs.name",
+  "control-panel": "plugin.controlPanel.name",
+};
 
 export const AppLayout: React.FC<AppLayoutProps> = ({
   activeTab,
@@ -19,14 +31,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 }) => {
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState<boolean>(false);
   const { currentUser } = useAuth();
-  const { plugins, branding } = useKernel();
+  const { plugins, branding, locale, setLocale, t } = useKernel();
 
   const currentPlugin = plugins.find((p) => p.id === activeTab);
   const crumb = currentPlugin
     ? {
         code: `MOD-${currentPlugin.code}`,
-        section: currentPlugin.sectionLabel,
-        title: currentPlugin.name,
+        section: branding.appName,
+        title: t(PLUGIN_NAME_KEY_MAP[activeTab]),
       }
     : {
         code: "MOD-00",
@@ -106,7 +118,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
           </div>
 
           {/* Right Header Utilities */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3.5">
             {/* Quick Search */}
             <div className="relative">
               <Search
@@ -115,14 +127,50 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               />
               <input
                 type="text"
-                placeholder={`Cari ${branding.documentPrefixPR}, ${branding.documentPrefixPO}, SKU...`}
+                placeholder={t("common.searchPlaceholder")}
                 style={{
                   backgroundColor: "var(--kr-bg-main)",
                   borderColor: "var(--kr-border)",
                   color: "var(--kr-text-main)",
                 }}
-                className="pl-8 pr-3 py-1 font-mono text-xs border w-52 focus:w-64 transition-all focus:outline-none"
+                className="pl-8 pr-3 py-1 font-mono text-xs border w-48 focus:w-60 transition-all focus:outline-none"
               />
+            </div>
+
+            {/* Instant Multi-Language Switcher (ID | EN | JA) */}
+            <div
+              style={{
+                backgroundColor: "var(--kr-bg-main)",
+                borderColor: "var(--kr-border)",
+              }}
+              className="flex items-center border p-0.5"
+              title={t("common.language")}
+            >
+              <Globe
+                style={{ color: "var(--kr-text-muted)" }}
+                className="w-3 h-3 mx-1.5"
+              />
+              {SUPPORTED_LOCALES.map((loc) => {
+                const isCurrent = locale === loc.code;
+                return (
+                  <button
+                    key={loc.code}
+                    type="button"
+                    onClick={() => setLocale(loc.code)}
+                    style={{
+                      backgroundColor: isCurrent
+                        ? "var(--kr-bg-sidebar)"
+                        : "transparent",
+                      color: isCurrent
+                        ? "var(--kr-text-sidebar)"
+                        : "var(--kr-text-muted)",
+                    }}
+                    className="px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase transition cursor-pointer"
+                  >
+                    {loc.flagCode}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Gitea-style Site Administration Shortcut */}
@@ -141,16 +189,15 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                 borderColor: "var(--kr-border)",
               }}
               className="px-2.5 py-1 border font-mono text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1.5 transition cursor-pointer hover:opacity-90"
-              title="Buka Panel Kontrol Sistem (Site Administration)"
             >
               <Sliders className="w-3 h-3" />
-              <span>Control Panel</span>
+              <span>{t("common.controlPanel")}</span>
             </button>
 
             {/* Active Staff Stamp */}
             <div
               style={{ borderColor: "var(--kr-border)" }}
-              className="flex items-center gap-3 pl-4 border-l"
+              className="flex items-center gap-3 pl-3.5 border-l"
             >
               <div className="text-right">
                 <div className="text-xs font-semibold leading-none">
@@ -160,9 +207,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                   style={{ color: "var(--kr-text-muted)" }}
                   className="font-mono text-[10px] uppercase tracking-wider mt-1"
                 >
-                  {currentUser.role === "APPROVER"
-                    ? "OTORISASI: APPROVER"
-                    : "OTORISASI: STAFF USER"}
+                  {currentUser.role}
                 </div>
               </div>
               <div

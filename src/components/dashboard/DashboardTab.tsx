@@ -25,9 +25,8 @@ interface DashboardTabProps {
 
 export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
   const { currentUser } = useAuth();
-  const { branding, emailConfig, enabledPlugins } = useKernel();
+  const { branding, emailConfig, enabledPlugins, t } = useKernel();
 
-  // Compute live stats from mockData
   const totalProducts = INITIAL_PRODUCTS.length;
   const pendingPRs = INITIAL_PURCHASE_REQUESTS.filter(
     (pr) => pr.status === "SUBMITTED",
@@ -39,7 +38,6 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
     (po) => po.status === "ORDERED" || po.status === "PARTIALLY_RECEIVED",
   ).length;
 
-  // Find critical stocks (where stock < minStock)
   const criticalItems = INITIAL_INVENTORY_BALANCES.filter((balance) => {
     const product = INITIAL_PRODUCTS.find((p) => p.id === balance.productId);
     return product ? balance.stock < product.minStock : false;
@@ -63,13 +61,12 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
     };
   });
 
-  // Recent combined transactions with dynamic document prefixes
   const recentTransactions = [
     {
       id: "tx_1",
       number: `${branding.documentPrefixPR}-2026-000001`,
-      stage: `TAHAP 01 // ${branding.documentPrefixPR}`,
-      type: "Purchase Request",
+      stage: `01 // ${branding.documentPrefixPR}`,
+      type: t("plugin.purchaseRequests.name"),
       warehouse: "Gudang Utama Jakarta",
       date: "23 Okt 2026",
       status: "SUBMITTED",
@@ -79,8 +76,8 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
     {
       id: "tx_2",
       number: `${branding.documentPrefixPO}-2026-000001`,
-      stage: `TAHAP 02 // ${branding.documentPrefixPO}`,
-      type: "Purchase Order",
+      stage: `02 // ${branding.documentPrefixPO}`,
+      type: t("plugin.purchaseOrders.name"),
       warehouse: "Gudang Roastery Bandung",
       date: "22 Okt 2026",
       status: "ORDERED",
@@ -90,8 +87,8 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
     {
       id: "tx_3",
       number: `${branding.documentPrefixGR}-2026-000001`,
-      stage: `TAHAP 03 // ${branding.documentPrefixGR}`,
-      type: "Goods Receipt",
+      stage: `03 // ${branding.documentPrefixGR}`,
+      type: t("plugin.goodsReceipts.name"),
       warehouse: "Gudang Utama Jakarta",
       date: "21 Okt 2026",
       status: "RECEIVED",
@@ -101,8 +98,8 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
     {
       id: "tx_4",
       number: `${branding.documentPrefixPR}-2026-000003`,
-      stage: `TAHAP 01 // ${branding.documentPrefixPR}`,
-      type: "Purchase Request",
+      stage: `01 // ${branding.documentPrefixPR}`,
+      type: t("plugin.purchaseRequests.name"),
       warehouse: "Gudang Roastery Bandung",
       date: "22 Okt 2026",
       status: "APPROVED",
@@ -111,27 +108,26 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
     },
   ];
 
-  // Daily weighing intake log
   const weeklyVolume = [
-    { day: "SEN", date: "20/10", value: 12.4, height: "54%", lot: "Batch-A" },
-    { day: "SEL", date: "21/10", value: 15.8, height: "68%", lot: "Batch-B" },
-    { day: "RAB", date: "22/10", value: 19.2, height: "84%", lot: "Batch-C" },
+    { day: "MON", date: "20/10", value: 12.4, height: "54%", lot: "Batch-A" },
+    { day: "TUE", date: "21/10", value: 15.8, height: "68%", lot: "Batch-B" },
+    { day: "WED", date: "22/10", value: 19.2, height: "84%", lot: "Batch-C" },
     {
-      day: "KAM",
+      day: "THU",
       date: "23/10",
       value: 14.7,
       height: "64%",
       lot: "Batch-D",
       active: true,
     },
-    { day: "JUM", date: "24/10", value: 22.0, height: "96%", lot: "Batch-E" },
-    { day: "SAB", date: "25/10", value: 17.5, height: "76%", lot: "Batch-F" },
-    { day: "MIN", date: "26/10", value: 10.2, height: "45%", lot: "Batch-G" },
+    { day: "FRI", date: "24/10", value: 22.0, height: "96%", lot: "Batch-E" },
+    { day: "SAT", date: "25/10", value: 17.5, height: "76%", lot: "Batch-F" },
+    { day: "SUN", date: "26/10", value: 10.2, height: "45%", lot: "Batch-G" },
   ];
 
   return (
     <div className="space-y-6">
-      {/* 1. Editorial Masthead (Dynamic White-Label & Microkernel Status) */}
+      {/* 1. Editorial Masthead */}
       <div
         style={{ borderColor: "var(--kr-border)" }}
         className="border-b pb-5 flex flex-col md:flex-row md:items-end justify-between gap-4"
@@ -143,7 +139,9 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
           >
             <span>{branding.orgName}</span>
             <span>•</span>
-            <span>{enabledPlugins.length} MODUL AKTIF</span>
+            <span>
+              {enabledPlugins.length} {t("dashboard.activeModules")}
+            </span>
             <span>•</span>
             <button
               type="button"
@@ -156,23 +154,22 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
               className="px-1.5 py-0.5 border font-semibold inline-flex items-center gap-1 cursor-pointer hover:opacity-80"
             >
               <Mail className="w-2.5 h-2.5" />
-              <span>NOTIF INTI: {emailConfig.coreAdminEmail}</span>
+              <span>
+                {t("dashboard.coreAlert")}: {emailConfig.coreAdminEmail}
+              </span>
             </button>
           </div>
           <h1
             style={{ color: "var(--kr-text-main)" }}
             className="font-serif text-2xl sm:text-3xl font-normal tracking-tight mt-1.5"
           >
-            Buku Ikhtisar &amp; Kendali {branding.itemTerm}
+            {t("dashboard.titlePrefix")} {branding.itemTerm}
           </h1>
           <p
             style={{ color: "var(--kr-text-muted)" }}
             className="text-xs sm:text-sm mt-1 max-w-2xl"
           >
-            Meja operasional {branding.appName} ({branding.appSubtitle}) —
-            pemantauan terpadu dokumen {branding.documentPrefixPR}, pesanan{" "}
-            {branding.documentPrefixPO}, hingga bukti terima{" "}
-            {branding.documentPrefixGR}.
+            {t("dashboard.subtitle")}
           </p>
         </div>
 
@@ -188,7 +185,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
             className="px-3.5 py-2.5 border font-mono text-xs uppercase tracking-wider font-semibold transition flex items-center gap-1.5 cursor-pointer hover:opacity-80"
           >
             <Sliders className="w-3.5 h-3.5" />
-            <span>Kustomisasi Kernel</span>
+            <span>{t("dashboard.customizeKernel")}</span>
           </button>
 
           {currentUser.role === "APPROVER" ? (
@@ -207,7 +204,8 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
                 className="w-3.5 h-3.5"
               />
               <span>
-                Periksa {pendingPRs} {branding.documentPrefixPR}
+                {t("dashboard.reviewBtn")} {pendingPRs}{" "}
+                {branding.documentPrefixPR}
               </span>
             </button>
           ) : (
@@ -225,7 +223,9 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
                 style={{ color: "var(--kr-accent)" }}
                 className="w-3.5 h-3.5"
               />
-              <span>Buat {branding.documentPrefixPR} Baru</span>
+              <span>
+                {t("dashboard.createPrBtn")} ({branding.documentPrefixPR})
+              </span>
             </button>
           )}
         </div>
@@ -239,7 +239,6 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
         }}
         className="border grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x"
       >
-        {/* Index 01: Master Produk */}
         <div
           onClick={() => onNavigate("products")}
           style={{ borderColor: "var(--kr-border)" }}
@@ -250,7 +249,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
               style={{ color: "var(--kr-text-muted)" }}
               className="font-mono text-[10px] font-semibold uppercase tracking-widest"
             >
-              01 // KATALOG {branding.itemTerm}
+              {t("dashboard.kpi1.label")}
             </span>
             <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition shrink-0" />
           </div>
@@ -262,19 +261,20 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
               style={{ color: "var(--kr-text-muted)" }}
               className="text-xs font-medium"
             >
-              SKU Terdaftar
+              {t("dashboard.kpi1.unit")}
             </span>
           </div>
           <div
             style={{ borderColor: "var(--kr-border)" }}
             className="pt-2.5 border-t flex items-center justify-between font-mono text-[10px]"
           >
-            <span style={{ color: "var(--kr-text-muted)" }}>STATUS MASTER</span>
-            <span className="text-[#1D593B] font-semibold">100% AKTIF</span>
+            <span style={{ color: "var(--kr-text-muted)" }}>
+              {t("dashboard.kpi1.footer")}
+            </span>
+            <span className="text-[#1D593B] font-semibold">100% ACTIVE</span>
           </div>
         </div>
 
-        {/* Index 02: Antrean PR */}
         <div
           onClick={() => onNavigate("purchase-requests")}
           style={{ borderColor: "var(--kr-border)" }}
@@ -285,7 +285,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
               style={{ color: "var(--kr-text-muted)" }}
               className="font-mono text-[10px] font-semibold uppercase tracking-widest"
             >
-              02 // ANTREAN {branding.documentPrefixPR}
+              {t("dashboard.kpi2.label")}
             </span>
             <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition shrink-0" />
           </div>
@@ -297,7 +297,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
               style={{ color: "var(--kr-text-muted)" }}
               className="text-xs font-medium"
             >
-              Dokumen {branding.documentPrefixPR}
+              {t("dashboard.kpi2.unit")}
             </span>
           </div>
           <div
@@ -305,7 +305,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
             className="pt-2.5 border-t flex items-center justify-between font-mono text-[10px]"
           >
             <span style={{ color: "var(--kr-text-muted)" }}>
-              SIAP JADI {branding.documentPrefixPO}
+              {t("dashboard.kpi2.footer")}
             </span>
             <span className="text-[#8A4B14] font-semibold">
               {approvedPRs} APPROVED
@@ -313,7 +313,6 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* Index 03: PO Dalam Pengiriman */}
         <div
           onClick={() => onNavigate("purchase-orders")}
           style={{ borderColor: "var(--kr-border)" }}
@@ -324,7 +323,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
               style={{ color: "var(--kr-text-muted)" }}
               className="font-mono text-[10px] font-semibold uppercase tracking-widest"
             >
-              03 // PESANAN ({branding.documentPrefixPO})
+              {t("dashboard.kpi3.label")}
             </span>
             <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition shrink-0" />
           </div>
@@ -336,21 +335,22 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
               style={{ color: "var(--kr-text-muted)" }}
               className="text-xs font-medium"
             >
-              {branding.documentPrefixPO} Terbuka
+              {t("dashboard.kpi3.unit")}
             </span>
           </div>
           <div
             style={{ borderColor: "var(--kr-border)" }}
             className="pt-2.5 border-t flex items-center justify-between font-mono text-[10px]"
           >
-            <span style={{ color: "var(--kr-text-muted)" }}>TAHAP TERIMA</span>
+            <span style={{ color: "var(--kr-text-muted)" }}>
+              {t("dashboard.kpi3.footer")}
+            </span>
             <span className="text-[#1E4A6D] font-semibold">
               ORDERED / PARTIAL
             </span>
           </div>
         </div>
 
-        {/* Index 04: Ambang Kritis */}
         <div
           onClick={() => onNavigate("inventory")}
           style={{ borderColor: "var(--kr-border)" }}
@@ -358,7 +358,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
         >
           <div className="flex items-center justify-between">
             <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-[#9E2A20]">
-              04 // AMBANG MINIMUM
+              {t("dashboard.kpi4.label")}
             </span>
             <ArrowUpRight className="w-3.5 h-3.5 text-[#9E2A20] transition shrink-0" />
           </div>
@@ -367,24 +367,27 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
               {criticalItems.length}
             </span>
             <span className="text-xs font-medium text-[#9E2A20]">
-              {branding.itemTerm} Kritis
+              {t("dashboard.kpi4.unit")}
             </span>
           </div>
           <div
             style={{ borderColor: "var(--kr-border)" }}
             className="pt-2.5 border-t flex items-center justify-between font-mono text-[10px]"
           >
-            <span style={{ color: "var(--kr-text-muted)" }}>ALERT EMAIL</span>
+            <span style={{ color: "var(--kr-text-muted)" }}>
+              {t("dashboard.kpi4.footer")}
+            </span>
             <span className="text-[#9E2A20] font-semibold">
-              {emailConfig.triggers.onCriticalStock ? "AKTIF" : "MANUAL"}
+              {emailConfig.triggers.onCriticalStock
+                ? t("common.active")
+                : t("common.inactive")}
             </span>
           </div>
         </div>
       </div>
 
-      {/* 3. Bagian Tengah: Log Timbangan Bahan Masuk & Kartu Peringatan Stok */}
+      {/* 3. Bagian Tengah: Log Timbangan & Bon Peringatan Stok */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Kolom Kiri (2 Kolom): Log Timbangan Penerimaan Fisik */}
         <div
           style={{
             backgroundColor: "var(--kr-bg-surface)",
@@ -393,7 +396,6 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
           className="lg:col-span-2 border p-5 sm:p-6 flex flex-col justify-between"
         >
           <div>
-            {/* Header Log Timbangan — Anti-Wrapping pada Mobile */}
             <div
               style={{ borderColor: "var(--kr-border)" }}
               className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b pb-4 mb-5"
@@ -403,21 +405,19 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
                   style={{ color: "var(--kr-text-muted)" }}
                   className="font-mono text-[10px] font-semibold uppercase tracking-widest"
                 >
-                  CATATAN PENERIMAAN FISIK // {branding.documentPrefixGR}
+                  {t("dashboard.chart.tag")} // {branding.documentPrefixGR}
                 </div>
                 <h2 className="font-serif text-lg sm:text-xl font-normal mt-0.5">
-                  Akumulasi Volume {branding.itemTerm} Masuk
+                  {t("dashboard.chart.title")}
                 </h2>
                 <p
                   style={{ color: "var(--kr-text-muted)" }}
                   className="text-xs mt-0.5"
                 >
-                  Rekapitulasi kuantitas bersih penerimaan barang selama 7 hari
-                  terakhir
+                  {t("dashboard.chart.desc")}
                 </p>
               </div>
 
-              {/* Stamped Total Box */}
               <div
                 style={{
                   backgroundColor: "var(--kr-bg-elevated)",
@@ -429,18 +429,17 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
                   style={{ color: "var(--kr-text-muted)" }}
                   className="font-mono text-[10px] uppercase tracking-wider"
                 >
-                  TOTAL MINGGU INI
+                  {t("dashboard.chart.weekTotal")}
                 </div>
                 <div className="font-mono text-lg sm:text-xl font-bold whitespace-nowrap">
                   111.8 UNIT/KG
                 </div>
                 <div className="font-mono text-[10px] text-[#1D593B] font-semibold whitespace-nowrap">
-                  +14.2% vs minggu lalu
+                  {t("dashboard.chart.vsLastWeek")}
                 </div>
               </div>
             </div>
 
-            {/* Grafik Kolom Timbangan Berbasis Ledger Grid */}
             <div className="relative pt-4 pb-2">
               <div
                 style={{ borderColor: "var(--kr-border)" }}
@@ -512,28 +511,25 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
           >
             <div>
               <span style={{ color: "var(--kr-text-muted)" }} className="block">
-                KATEGORI UTAMA
+                {t("dashboard.chart.dominantCat")}
               </span>
-              <span className="font-semibold">{branding.itemTerm} Inti</span>
+              <span className="font-semibold">{branding.itemTerm}</span>
             </div>
             <div>
               <span style={{ color: "var(--kr-text-muted)" }} className="block">
-                RATA-RATA HARIAN
+                {t("dashboard.chart.dailyAvg")}
               </span>
-              <span className="font-semibold">15.97 / Hari</span>
+              <span className="font-semibold">15.97 / Day</span>
             </div>
             <div className="text-right">
               <span style={{ color: "var(--kr-text-muted)" }} className="block">
-                SELISIH AUDIT
+                {t("dashboard.chart.auditVariance")}
               </span>
-              <span className="font-semibold text-[#1D593B]">
-                0.0% (Sesuai)
-              </span>
+              <span className="font-semibold text-[#1D593B]">0.0% (OK)</span>
             </div>
           </div>
         </div>
 
-        {/* Kolom Kanan (1 Kolom): Bon Peringatan Saldo Minimum */}
         <div
           style={{
             backgroundColor: "var(--kr-bg-surface)",
@@ -549,14 +545,14 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
               <div>
                 <div className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#9E2A20] flex items-center gap-1.5">
                   <AlertTriangle className="w-3.5 h-3.5" />
-                  <span>BON PERINGATAN GUDANG</span>
+                  <span>{t("dashboard.alert.tag")}</span>
                 </div>
                 <h3 className="font-serif text-lg font-normal mt-0.5">
-                  Saldo di Bawah Minimum
+                  {t("dashboard.alert.title")}
                 </h3>
               </div>
               <span className="font-mono text-[10px] font-bold text-[#9E2A20] bg-[#FCEAE8] border border-[#E6B8B3] px-2 py-0.5">
-                {criticalItems.length} ITEM
+                {criticalItems.length} SKU
               </span>
             </div>
 
@@ -578,7 +574,8 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
                       {item.product.sku}
                     </span>
                     <span className="font-mono text-[10px] font-bold text-[#9E2A20]">
-                      KURANG {item.deficit} {item.product.unit}
+                      {t("dashboard.alert.deficit")} {item.deficit}{" "}
+                      {item.product.unit}
                     </span>
                   </div>
                   <div className="text-xs font-bold mt-0.5">
@@ -623,7 +620,9 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
               }}
               className="w-full py-2.5 px-3 font-mono text-[11px] uppercase tracking-wider font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer"
             >
-              <span>Susun {branding.documentPrefixPR} Pengadaan Baru</span>
+              <span>
+                {t("dashboard.alert.draftPrBtn")} ({branding.documentPrefixPR})
+              </span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -647,10 +646,10 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
               style={{ color: "var(--kr-text-muted)" }}
               className="font-mono text-[10px] font-semibold uppercase tracking-widest"
             >
-              JURNAL EKSPEDISI DOKUMEN
+              {t("dashboard.tx.tag")}
             </div>
             <h3 className="font-serif text-lg font-normal mt-0.5">
-              Mutasi Dokumen Pengadaan Terkini
+              {t("dashboard.tx.title")}
             </h3>
           </div>
           <div
@@ -661,8 +660,8 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
             }}
             className="font-mono text-[11px] border px-3 py-1.5"
           >
-            ALUR BAKU: {branding.documentPrefixPR} → APPROVAL →{" "}
-            {branding.documentPrefixPO} → {branding.documentPrefixGR}
+            {t("dashboard.tx.flowLabel")}: {branding.documentPrefixPR} →
+            APPROVAL → {branding.documentPrefixPO} → {branding.documentPrefixGR}
           </div>
         </div>
 
@@ -677,12 +676,24 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
                 }}
                 className="border-b font-mono text-[10px] uppercase tracking-wider"
               >
-                <th className="py-3 px-5 font-semibold">No. Registrasi</th>
-                <th className="py-3 px-4 font-semibold">Tahap Siklus</th>
-                <th className="py-3 px-4 font-semibold">Gudang Tujuan</th>
-                <th className="py-3 px-4 font-semibold">Tanggal Catat</th>
-                <th className="py-3 px-4 font-semibold">Status Dokumen</th>
-                <th className="py-3 px-5 text-right font-semibold">Berkas</th>
+                <th className="py-3 px-5 font-semibold">
+                  {t("dashboard.tx.colReg")}
+                </th>
+                <th className="py-3 px-4 font-semibold">
+                  {t("dashboard.tx.colStage")}
+                </th>
+                <th className="py-3 px-4 font-semibold">
+                  {t("dashboard.tx.colWarehouse")}
+                </th>
+                <th className="py-3 px-4 font-semibold">
+                  {t("dashboard.tx.colDate")}
+                </th>
+                <th className="py-3 px-4 font-semibold">
+                  {t("dashboard.tx.colStatus")}
+                </th>
+                <th className="py-3 px-5 text-right font-semibold">
+                  {t("dashboard.tx.colFile")}
+                </th>
               </tr>
             </thead>
             <tbody
@@ -729,7 +740,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
                       type="button"
                       className="font-mono text-[11px] font-semibold inline-flex items-center gap-1 cursor-pointer hover:underline"
                     >
-                      <span>BUKA</span>
+                      <span>{t("common.open")}</span>
                       <ArrowUpRight className="w-3.5 h-3.5" />
                     </button>
                   </td>
