@@ -2013,8 +2013,9 @@ INSTANCE_TOKEN="${dbConnection.instanceToken}"`}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 font-mono text-xs">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 font-mono text-xs">
                   {[
+                    { name: "users", count: accounts.length },
                     { name: "warehouses", count: warehouses.length },
                     { name: "suppliers", count: suppliers.length },
                     { name: "products", count: products.length },

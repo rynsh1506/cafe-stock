@@ -1,5 +1,11 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { UserProfile, UserRole } from "@/types";
+import {
+  clearNativeDatabase,
+  DB_TABLE_KEYS,
+  loadUsersFromSqliteDatabase,
+  syncUsersToSqliteDatabase,
+} from "@/utils/sqliteDatabase";
 
 export type AccountApprovalStatus = "ACTIVE" | "PENDING" | "REJECTED";
 
@@ -64,7 +70,7 @@ function purgeLegacyAuthStorage(): void {
 purgeLegacyAuthStorage();
 
 const AUTH_STORAGE_KEYS = {
-  ACCOUNTS: "accounts",
+  ACCOUNTS: DB_TABLE_KEYS.USERS,
   ACTIVE_USER: "active_user",
 } as const;
 
@@ -125,14 +131,45 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [accounts, setAccounts] = useState<StoredUserAccount[]>(() =>
-    readJson<StoredUserAccount[]>(AUTH_STORAGE_KEYS.ACCOUNTS, []),
-  );
+  const [accounts, setAccounts] = useState<StoredUserAccount[]>(() => {
+    const usersTable = readJson<StoredUserAccount[]>(
+      AUTH_STORAGE_KEYS.ACCOUNTS,
+      [],
+    );
+    if (usersTable.length > 0) {
+      return usersTable;
+    }
+    return readJson<StoredUserAccount[]>("accounts", []);
+  });
 
   const [activeSessionUser, setActiveSessionUser] =
     useState<UserProfile | null>(() =>
       readJson<UserProfile | null>(AUTH_STORAGE_KEYS.ACTIVE_USER, null),
     );
+
+  useEffect(() => {
+    let active = true;
+    void loadUsersFromSqliteDatabase().then((dbUsers) => {
+      if (!active || !dbUsers) {
+        return;
+      }
+      if (dbUsers.length > 0) {
+        setAccounts(dbUsers);
+        writeJson(AUTH_STORAGE_KEYS.ACCOUNTS, dbUsers);
+      } else if (accounts.length > 0) {
+        void syncUsersToSqliteDatabase(accounts);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const persistAccountsToDb = (nextAccounts: StoredUserAccount[]): void => {
+    setAccounts(nextAccounts);
+    writeJson(AUTH_STORAGE_KEYS.ACCOUNTS, nextAccounts);
+    void syncUsersToSqliteDatabase(nextAccounts);
+  };
 
   const hasInitializedAccount = accounts.length > 0;
   const isAuthenticated = hasInitializedAccount && activeSessionUser !== null;
@@ -188,8 +225,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     const nextAccounts = [...accounts, newAccount];
-    setAccounts(nextAccounts);
-    writeJson(AUTH_STORAGE_KEYS.ACCOUNTS, nextAccounts);
+    persistAccountsToDb(nextAccounts);
 
     if (requiresAdminApproval) {
       return { ok: true, pendingApproval: true };
@@ -276,16 +312,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           }
         : acc,
     );
-    setAccounts(next);
-    writeJson(AUTH_STORAGE_KEYS.ACCOUNTS, next);
+    persistAccountsToDb(next);
   };
 
   const rejectAccount = (id: string): void => {
     const next = accounts.map((acc) =>
       acc.id === id ? { ...acc, status: "REJECTED" as const } : acc,
     );
-    setAccounts(next);
-    writeJson(AUTH_STORAGE_KEYS.ACCOUNTS, next);
+    persistAccountsToDb(next);
   };
 
   const deleteAccount = (id: string): void => {
@@ -293,16 +327,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       return;
     }
     const next = accounts.filter((acc) => acc.id !== id);
-    setAccounts(next);
-    writeJson(AUTH_STORAGE_KEYS.ACCOUNTS, next);
+    persistAccountsToDb(next);
   };
 
   const updateAccountRole = (id: string, role: UserRole): void => {
     const next = accounts.map((acc) =>
       acc.id === id ? { ...acc, role } : acc,
     );
-    setAccounts(next);
-    writeJson(AUTH_STORAGE_KEYS.ACCOUNTS, next);
+    persistAccountsToDb(next);
     if (activeSessionUser?.id === id) {
       const updatedSession = { ...activeSessionUser, role };
       setActiveSessionUser(updatedSession);
@@ -351,9 +383,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const resetAllAccounts = (): void => {
     setAccounts([]);
     setActiveSessionUser(null);
+    void syncUsersToSqliteDatabase([]);
+    void clearNativeDatabase(true);
     try {
       window.localStorage.removeItem(AUTH_STORAGE_KEYS.ACCOUNTS);
+      window.localStorage.removeItem("accounts");
       window.localStorage.removeItem(AUTH_STORAGE_KEYS.ACTIVE_USER);
+      purgeLegacyAuthStorage();
     } catch {
       // ignore
     }

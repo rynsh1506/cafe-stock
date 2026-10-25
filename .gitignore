@@ -28,3 +28,12 @@ dist-ssr
 .env.*
 !.env.example
 
+# Local SQLite database files
+database/*.sqlite*
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+*.db
+
+
