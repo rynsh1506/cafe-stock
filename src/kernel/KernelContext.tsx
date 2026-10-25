@@ -24,9 +24,11 @@ import {
   THEME_PALETTES,
 } from "@/kernel/registry";
 import {
+  BUILTIN_LOCALES,
   BUILTIN_TRANSLATIONS,
+  BuiltInLocaleCode,
   LocaleCode,
-  SUPPORTED_LOCALES,
+  LocaleMetadata,
   TranslationDictionary,
   TranslationKey,
 } from "@/kernel/i18n";
@@ -39,9 +41,15 @@ const STORAGE_KEYS = {
   EMAIL_CONFIG: "kr_email_config_v1",
   EMAIL_LOGS: "kr_email_logs_v1",
   LOCALE: "kr_locale_v1",
-  CUSTOM_DICT: "kr_custom_dict_v1",
+  CUSTOM_LOCALES: "kr_custom_locales_v2",
+  CUSTOM_DICTS_BY_LOCALE: "kr_custom_dicts_by_locale_v2",
   DB_CONN: "kr_db_conn_v1",
 } as const;
+
+interface CustomLocaleEntry {
+  meta: LocaleMetadata;
+  baseLocale: BuiltInLocaleCode;
+}
 
 const DEFAULT_DB_CONNECTION: DatabaseConnectionConfig = {
   mode: "LOCAL_EMBEDDED",
@@ -98,8 +106,16 @@ interface KernelContextValue {
   updateBranding: (partial: Partial<BrandingConfig>) => void;
   applyIndustryPreset: (presetId: IndustryPresetId) => void;
   locale: LocaleCode;
+  availableLocales: LocaleMetadata[];
   setLocale: (code: LocaleCode) => void;
+  createCustomLocale: (
+    code: string,
+    nativeName: string,
+    baseLocale: BuiltInLocaleCode,
+  ) => void;
+  deleteCustomLocale: (code: string) => void;
   t: (key: TranslationKey) => string;
+  getBaseTranslationForCurrentLocale: (key: TranslationKey) => string;
   customTranslations: Partial<TranslationDictionary>;
   updateCustomTranslation: (key: TranslationKey, value: string) => void;
   resetCustomTranslations: () => void;
@@ -157,15 +173,21 @@ export const KernelProvider: React.FC<{ children: React.ReactNode }> = ({
     ),
   );
 
+  const [customLocaleEntries, setCustomLocaleEntries] = useState<
+    CustomLocaleEntry[]
+  >(() =>
+    readPersistedJson<CustomLocaleEntry[]>(STORAGE_KEYS.CUSTOM_LOCALES, []),
+  );
+
   const [locale, setLocaleState] = useState<LocaleCode>(() =>
     readPersistedJson<LocaleCode>(STORAGE_KEYS.LOCALE, "id"),
   );
 
-  const [customTranslations, setCustomTranslations] = useState<
-    Partial<TranslationDictionary>
+  const [customDictsByLocale, setCustomDictsByLocale] = useState<
+    Record<string, Partial<TranslationDictionary>>
   >(() =>
-    readPersistedJson<Partial<TranslationDictionary>>(
-      STORAGE_KEYS.CUSTOM_DICT,
+    readPersistedJson<Record<string, Partial<TranslationDictionary>>>(
+      STORAGE_KEYS.CUSTOM_DICTS_BY_LOCALE,
       {},
     ),
   );
@@ -193,6 +215,11 @@ export const KernelProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   const [lastWriteMs, setLastWriteMs] = useState<number>(0.18);
+
+  const availableLocales: LocaleMetadata[] = useMemo(
+    () => [...BUILTIN_LOCALES, ...customLocaleEntries.map((e) => e.meta)],
+    [customLocaleEntries],
+  );
 
   const baseTheme = useMemo(
     () =>
@@ -244,36 +271,114 @@ export const KernelProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const setLocale = (code: LocaleCode): void => {
-    if (!SUPPORTED_LOCALES.some((l) => l.code === code)) {
-      return;
-    }
     setLocaleState(code);
     persistWithTiming(STORAGE_KEYS.LOCALE, code);
   };
+
+  const createCustomLocale = (
+    rawCode: string,
+    nativeName: string,
+    baseLocale: BuiltInLocaleCode,
+  ): void => {
+    const cleanCode = rawCode
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9-_]/g, "");
+    const cleanName = nativeName.trim();
+    if (!cleanCode || !cleanName) {
+      return;
+    }
+    if (availableLocales.some((l) => l.code === cleanCode)) {
+      setLocale(cleanCode);
+      return;
+    }
+    const newEntry: CustomLocaleEntry = {
+      meta: {
+        code: cleanCode,
+        name: cleanName,
+        nativeName: cleanName,
+        flagCode: cleanCode.slice(0, 3).toUpperCase(),
+        isBuiltIn: false,
+      },
+      baseLocale,
+    };
+    setCustomLocaleEntries((prev) => {
+      const next = [...prev, newEntry];
+      persistWithTiming(STORAGE_KEYS.CUSTOM_LOCALES, next);
+      return next;
+    });
+    setLocale(cleanCode);
+  };
+
+  const deleteCustomLocale = (code: string): void => {
+    if (BUILTIN_LOCALES.some((b) => b.code === code)) {
+      return;
+    }
+    setCustomLocaleEntries((prev) => {
+      const next = prev.filter((item) => item.meta.code !== code);
+      persistWithTiming(STORAGE_KEYS.CUSTOM_LOCALES, next);
+      return next;
+    });
+    setCustomDictsByLocale((prev) => {
+      const copy = { ...prev };
+      delete copy[code];
+      persistWithTiming(STORAGE_KEYS.CUSTOM_DICTS_BY_LOCALE, copy);
+      return copy;
+    });
+    if (locale === code) {
+      setLocale("id");
+    }
+  };
+
+  const getBaseTranslationForCurrentLocale = (key: TranslationKey): string => {
+    if (locale === "id" || locale === "en" || locale === "ja") {
+      return BUILTIN_TRANSLATIONS[locale][key];
+    }
+    const customEntry = customLocaleEntries.find((e) => e.meta.code === locale);
+    const baseCode: BuiltInLocaleCode = customEntry?.baseLocale ?? "id";
+    return BUILTIN_TRANSLATIONS[baseCode][key];
+  };
+
+  const customTranslations: Partial<TranslationDictionary> = useMemo(
+    () => customDictsByLocale[locale] ?? {},
+    [customDictsByLocale, locale],
+  );
 
   const t = (key: TranslationKey): string => {
     const customVal = customTranslations[key];
     if (customVal && customVal.trim().length > 0) {
       return customVal;
     }
-    const dict = BUILTIN_TRANSLATIONS[locale] ?? BUILTIN_TRANSLATIONS.id;
-    return dict[key] ?? BUILTIN_TRANSLATIONS.id[key];
+    return getBaseTranslationForCurrentLocale(key);
   };
 
   const updateCustomTranslation = (
     key: TranslationKey,
     value: string,
   ): void => {
-    setCustomTranslations((prev) => {
-      const next = { ...prev, [key]: value };
-      persistWithTiming(STORAGE_KEYS.CUSTOM_DICT, next);
+    setCustomDictsByLocale((prev) => {
+      const nextForLocale = {
+        ...(prev[locale] ?? {}),
+        [key]: value,
+      };
+      const next = {
+        ...prev,
+        [locale]: nextForLocale,
+      };
+      persistWithTiming(STORAGE_KEYS.CUSTOM_DICTS_BY_LOCALE, next);
       return next;
     });
   };
 
   const resetCustomTranslations = (): void => {
-    setCustomTranslations({});
-    persistWithTiming(STORAGE_KEYS.CUSTOM_DICT, {});
+    setCustomDictsByLocale((prev) => {
+      const next = {
+        ...prev,
+        [locale]: {},
+      };
+      persistWithTiming(STORAGE_KEYS.CUSTOM_DICTS_BY_LOCALE, next);
+      return next;
+    });
   };
 
   const updateDbConnection = (
@@ -415,7 +520,8 @@ export const KernelProvider: React.FC<{ children: React.ReactNode }> = ({
     setCustomColors({});
     setBranding(INDUSTRY_PRESETS.ROASTERY_CAFE);
     setLocaleState("id");
-    setCustomTranslations({});
+    setCustomLocaleEntries([]);
+    setCustomDictsByLocale({});
     setDbConnection(DEFAULT_DB_CONNECTION);
     setEmailConfig(DEFAULT_EMAIL_CONFIG);
     setEmailLogs(INITIAL_DISPATCH_LOGS);
@@ -464,8 +570,12 @@ export const KernelProvider: React.FC<{ children: React.ReactNode }> = ({
         updateBranding,
         applyIndustryPreset,
         locale,
+        availableLocales,
         setLocale,
+        createCustomLocale,
+        deleteCustomLocale,
         t,
+        getBaseTranslationForCurrentLocale,
         customTranslations,
         updateCustomTranslation,
         resetCustomTranslations,

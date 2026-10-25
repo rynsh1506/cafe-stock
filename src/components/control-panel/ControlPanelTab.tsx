@@ -11,6 +11,7 @@ import {
   HardDrive,
   Mail,
   Palette,
+  Plus,
   RotateCcw,
   Search,
   Send,
@@ -22,10 +23,11 @@ import {
 import { useKernel } from "@/kernel/KernelContext";
 import { IndustryPresetId, ThemeColors } from "@/kernel/types";
 import {
-  BUILTIN_TRANSLATIONS,
-  SUPPORTED_LOCALES,
+  BUILTIN_LOCALES,
+  BuiltInLocaleCode,
   TranslationKey,
 } from "@/kernel/i18n";
+import { NavigationTab } from "@/types";
 
 type AdminSectionId =
   | "status"
@@ -37,31 +39,44 @@ type AdminSectionId =
   | "mailer"
   | "dev-sdk";
 
+const PLUGIN_NAME_KEY_MAP: Record<NavigationTab, TranslationKey> = {
+  dashboard: "plugin.dashboard.name",
+  products: "plugin.products.name",
+  "purchase-requests": "plugin.purchaseRequests.name",
+  "purchase-orders": "plugin.purchaseOrders.name",
+  "goods-receipts": "plugin.goodsReceipts.name",
+  inventory: "plugin.inventory.name",
+  "audit-logs": "plugin.auditLogs.name",
+  "control-panel": "plugin.controlPanel.name",
+};
+
 const CUSTOMIZABLE_DICT_KEYS: {
   key: TranslationKey;
   category: string;
 }[] = [
-  { key: "plugin.dashboard.name", category: "Menu Navigasi" },
-  { key: "plugin.products.name", category: "Menu Navigasi" },
-  { key: "plugin.purchaseRequests.name", category: "Menu Navigasi" },
-  { key: "plugin.purchaseOrders.name", category: "Menu Navigasi" },
-  { key: "plugin.goodsReceipts.name", category: "Menu Navigasi" },
-  { key: "plugin.inventory.name", category: "Menu Navigasi" },
-  { key: "plugin.auditLogs.name", category: "Menu Navigasi" },
-  { key: "dashboard.titlePrefix", category: "Halaman Ikhtisar" },
-  { key: "dashboard.subtitle", category: "Halaman Ikhtisar" },
-  { key: "dashboard.createPrBtn", category: "Tombol Aksi" },
-  { key: "dashboard.reviewBtn", category: "Tombol Aksi" },
-  { key: "dashboard.kpi1.label", category: "Kartu Indeks KPI" },
-  { key: "dashboard.kpi2.label", category: "Kartu Indeks KPI" },
-  { key: "dashboard.kpi3.label", category: "Kartu Indeks KPI" },
-  { key: "dashboard.kpi4.label", category: "Kartu Indeks KPI" },
-  { key: "dashboard.chart.title", category: "Grafik & Laporan" },
-  { key: "dashboard.alert.title", category: "Peringatan Gudang" },
-  { key: "dashboard.tx.title", category: "Jurnal Transaksi" },
-  { key: "login.heroLine1", category: "Halaman Login" },
-  { key: "login.heroLine2", category: "Halaman Login" },
-  { key: "login.welcomeTitle", category: "Halaman Login" },
+  { key: "plugin.dashboard.name", category: "Navigasi" },
+  { key: "plugin.products.name", category: "Navigasi" },
+  { key: "plugin.purchaseRequests.name", category: "Navigasi" },
+  { key: "plugin.purchaseOrders.name", category: "Navigasi" },
+  { key: "plugin.goodsReceipts.name", category: "Navigasi" },
+  { key: "plugin.inventory.name", category: "Navigasi" },
+  { key: "plugin.auditLogs.name", category: "Navigasi" },
+  { key: "plugin.controlPanel.name", category: "Navigasi" },
+  { key: "dashboard.titlePrefix", category: "Dashboard" },
+  { key: "dashboard.subtitle", category: "Dashboard" },
+  { key: "dashboard.createPrBtn", category: "Dashboard" },
+  { key: "dashboard.reviewBtn", category: "Dashboard" },
+  { key: "dashboard.kpi1.label", category: "KPI" },
+  { key: "dashboard.kpi2.label", category: "KPI" },
+  { key: "dashboard.kpi3.label", category: "KPI" },
+  { key: "dashboard.kpi4.label", category: "KPI" },
+  { key: "dashboard.chart.title", category: "Grafik" },
+  { key: "dashboard.alert.title", category: "Gudang" },
+  { key: "dashboard.tx.title", category: "Transaksi" },
+  { key: "login.heroLine1", category: "Login" },
+  { key: "login.heroLine2", category: "Login" },
+  { key: "login.welcomeTitle", category: "Login" },
+  { key: "cp.headerTitle", category: "Control Panel" },
 ];
 
 export const ControlPanelTab: React.FC = () => {
@@ -80,8 +95,12 @@ export const ControlPanelTab: React.FC = () => {
     updateBranding,
     applyIndustryPreset,
     locale,
+    availableLocales,
     setLocale,
+    createCustomLocale,
+    deleteCustomLocale,
     t,
+    getBaseTranslationForCurrentLocale,
     customTranslations,
     updateCustomTranslation,
     resetCustomTranslations,
@@ -99,6 +118,9 @@ export const ControlPanelTab: React.FC = () => {
 
   const [activeSection, setActiveSection] = useState<AdminSectionId>("i18n");
   const [dictFilter, setDictFilter] = useState<string>("");
+  const [newLangCode, setNewLangCode] = useState<string>("");
+  const [newLangName, setNewLangName] = useState<string>("");
+  const [newLangBase, setNewLangBase] = useState<BuiltInLocaleCode>("id");
   const [testSentBanner, setTestSentBanner] = useState<boolean>(false);
 
   const customOverrideCount = Object.values(customTranslations).filter(
@@ -130,7 +152,7 @@ export const ControlPanelTab: React.FC = () => {
       code: "ADM-03",
       label: t("cp.nav.i18n"),
       icon: Globe,
-      badge: locale.toUpperCase(),
+      badge: `${locale.toUpperCase()} (${availableLocales.length})`,
     },
     {
       id: "database",
@@ -157,7 +179,7 @@ export const ControlPanelTab: React.FC = () => {
       code: "ADM-07",
       label: t("cp.nav.mailer"),
       icon: Mail,
-      badge: emailConfig.enabled ? "SMTP ON" : "OFF",
+      badge: emailConfig.enabled ? "ON" : "OFF",
     },
     {
       id: "dev-sdk",
@@ -169,40 +191,50 @@ export const ControlPanelTab: React.FC = () => {
 
   const colorTokenFields: {
     key: keyof ThemeColors;
-    label: string;
+    labelKey: TranslationKey;
     tokenName: string;
   }[] = [
     {
       key: "bgMain",
-      label: "Latar Utama (Workspace)",
+      labelKey: "cp.themes.tokenBgMain",
       tokenName: "--kr-bg-main",
     },
     {
       key: "bgSurface",
-      label: "Permukaan Kertas / Panel",
+      labelKey: "cp.themes.tokenBgSurface",
       tokenName: "--kr-bg-surface",
     },
     {
       key: "bgSidebar",
-      label: "Latar Navigasi Samping",
+      labelKey: "cp.themes.tokenBgSidebar",
       tokenName: "--kr-bg-sidebar",
     },
     {
       key: "textMain",
-      label: "Tinta Teks Utama",
+      labelKey: "cp.themes.tokenTextMain",
       tokenName: "--kr-text-main",
     },
     {
       key: "border",
-      label: "Garis Arsitektural Panel",
+      labelKey: "cp.themes.tokenBorder",
       tokenName: "--kr-border",
     },
     {
       key: "accent",
-      label: "Warna Aksen Utama",
+      labelKey: "cp.themes.tokenAccent",
       tokenName: "--kr-accent",
     },
   ];
+
+  const handleCreateLanguage = (e: React.FormEvent): void => {
+    e.preventDefault();
+    if (!newLangCode.trim() || !newLangName.trim()) {
+      return;
+    }
+    createCustomLocale(newLangCode, newLangName, newLangBase);
+    setNewLangCode("");
+    setNewLangName("");
+  };
 
   const handleSendTestMail = (): void => {
     sendTestEmailNotification();
@@ -217,7 +249,9 @@ export const ControlPanelTab: React.FC = () => {
       return true;
     }
     const q = dictFilter.toLowerCase();
-    const defaultVal = BUILTIN_TRANSLATIONS[locale][item.key].toLowerCase();
+    const defaultVal = getBaseTranslationForCurrentLocale(
+      item.key,
+    ).toLowerCase();
     return (
       item.key.toLowerCase().includes(q) ||
       item.category.toLowerCase().includes(q) ||
@@ -273,7 +307,7 @@ export const ControlPanelTab: React.FC = () => {
 
       {/* Main Two-Column Gitea Admin Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Rail: Site Administration Menu (4 Cols on LG) */}
+        {/* Left Rail: Site Administration Menu */}
         <div
           style={{
             backgroundColor: "var(--kr-bg-surface)",
@@ -290,7 +324,7 @@ export const ControlPanelTab: React.FC = () => {
             className="px-4 py-3 border-b font-mono text-[10px] font-semibold uppercase tracking-widest flex items-center justify-between"
           >
             <span>{t("cp.menuTitle")}</span>
-            <span>v2.1</span>
+            <span>v2.2</span>
           </div>
 
           <div style={{ borderColor: "var(--kr-border)" }} className="divide-y">
@@ -352,7 +386,7 @@ export const ControlPanelTab: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Content Area (8 Cols on LG) */}
+        {/* Right Content Area */}
         <div
           style={{
             backgroundColor: "var(--kr-bg-surface)",
@@ -391,7 +425,7 @@ export const ControlPanelTab: React.FC = () => {
                     className="font-mono text-[10px] uppercase tracking-wider flex items-center gap-1.5"
                   >
                     <Database className="w-3.5 h-3.5" />
-                    <span>READ / WRITE LATENCY</span>
+                    <span>{t("cp.status.latencyTitle")}</span>
                   </div>
                   <div className="font-mono text-2xl font-bold mt-2">
                     {storageMetrics.avgReadLatencyMs} ms
@@ -413,7 +447,7 @@ export const ControlPanelTab: React.FC = () => {
                     className="font-mono text-[10px] uppercase tracking-wider flex items-center gap-1.5"
                   >
                     <Blocks className="w-3.5 h-3.5" />
-                    <span>ACTIVE ADD-ONS</span>
+                    <span>{t("cp.status.addonsTitle")}</span>
                   </div>
                   <div className="font-mono text-2xl font-bold mt-2">
                     {enabledPlugins.length} / {plugins.length}
@@ -422,8 +456,8 @@ export const ControlPanelTab: React.FC = () => {
                     style={{ color: "var(--kr-text-muted)" }}
                     className="font-mono text-[10px] mt-1"
                   >
-                    Locale: {locale.toUpperCase()} ({customOverrideCount} custom
-                    terms)
+                    {locale.toUpperCase()} ({customOverrideCount}{" "}
+                    {t("cp.status.customTerms")})
                   </div>
                 </div>
 
@@ -439,7 +473,7 @@ export const ControlPanelTab: React.FC = () => {
                     className="font-mono text-[10px] uppercase tracking-wider flex items-center gap-1.5"
                   >
                     <Cpu className="w-3.5 h-3.5" />
-                    <span>DB DRIVER MODE</span>
+                    <span>{t("cp.status.dbModeTitle")}</span>
                   </div>
                   <div className="font-mono text-sm font-bold mt-2 truncate">
                     {dbConnection.mode === "LOCAL_EMBEDDED"
@@ -466,7 +500,7 @@ export const ControlPanelTab: React.FC = () => {
                   }}
                   className="px-4 py-2.5 border-b font-mono text-[10px] font-semibold uppercase tracking-widest"
                 >
-                  SPESIFIKASI KONFIGURASI KERNEL SAAT INI
+                  {t("cp.status.specHeader")}
                 </div>
                 <div
                   style={{ borderColor: "var(--kr-border)" }}
@@ -474,7 +508,7 @@ export const ControlPanelTab: React.FC = () => {
                 >
                   <div className="px-4 py-2.5 flex items-center justify-between gap-4">
                     <span style={{ color: "var(--kr-text-muted)" }}>
-                      App Identity
+                      {t("cp.status.rowIdentity")}
                     </span>
                     <span className="font-bold">
                       {branding.appName} ({branding.orgName})
@@ -482,21 +516,21 @@ export const ControlPanelTab: React.FC = () => {
                   </div>
                   <div className="px-4 py-2.5 flex items-center justify-between gap-4">
                     <span style={{ color: "var(--kr-text-muted)" }}>
-                      Storage Adapter
+                      {t("cp.status.rowStorage")}
                     </span>
                     <span>{storageMetrics.engineName}</span>
                   </div>
                   <div className="px-4 py-2.5 flex items-center justify-between gap-4">
                     <span style={{ color: "var(--kr-text-muted)" }}>
-                      Active Language Pack
+                      {t("cp.status.rowLang")}
                     </span>
                     <span className="uppercase font-bold">
-                      {locale} ({customOverrideCount} Kustom)
+                      {locale} ({availableLocales.length} locales)
                     </span>
                   </div>
                   <div className="px-4 py-2.5 flex items-center justify-between gap-4">
                     <span style={{ color: "var(--kr-text-muted)" }}>
-                      Core Alert Destination
+                      {t("cp.status.rowEmail")}
                     </span>
                     <span className="font-semibold">
                       {emailConfig.coreAdminEmail}
@@ -530,25 +564,25 @@ export const ControlPanelTab: React.FC = () => {
                   style={{ color: "var(--kr-text-muted)" }}
                   className="font-mono text-[10px] font-semibold uppercase tracking-widest mb-2.5"
                 >
-                  PILIH PRESET PROFIL PENGGUNAAN (1-KLIK)
+                  {t("cp.identity.presetLabel")}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {(
                     [
                       {
                         id: "ROASTERY_CAFE" as IndustryPresetId,
-                        title: "Roastery & Cafe",
-                        sub: "CafeStock — Bahan Baku & Bar",
+                        title: t("cp.identity.presetRoastery"),
+                        sub: "CafeStock — PR / PO / GR",
                       },
                       {
                         id: "GENERAL_WAREHOUSE" as IndustryPresetId,
-                        title: "ERP Gudang Umum",
-                        sub: "OpenSupply — Komoditas Logistik",
+                        title: t("cp.identity.presetWarehouse"),
+                        sub: "OpenSupply — REQ / ORD / RCV",
                       },
                       {
                         id: "IT_ASSET_TICKETING" as IndustryPresetId,
-                        title: "IT Ticketing Desk",
-                        sub: "osProcure — Tiket & Pengadaan Aset",
+                        title: t("cp.identity.presetTicketing"),
+                        sub: "osProcure — TKT / PO-IT / AST",
                       },
                     ] as const
                   ).map((preset) => {
@@ -591,7 +625,7 @@ export const ControlPanelTab: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                 <div>
                   <label className="block font-mono text-[10px] font-semibold uppercase tracking-widest mb-1.5">
-                    Judul Utama Aplikasi
+                    {t("cp.identity.appNameLabel")}
                   </label>
                   <input
                     type="text"
@@ -610,7 +644,7 @@ export const ControlPanelTab: React.FC = () => {
 
                 <div>
                   <label className="block font-mono text-[10px] font-semibold uppercase tracking-widest mb-1.5">
-                    Subjudul / Tagline Sistem
+                    {t("cp.identity.appSubLabel")}
                   </label>
                   <input
                     type="text"
@@ -629,7 +663,7 @@ export const ControlPanelTab: React.FC = () => {
 
                 <div>
                   <label className="block font-mono text-[10px] font-semibold uppercase tracking-widest mb-1.5">
-                    Nama Organisasi / Cabang
+                    {t("cp.identity.orgNameLabel")}
                   </label>
                   <input
                     type="text"
@@ -648,7 +682,7 @@ export const ControlPanelTab: React.FC = () => {
 
                 <div>
                   <label className="block font-mono text-[10px] font-semibold uppercase tracking-widest mb-1.5">
-                    Sebutan Item (Terminologi)
+                    {t("cp.identity.itemTermLabel")}
                   </label>
                   <input
                     type="text"
@@ -669,7 +703,7 @@ export const ControlPanelTab: React.FC = () => {
               <div className="grid grid-cols-3 gap-3 pt-2">
                 <div>
                   <label className="block font-mono text-[10px] font-semibold uppercase tracking-widest mb-1">
-                    Prefix Request (PR)
+                    {t("cp.identity.prefixPrLabel")}
                   </label>
                   <input
                     type="text"
@@ -689,7 +723,7 @@ export const ControlPanelTab: React.FC = () => {
                 </div>
                 <div>
                   <label className="block font-mono text-[10px] font-semibold uppercase tracking-widest mb-1">
-                    Prefix Order (PO)
+                    {t("cp.identity.prefixPoLabel")}
                   </label>
                   <input
                     type="text"
@@ -709,7 +743,7 @@ export const ControlPanelTab: React.FC = () => {
                 </div>
                 <div>
                   <label className="block font-mono text-[10px] font-semibold uppercase tracking-widest mb-1">
-                    Prefix Receipt (GR)
+                    {t("cp.identity.prefixGrLabel")}
                   </label>
                   <input
                     type="text"
@@ -731,7 +765,7 @@ export const ControlPanelTab: React.FC = () => {
             </div>
           )}
 
-          {/* SECTION 3: MULTI-BAHASA & KAMUS KUSTOM (i18n STUDIO) */}
+          {/* SECTION 3: MULTI-BAHASA, PEMBUAT BAHASA BARU & KAMUS KUSTOM */}
           {activeSection === "i18n" && (
             <div className="space-y-6">
               <div
@@ -742,36 +776,33 @@ export const ControlPanelTab: React.FC = () => {
                   style={{ color: "var(--kr-text-muted)" }}
                   className="font-mono text-[10px] uppercase tracking-widest"
                 >
-                  ADM-03 // MULTI-LANGUAGE &amp; CUSTOM TERMINOLOGY DICTIONARY
+                  ADM-03 // MULTI-LANGUAGE &amp; CUSTOM LOCALE STUDIO
                 </div>
                 <h2 className="font-serif text-xl font-normal mt-0.5">
-                  Paket Bahasa &amp; Editor Kamus Kustom
+                  {t("cp.nav.i18n")}
                 </h2>
                 <p
                   style={{ color: "var(--kr-text-muted)" }}
                   className="text-xs mt-1"
                 >
-                  Pilih bahasa utama sistem (Indonesia, Inggris, Jepang) atau
-                  ubah istilah kalimat apa pun sesuai bahasa/kebiasaan
-                  perusahaan Anda secara langsung.
+                  {t("cp.i18n.desc")}
                 </p>
               </div>
 
-              {/* Built-In Language Packs */}
+              {/* Installed Languages Grid (Built-In + User-Created) */}
               <div>
                 <div
                   style={{ color: "var(--kr-text-muted)" }}
                   className="font-mono text-[10px] font-semibold uppercase tracking-widest mb-2.5"
                 >
-                  PILIH PAKET BAHASA BAWAAN (BUILT-IN LOCALES)
+                  {t("cp.i18n.activeLocalesLabel")} ({availableLocales.length})
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {SUPPORTED_LOCALES.map((loc) => {
+                  {availableLocales.map((loc) => {
                     const isCurrent = locale === loc.code;
                     return (
-                      <button
+                      <div
                         key={loc.code}
-                        type="button"
                         onClick={() => setLocale(loc.code)}
                         style={{
                           backgroundColor: isCurrent
@@ -781,29 +812,139 @@ export const ControlPanelTab: React.FC = () => {
                             ? "var(--kr-accent)"
                             : "var(--kr-border)",
                         }}
-                        className="p-3.5 text-left border transition cursor-pointer"
+                        className="p-3.5 border transition cursor-pointer flex flex-col justify-between"
                       >
-                        <div className="flex items-center justify-between">
-                          <span className="font-mono text-xs font-bold">
-                            [{loc.flagCode}] {loc.nativeName}
-                          </span>
-                          {isCurrent && (
-                            <Check className="w-3.5 h-3.5 text-[#1D593B]" />
-                          )}
+                        <div>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-mono text-xs font-bold truncate">
+                              [{loc.flagCode}] {loc.nativeName}
+                            </span>
+                            {isCurrent && (
+                              <Check className="w-3.5 h-3.5 text-[#1D593B] shrink-0" />
+                            )}
+                          </div>
+                          <div
+                            style={{ color: "var(--kr-text-muted)" }}
+                            className="font-mono text-[10px] mt-1 flex items-center justify-between"
+                          >
+                            <span>Code: {loc.code}</span>
+                            <span className="px-1 py-0.2 border text-[9px]">
+                              {loc.isBuiltIn
+                                ? t("cp.i18n.builtInBadge")
+                                : t("cp.i18n.customBadge")}
+                            </span>
+                          </div>
                         </div>
-                        <div
-                          style={{ color: "var(--kr-text-muted)" }}
-                          className="font-mono text-[10px] mt-1"
-                        >
-                          Locale Code: {loc.code} ({loc.name})
-                        </div>
-                      </button>
+
+                        {!loc.isBuiltIn && (
+                          <div className="mt-2.5 pt-2 border-t border-black/10 flex justify-end">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteCustomLocale(loc.code);
+                              }}
+                              className="font-mono text-[10px] text-[#9E2A20] hover:underline flex items-center gap-1 cursor-pointer"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                              <span>{t("common.delete")}</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     );
                   })}
                 </div>
               </div>
 
-              {/* Custom Dictionary Editor */}
+              {/* Create New Custom Language Form (Besides the 3 Built-In Locales) */}
+              <form
+                onSubmit={handleCreateLanguage}
+                style={{
+                  backgroundColor: "var(--kr-bg-main)",
+                  borderColor: "var(--kr-border)",
+                }}
+                className="p-4 border space-y-3"
+              >
+                <div className="font-mono text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5">
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{t("cp.i18n.addLangTitle")}</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
+                  <div className="sm:col-span-3">
+                    <input
+                      type="text"
+                      required
+                      maxLength={8}
+                      value={newLangCode}
+                      onChange={(e) => setNewLangCode(e.target.value)}
+                      placeholder={t("cp.i18n.addLangCodePlaceholder")}
+                      style={{
+                        backgroundColor: "var(--kr-bg-surface)",
+                        borderColor: "var(--kr-border)",
+                        color: "var(--kr-text-main)",
+                      }}
+                      className="w-full px-2.5 py-2 border font-mono text-xs focus:outline-none"
+                    />
+                  </div>
+                  <div className="sm:col-span-4">
+                    <input
+                      type="text"
+                      required
+                      value={newLangName}
+                      onChange={(e) => setNewLangName(e.target.value)}
+                      placeholder={t("cp.i18n.addLangNamePlaceholder")}
+                      style={{
+                        backgroundColor: "var(--kr-bg-surface)",
+                        borderColor: "var(--kr-border)",
+                        color: "var(--kr-text-main)",
+                      }}
+                      className="w-full px-2.5 py-2 border font-mono text-xs focus:outline-none"
+                    />
+                  </div>
+                  <div className="sm:col-span-3">
+                    <label
+                      style={{ color: "var(--kr-text-muted)" }}
+                      className="block font-mono text-[9px] uppercase mb-0.5"
+                    >
+                      {t("cp.i18n.addLangBaseLabel")}
+                    </label>
+                    <select
+                      value={newLangBase}
+                      onChange={(e) =>
+                        setNewLangBase(e.target.value as BuiltInLocaleCode)
+                      }
+                      style={{
+                        backgroundColor: "var(--kr-bg-surface)",
+                        borderColor: "var(--kr-border)",
+                        color: "var(--kr-text-main)",
+                      }}
+                      className="w-full px-2 py-2 border font-mono text-xs focus:outline-none"
+                    >
+                      {BUILTIN_LOCALES.map((b) => (
+                        <option key={b.code} value={b.code}>
+                          {b.flagCode} ({b.nativeName})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <button
+                      type="submit"
+                      style={{
+                        backgroundColor: "var(--kr-bg-sidebar)",
+                        color: "var(--kr-text-sidebar)",
+                      }}
+                      className="w-full py-2 px-2.5 font-mono text-[10px] font-bold uppercase tracking-wider cursor-pointer"
+                    >
+                      {t("cp.i18n.addLangBtn")}
+                    </button>
+                  </div>
+                </div>
+              </form>
+
+              {/* Custom Dictionary Editor for Currently Active Locale */}
               <div
                 style={{ borderColor: "var(--kr-border)" }}
                 className="pt-4 border-t space-y-3"
@@ -811,14 +952,14 @@ export const ControlPanelTab: React.FC = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
                     <span className="font-mono text-[10px] font-semibold uppercase tracking-widest block">
-                      EDITOR KAMUS KUSTOM ({customOverrideCount} ISTILAH DIUBAH)
+                      {t("cp.i18n.editorTitle")} [{locale.toUpperCase()}] (
+                      {customOverrideCount} {t("cp.status.customTerms")})
                     </span>
                     <span
                       style={{ color: "var(--kr-text-muted)" }}
                       className="text-[11px]"
                     >
-                      Ketik terjemahan/istilah Anda sendiri pada kolom kanan
-                      untuk menimpa teks bawaan secara instan.
+                      {t("cp.i18n.editorSubtitle")}
                     </span>
                   </div>
                   {customOverrideCount > 0 && (
@@ -827,12 +968,11 @@ export const ControlPanelTab: React.FC = () => {
                       onClick={resetCustomTranslations}
                       className="font-mono text-[10px] underline cursor-pointer shrink-0"
                     >
-                      Reset Kamus Kustom
+                      {t("cp.i18n.resetDictBtn")}
                     </button>
                   )}
                 </div>
 
-                {/* Search Filter */}
                 <div className="relative">
                   <Search
                     style={{ color: "var(--kr-text-muted)" }}
@@ -842,7 +982,7 @@ export const ControlPanelTab: React.FC = () => {
                     type="text"
                     value={dictFilter}
                     onChange={(e) => setDictFilter(e.target.value)}
-                    placeholder="Cari kunci kamus atau teks (misal: dashboard, menu, login)..."
+                    placeholder={t("cp.i18n.searchPlaceholder")}
                     style={{
                       backgroundColor: "var(--kr-bg-main)",
                       borderColor: "var(--kr-border)",
@@ -852,13 +992,14 @@ export const ControlPanelTab: React.FC = () => {
                   />
                 </div>
 
-                {/* Dictionary Table */}
                 <div
                   style={{ borderColor: "var(--kr-border)" }}
                   className="border divide-y max-h-80 overflow-y-auto"
                 >
                   {filteredDictItems.map((item) => {
-                    const builtinText = BUILTIN_TRANSLATIONS[locale][item.key];
+                    const builtinText = getBaseTranslationForCurrentLocale(
+                      item.key,
+                    );
                     const customVal = customTranslations[item.key] ?? "";
                     return (
                       <div
@@ -874,7 +1015,7 @@ export const ControlPanelTab: React.FC = () => {
                             style={{ color: "var(--kr-text-muted)" }}
                             className="text-[11px] truncate"
                           >
-                            Bawaan ({locale.toUpperCase()}): {builtinText}
+                            {t("cp.i18n.defaultTextPrefix")}: {builtinText}
                           </div>
                         </div>
                         <div className="sm:col-span-7">
@@ -903,7 +1044,7 @@ export const ControlPanelTab: React.FC = () => {
             </div>
           )}
 
-          {/* SECTION 4: KONEKSI DATABASE & SERVER NODE (DUAL-MODE ADAPTER) */}
+          {/* SECTION 4: KONEKSI DATABASE & SERVER NODE */}
           {activeSection === "database" && (
             <div className="space-y-6">
               <div
@@ -917,17 +1058,13 @@ export const ControlPanelTab: React.FC = () => {
                   ADM-04 // HYBRID STORAGE &amp; MULTI-DEVICE SYNC ADAPTER
                 </div>
                 <h2 className="font-serif text-xl font-normal mt-0.5">
-                  Mode Penyimpanan Database (Lokal Tauri vs Server Bersama)
+                  {t("cp.nav.database")}
                 </h2>
                 <p
                   style={{ color: "var(--kr-text-muted)" }}
                   className="text-xs mt-1"
                 >
-                  Pilih <strong>Standalone Local</strong> jika aplikasi hanya
-                  dipakai pada 1 komputer mandiri, atau{" "}
-                  <strong>Remote Server Node</strong> agar banyak karyawan (HP{" "}
-                  <code>.apk</code> &amp; PC <code>.exe</code>) terhubung ke
-                  database yang sama.
+                  {t("cp.db.desc")}
                 </p>
               </div>
 
@@ -950,7 +1087,7 @@ export const ControlPanelTab: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 font-mono text-xs font-bold">
                       <HardDrive className="w-4 h-4" />
-                      <span>1. Standalone Local (Embedded)</span>
+                      <span>{t("cp.db.localTitle")}</span>
                     </div>
                     {dbConnection.mode === "LOCAL_EMBEDDED" && (
                       <Check className="w-4 h-4 text-[#1D593B]" />
@@ -960,9 +1097,7 @@ export const ControlPanelTab: React.FC = () => {
                     style={{ color: "var(--kr-text-muted)" }}
                     className="text-xs mt-2 leading-relaxed"
                   >
-                    Berjalan 100% lokal di dalam Tauri tanpa server luar. Sangat
-                    kencang (&lt;0.1 ms), cocok untuk 1 perangkat kasir/gudang
-                    tunggal atau simulasi offline.
+                    {t("cp.db.localDesc")}
                   </p>
                 </button>
 
@@ -986,7 +1121,7 @@ export const ControlPanelTab: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 font-mono text-xs font-bold">
                       <Server className="w-4 h-4" />
-                      <span>2. Shared Server Node (Multi-Device)</span>
+                      <span>{t("cp.db.remoteTitle")}</span>
                     </div>
                     {dbConnection.mode === "REMOTE_SERVER_NODE" && (
                       <Check className="w-4 h-4 text-[#1D593B]" />
@@ -996,10 +1131,7 @@ export const ControlPanelTab: React.FC = () => {
                     style={{ color: "var(--kr-text-muted)" }}
                     className="text-xs mt-2 leading-relaxed"
                   >
-                    Menyambungkan aplikasi <code>.exe</code> &amp;{" "}
-                    <code>.apk</code> karyawan ke node server kantor
-                    (ElysiaJS/PostgreSQL) agar tiket PR &amp; Approval
-                    tersinkronisasi real-time.
+                    {t("cp.db.remoteDesc")}
                   </p>
                 </button>
               </div>
@@ -1013,12 +1145,12 @@ export const ControlPanelTab: React.FC = () => {
                   className="p-4 border space-y-4"
                 >
                   <div className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#1D593B]">
-                    ● KONFIGURASI ENDPOINT SERVER BERSAMA
+                    {t("cp.db.remoteHeader")}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block font-mono text-[10px] font-semibold uppercase tracking-widest mb-1.5">
-                        URL Host Server / API Node
+                        {t("cp.db.hostUrlLabel")}
                       </label>
                       <input
                         type="text"
@@ -1039,7 +1171,7 @@ export const ControlPanelTab: React.FC = () => {
                     </div>
                     <div>
                       <label className="block font-mono text-[10px] font-semibold uppercase tracking-widest mb-1.5">
-                        Token Otorisasi Instansi
+                        {t("cp.db.tokenLabel")}
                       </label>
                       <input
                         type="text"
@@ -1082,6 +1214,9 @@ export const ControlPanelTab: React.FC = () => {
               <div className="space-y-3">
                 {plugins.map((plugin) => {
                   const enabled = isPluginEnabled(plugin.id);
+                  const translatedPluginTitle = t(
+                    PLUGIN_NAME_KEY_MAP[plugin.id],
+                  );
                   return (
                     <div
                       key={plugin.id}
@@ -1105,7 +1240,7 @@ export const ControlPanelTab: React.FC = () => {
                             MOD-{plugin.code}
                           </span>
                           <span className="text-xs font-bold">
-                            {plugin.name}
+                            {translatedPluginTitle}
                           </span>
                           <span
                             style={{ color: "var(--kr-text-muted)" }}
@@ -1223,7 +1358,7 @@ export const ControlPanelTab: React.FC = () => {
                           className="w-5 h-5 border border-black/20"
                         />
                         <span className="ml-auto font-mono text-[10px] font-semibold">
-                          {isSelected ? "● ACTIVE" : "APPLY"}
+                          {isSelected ? t("common.inUse") : t("common.apply")}
                         </span>
                       </div>
                     </button>
@@ -1237,7 +1372,7 @@ export const ControlPanelTab: React.FC = () => {
               >
                 <div className="flex items-center justify-between mb-3">
                   <span className="font-mono text-[10px] font-semibold uppercase tracking-widest">
-                    LIVE HEX COLOR PICKER
+                    {t("cp.themes.pickerHeader")}
                   </span>
                   <button
                     type="button"
@@ -1260,7 +1395,7 @@ export const ControlPanelTab: React.FC = () => {
                     >
                       <div className="min-w-0">
                         <div className="text-[11px] font-semibold truncate">
-                          {field.label}
+                          {t(field.labelKey)}
                         </div>
                         <div
                           style={{ color: "var(--kr-text-muted)" }}
@@ -1314,13 +1449,15 @@ export const ControlPanelTab: React.FC = () => {
                       : "bg-[#FCEAE8] text-[#9E2A20] border-[#E6B8B3]"
                   }`}
                 >
-                  {emailConfig.enabled ? "SMTP: ENABLED" : "SMTP: DISABLED"}
+                  {emailConfig.enabled
+                    ? t("cp.mailer.smtpEnabled")
+                    : t("cp.mailer.smtpDisabled")}
                 </button>
               </div>
 
               {testSentBanner && (
                 <div className="p-3 bg-[#E7F2EC] border border-[#B2D3C1] text-[#1D593B] font-mono text-xs">
-                  ✓ Test notification dispatched to:{" "}
+                  {t("cp.mailer.testSentNotice")}{" "}
                   <strong>{emailConfig.coreAdminEmail}</strong>
                 </div>
               )}
@@ -1328,7 +1465,7 @@ export const ControlPanelTab: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block font-mono text-[10px] font-semibold uppercase tracking-widest mb-1.5">
-                    Alamat Email Inti (Penerima Utama / Admin)
+                    {t("cp.mailer.coreEmailLabel")}
                   </label>
                   <input
                     type="email"
@@ -1347,7 +1484,7 @@ export const ControlPanelTab: React.FC = () => {
 
                 <div>
                   <label className="block font-mono text-[10px] font-semibold uppercase tracking-widest mb-1.5">
-                    Email Grup Approver
+                    {t("cp.mailer.approverEmailLabel")}
                   </label>
                   <input
                     type="email"
@@ -1365,52 +1502,60 @@ export const ControlPanelTab: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {(
-                  [
-                    {
-                      key: "onPrSubmitted",
-                      label: "Saat Tiket PR Baru Diajukan (SUBMITTED)",
-                    },
-                    {
-                      key: "onPrApproved",
-                      label: "Saat PR Disetujui Approver (APPROVED)",
-                    },
-                    {
-                      key: "onPrRejected",
-                      label: "Saat PR Ditolak Approver (REJECTED)",
-                    },
-                    {
-                      key: "onPoOrdered",
-                      label: "Saat PO Diterbitkan ke Pemasok (ORDERED)",
-                    },
-                    {
-                      key: "onGrReceived",
-                      label: "Saat Barang Masuk Diterima Gudang (GR)",
-                    },
-                    {
-                      key: "onCriticalStock",
-                      label: "Saat Saldo Stok Menyentuh Batas Kritis",
-                    },
-                  ] as const
-                ).map((rule) => (
-                  <label
-                    key={rule.key}
-                    style={{
-                      backgroundColor: "var(--kr-bg-main)",
-                      borderColor: "var(--kr-border)",
-                    }}
-                    className="p-2.5 border flex items-center gap-2.5 cursor-pointer text-xs"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={emailConfig.triggers[rule.key]}
-                      onChange={() => toggleEmailTrigger(rule.key)}
-                      className="w-3.5 h-3.5 accent-[#1F1612]"
-                    />
-                    <span>{rule.label}</span>
-                  </label>
-                ))}
+              <div>
+                <div
+                  style={{ color: "var(--kr-text-muted)" }}
+                  className="font-mono text-[10px] font-semibold uppercase tracking-widest mb-2.5"
+                >
+                  {t("cp.mailer.triggersHeader")}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {(
+                    [
+                      {
+                        key: "onPrSubmitted",
+                        label: t("cp.mailer.trigPrSub"),
+                      },
+                      {
+                        key: "onPrApproved",
+                        label: t("cp.mailer.trigPrApp"),
+                      },
+                      {
+                        key: "onPrRejected",
+                        label: t("cp.mailer.trigPrRej"),
+                      },
+                      {
+                        key: "onPoOrdered",
+                        label: t("cp.mailer.trigPoOrd"),
+                      },
+                      {
+                        key: "onGrReceived",
+                        label: t("cp.mailer.trigGrRec"),
+                      },
+                      {
+                        key: "onCriticalStock",
+                        label: t("cp.mailer.trigCrit"),
+                      },
+                    ] as const
+                  ).map((rule) => (
+                    <label
+                      key={rule.key}
+                      style={{
+                        backgroundColor: "var(--kr-bg-main)",
+                        borderColor: "var(--kr-border)",
+                      }}
+                      className="p-2.5 border flex items-center gap-2.5 cursor-pointer text-xs"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={emailConfig.triggers[rule.key]}
+                        onChange={() => toggleEmailTrigger(rule.key)}
+                        className="w-3.5 h-3.5 accent-[#1F1612]"
+                      />
+                      <span>{rule.label}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
 
               <div
@@ -1419,7 +1564,7 @@ export const ControlPanelTab: React.FC = () => {
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-mono text-[10px] font-semibold uppercase tracking-widest">
-                    OUTBOX DISPATCH LOG ({emailLogs.length})
+                    {t("cp.mailer.outboxHeader")} ({emailLogs.length})
                   </span>
                   <div className="flex items-center gap-2">
                     <button
@@ -1432,7 +1577,7 @@ export const ControlPanelTab: React.FC = () => {
                       className="px-2.5 py-1.5 border font-mono text-[10px] uppercase flex items-center gap-1 cursor-pointer"
                     >
                       <Trash2 className="w-3 h-3" />
-                      <span>Clear</span>
+                      <span>{t("common.clear")}</span>
                     </button>
                     <button
                       type="button"
@@ -1444,7 +1589,7 @@ export const ControlPanelTab: React.FC = () => {
                       className="px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider font-semibold flex items-center gap-1.5 cursor-pointer"
                     >
                       <Send className="w-3 h-3" />
-                      <span>Send Test Email</span>
+                      <span>{t("cp.mailer.sendTestBtn")}</span>
                     </button>
                   </div>
                 </div>
@@ -1508,34 +1653,12 @@ export const ControlPanelTab: React.FC = () => {
               >
                 <div className="font-mono text-xs font-bold flex items-center gap-2">
                   <ShieldAlert className="w-4 h-4 text-[#8A4B14]" />
-                  <span>Arsitektur Modular yang Bersih bagi Programmer:</span>
+                  <span>{t("cp.sdk.boxTitle")}</span>
                 </div>
                 <ul className="list-disc list-inside text-xs space-y-2 leading-relaxed">
-                  <li>
-                    <strong>Tambah Plugin / Modul Baru</strong>: Cukup daftarkan
-                    objek manifest di{" "}
-                    <code className="font-mono px-1.5 py-0.5 bg-black/10">
-                      src/kernel/registry.ts
-                    </code>
-                    .
-                  </li>
-                  <li>
-                    <strong>Tambah Bahasa / Kamus Baru</strong>: Cukup tambahkan
-                    kode bahasa atau kunci kamus bertipe ketat di{" "}
-                    <code className="font-mono px-1.5 py-0.5 bg-black/10">
-                      src/kernel/i18n.ts
-                    </code>
-                    .
-                  </li>
-                  <li>
-                    <strong>Tambah Tema Palet Baru</strong>: Cukup tambahkan
-                    objek warna di{" "}
-                    <code className="font-mono px-1.5 py-0.5 bg-black/10">
-                      THEME_PALETTES
-                    </code>{" "}
-                    pada{" "}
-                    <code className="font-mono">src/kernel/registry.ts</code>.
-                  </li>
+                  <li>{t("cp.sdk.step1")}</li>
+                  <li>{t("cp.sdk.step2")}</li>
+                  <li>{t("cp.sdk.step3")}</li>
                 </ul>
               </div>
             </div>

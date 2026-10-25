@@ -5,7 +5,7 @@ import { MobileHeader } from "@/components/layout/MobileHeader";
 import { Globe, Search, Sliders } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useKernel } from "@/kernel/KernelContext";
-import { SUPPORTED_LOCALES, TranslationKey } from "@/kernel/i18n";
+import { TranslationKey } from "@/kernel/i18n";
 
 interface AppLayoutProps {
   activeTab: NavigationTab;
@@ -31,7 +31,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 }) => {
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState<boolean>(false);
   const { currentUser } = useAuth();
-  const { plugins, branding, locale, setLocale, t } = useKernel();
+  const { plugins, branding, locale, availableLocales, setLocale, t } =
+    useKernel();
 
   const currentPlugin = plugins.find((p) => p.id === activeTab);
   const crumb = currentPlugin
@@ -137,40 +138,35 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               />
             </div>
 
-            {/* Instant Multi-Language Switcher (ID | EN | JA) */}
+            {/* Scalable Multi-Language Dropdown Selector */}
             <div
               style={{
                 backgroundColor: "var(--kr-bg-main)",
                 borderColor: "var(--kr-border)",
               }}
-              className="flex items-center border p-0.5"
+              className="flex items-center border px-2 py-1"
               title={t("common.language")}
             >
               <Globe
                 style={{ color: "var(--kr-text-muted)" }}
-                className="w-3 h-3 mx-1.5"
+                className="w-3.5 h-3.5 mr-1.5 shrink-0"
               />
-              {SUPPORTED_LOCALES.map((loc) => {
-                const isCurrent = locale === loc.code;
-                return (
-                  <button
-                    key={loc.code}
-                    type="button"
-                    onClick={() => setLocale(loc.code)}
-                    style={{
-                      backgroundColor: isCurrent
-                        ? "var(--kr-bg-sidebar)"
-                        : "transparent",
-                      color: isCurrent
-                        ? "var(--kr-text-sidebar)"
-                        : "var(--kr-text-muted)",
-                    }}
-                    className="px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase transition cursor-pointer"
-                  >
-                    {loc.flagCode}
-                  </button>
-                );
-              })}
+              <select
+                value={locale}
+                onChange={(e) => setLocale(e.target.value)}
+                aria-label={t("common.language")}
+                style={{
+                  backgroundColor: "var(--kr-bg-main)",
+                  color: "var(--kr-text-main)",
+                }}
+                className="font-mono text-[10px] font-bold uppercase focus:outline-none cursor-pointer"
+              >
+                {availableLocales.map((loc) => (
+                  <option key={loc.code} value={loc.code}>
+                    [{loc.flagCode}] {loc.nativeName}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Gitea-style Site Administration Shortcut */}

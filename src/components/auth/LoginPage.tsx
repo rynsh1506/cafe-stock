@@ -11,12 +11,11 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useKernel } from "@/kernel/KernelContext";
-import { SUPPORTED_LOCALES } from "@/kernel/i18n";
 import { UserRole } from "@/types";
 
 export const LoginPage: React.FC = () => {
   const { login } = useAuth();
-  const { branding, locale, setLocale, t } = useKernel();
+  const { branding, locale, availableLocales, setLocale, t } = useKernel();
   const [username, setUsername] = useState<string>("user_procurement");
   const [password, setPassword] = useState<string>("password123");
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -111,7 +110,7 @@ export const LoginPage: React.FC = () => {
                     }}
                     className="font-mono text-[10px] font-medium uppercase px-1.5 py-0.5 border"
                   >
-                    KERNEL v2.0
+                    KERNEL v2.1
                   </span>
                 </div>
                 <div className="font-mono text-[10px] uppercase tracking-widest opacity-65">
@@ -125,7 +124,6 @@ export const LoginPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Editorial Headline */}
           <div className="mt-10 lg:mt-14 space-y-5">
             <div
               style={{ color: "var(--kr-accent)" }}
@@ -152,7 +150,6 @@ export const LoginPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Architectural Ledger Grid: 4-Stage Procurement Flow */}
         <div className="my-8 lg:my-0">
           <div className="font-mono text-[10px] uppercase tracking-widest opacity-60 mb-2.5">
             {t("login.chainTitle")}
@@ -185,7 +182,6 @@ export const LoginPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Footer Colophon */}
         <div
           style={{ borderColor: "var(--kr-border-sidebar)" }}
           className="flex items-center justify-between text-[11px] font-mono opacity-60 border-t pt-4"
@@ -195,17 +191,17 @@ export const LoginPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Sisi Kanan: Formulir Masuk & Kartu Akses Shift */}
+      {/* Sisi Kanan: Formulir Masuk */}
       <div className="flex-1 flex items-center justify-center p-6 sm:p-10 lg:p-16">
         <div className="w-full max-w-md">
-          {/* Top Document Tag & Multi-Language Switcher */}
+          {/* Top Document Tag & Scalable Language Dropdown */}
           <div
             style={{ borderColor: "var(--kr-border)" }}
             className="flex items-center justify-between border-b pb-3 mb-7 gap-2"
           >
             <span
               style={{ color: "var(--kr-text-muted)" }}
-              className="font-mono text-[10px] uppercase tracking-widest"
+              className="font-mono text-[10px] uppercase tracking-widest truncate"
             >
               {t("login.formTag")}
             </span>
@@ -215,33 +211,28 @@ export const LoginPage: React.FC = () => {
                 backgroundColor: "var(--kr-bg-surface)",
                 borderColor: "var(--kr-border)",
               }}
-              className="flex items-center border p-0.5"
+              className="flex items-center border px-2 py-1 shrink-0"
             >
               <Globe
                 style={{ color: "var(--kr-text-muted)" }}
-                className="w-3 h-3 mx-1.5"
+                className="w-3.5 h-3.5 mr-1.5 shrink-0"
               />
-              {SUPPORTED_LOCALES.map((loc) => {
-                const isCurrent = locale === loc.code;
-                return (
-                  <button
-                    key={loc.code}
-                    type="button"
-                    onClick={() => setLocale(loc.code)}
-                    style={{
-                      backgroundColor: isCurrent
-                        ? "var(--kr-bg-sidebar)"
-                        : "transparent",
-                      color: isCurrent
-                        ? "var(--kr-text-sidebar)"
-                        : "var(--kr-text-muted)",
-                    }}
-                    className="px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase transition cursor-pointer"
-                  >
-                    {loc.flagCode}
-                  </button>
-                );
-              })}
+              <select
+                value={locale}
+                onChange={(e) => setLocale(e.target.value)}
+                aria-label={t("common.language")}
+                style={{
+                  backgroundColor: "var(--kr-bg-surface)",
+                  color: "var(--kr-text-main)",
+                }}
+                className="font-mono text-[10px] font-bold uppercase focus:outline-none cursor-pointer"
+              >
+                {availableLocales.map((loc) => (
+                  <option key={loc.code} value={loc.code}>
+                    [{loc.flagCode}] {loc.nativeName}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -257,7 +248,6 @@ export const LoginPage: React.FC = () => {
             </p>
           </div>
 
-          {/* Form Login */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label
@@ -302,7 +292,7 @@ export const LoginPage: React.FC = () => {
                   style={{ color: "var(--kr-text-muted)" }}
                   className="font-mono text-[10px]"
                 >
-                  Default: password123
+                  {t("login.defaultPassHint")}
                 </span>
               </div>
               <div className="relative">
@@ -379,7 +369,6 @@ export const LoginPage: React.FC = () => {
             </button>
           </form>
 
-          {/* Kartu Akses Cepat (Seeder Pass) */}
           <div
             style={{ borderColor: "var(--kr-border)" }}
             className="mt-8 pt-6 border-t"

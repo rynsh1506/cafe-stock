@@ -3,7 +3,7 @@ import { Coffee, Menu, X, ArrowRightLeft, Sliders, Globe } from "lucide-react";
 import { NavigationTab } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 import { useKernel } from "@/kernel/KernelContext";
-import { LocaleCode, SUPPORTED_LOCALES, TranslationKey } from "@/kernel/i18n";
+import { TranslationKey } from "@/kernel/i18n";
 
 interface MobileHeaderProps {
   activeTab: NavigationTab;
@@ -30,7 +30,8 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   onSelectTab,
 }) => {
   const { currentUser, switchRole } = useAuth();
-  const { plugins, branding, locale, setLocale, t } = useKernel();
+  const { plugins, branding, locale, availableLocales, setLocale, t } =
+    useKernel();
 
   const currentPlugin = plugins.find((p) => p.id === activeTab);
   const titleText = currentPlugin
@@ -42,13 +43,6 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
     switchRole(nextRole);
   };
 
-  const cycleLocale = (): void => {
-    const idx = SUPPORTED_LOCALES.findIndex((l) => l.code === locale);
-    const nextLocale: LocaleCode =
-      SUPPORTED_LOCALES[(idx + 1) % SUPPORTED_LOCALES.length].code;
-    setLocale(nextLocale);
-  };
-
   return (
     <header
       style={{
@@ -56,7 +50,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
         color: "var(--kr-text-sidebar)",
         borderColor: "var(--kr-border-sidebar)",
       }}
-      className="md:hidden sticky top-0 z-40 border-b px-3 py-2.5 flex items-center justify-between"
+      className="md:hidden sticky top-0 z-40 border-b px-3 py-2.5 flex items-center justify-between gap-2"
     >
       <div className="flex items-center gap-2 min-w-0">
         <button
@@ -95,17 +89,32 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
       </div>
 
       <div className="flex items-center gap-1.5 shrink-0">
-        {/* 1-Click Mobile Language Cycle */}
-        <button
-          onClick={cycleLocale}
-          type="button"
-          style={{ borderColor: "var(--kr-border-sidebar)" }}
-          className="px-1.5 py-1 border font-mono text-[10px] font-bold uppercase flex items-center gap-1"
-          title="Switch Language (ID / EN / JA)"
+        {/* Compact Scalable Language Dropdown for Mobile (Supports Unlimited Languages) */}
+        <div
+          style={{
+            backgroundColor: "var(--kr-bg-sidebar-header)",
+            borderColor: "var(--kr-border-sidebar)",
+          }}
+          className="flex items-center border px-1.5 py-1"
         >
-          <Globe className="w-3 h-3" />
-          <span>{locale.toUpperCase()}</span>
-        </button>
+          <Globe className="w-3 h-3 mr-1 opacity-75 shrink-0" />
+          <select
+            value={locale}
+            onChange={(e) => setLocale(e.target.value)}
+            aria-label={t("common.language")}
+            style={{
+              backgroundColor: "var(--kr-bg-sidebar-header)",
+              color: "var(--kr-text-sidebar)",
+            }}
+            className="font-mono text-[10px] font-bold uppercase focus:outline-none cursor-pointer max-w-[56px]"
+          >
+            {availableLocales.map((loc) => (
+              <option key={loc.code} value={loc.code}>
+                {loc.flagCode} — {loc.nativeName}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <button
           onClick={() => onSelectTab("control-panel")}
