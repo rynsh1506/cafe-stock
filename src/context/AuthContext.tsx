@@ -3,27 +3,54 @@ import { UserProfile, UserRole } from "@/types";
 
 interface AuthContextType {
   currentUser: UserProfile;
+  registeredAccounts: UserProfile[];
   switchRole: (role: UserRole) => void;
   isAuthenticated: boolean;
   login: (username: string, role?: UserRole) => void;
   logout: () => void;
 }
 
-const DEFAULT_USERS: Record<UserRole, UserProfile> = {
-  USER: {
+export const REGISTERED_ACCOUNTS: UserProfile[] = [
+  {
     id: "usr_001",
     name: "Muhammad Riyansyah",
     username: "user_procurement",
     role: "USER",
     email: "riyansyah@cafestock.local",
   },
-  APPROVER: {
+  {
     id: "usr_002",
-    name: "Riko Toni (Manager)",
+    name: "Riko Toni",
     username: "approver_manager",
     role: "APPROVER",
     email: "riko.toni@cafestock.local",
   },
+  {
+    id: "usr_003",
+    name: "Andika Pratama Nugroho",
+    username: "andika_warehouse",
+    role: "USER",
+    email: "andika@cafestock.local",
+  },
+  {
+    id: "usr_004",
+    name: "Darmawan",
+    username: "darmawan_inventory",
+    role: "USER",
+    email: "darmawan@cafestock.local",
+  },
+  {
+    id: "usr_005",
+    name: "Reza Adjriel",
+    username: "reza_approver",
+    role: "APPROVER",
+    email: "reza.adjriel@cafestock.local",
+  },
+];
+
+const DEFAULT_USERS: Record<UserRole, UserProfile> = {
+  USER: REGISTERED_ACCOUNTS[0],
+  APPROVER: REGISTERED_ACCOUNTS[1],
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,10 +67,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setCurrentUser(DEFAULT_USERS[newRole]);
   };
 
-  const login = (username: string, role: UserRole = "USER"): void => {
+  const login = (username: string, explicitRole?: UserRole): void => {
+    const cleanUsername = username.trim().toLowerCase();
+    const matchedAccount = REGISTERED_ACCOUNTS.find(
+      (acc) => acc.username.toLowerCase() === cleanUsername,
+    );
+
+    if (matchedAccount) {
+      setCurrentUser(matchedAccount);
+      setIsAuthenticated(true);
+      return;
+    }
+
+    const inferredRole: UserRole =
+      explicitRole ??
+      (cleanUsername.includes("approver") ||
+      cleanUsername.includes("manager") ||
+      cleanUsername.includes("admin")
+        ? "APPROVER"
+        : "USER");
+
     setCurrentUser({
-      ...DEFAULT_USERS[role],
-      username: username || DEFAULT_USERS[role].username,
+      ...DEFAULT_USERS[inferredRole],
+      username: username.trim() || DEFAULT_USERS[inferredRole].username,
     });
     setIsAuthenticated(true);
   };
@@ -56,6 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     <AuthContext.Provider
       value={{
         currentUser,
+        registeredAccounts: REGISTERED_ACCOUNTS,
         switchRole,
         isAuthenticated,
         login,
