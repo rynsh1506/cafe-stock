@@ -14,6 +14,7 @@ import { NavigationTab, PRStatus, PurchaseRequest } from "@/types";
 import { useStore } from "@/context/StoreContext";
 import { useAuth } from "@/context/AuthContext";
 import { useKernel } from "@/kernel/KernelContext";
+import { PaginationBar } from "@/components/layout/PaginationBar";
 
 interface PurchaseRequestsTabProps {
   onNavigate: (tab: NavigationTab) => void;
@@ -39,17 +40,19 @@ export const PurchaseRequestsTab: React.FC<PurchaseRequestsTabProps> = ({
   const activeProducts = products.filter((p) => p.isActive);
 
   const [statusFilter, setStatusFilter] = useState<PRStatus | "ALL">("ALL");
+  const [prPage, setPrPage] = useState<number>(1);
+  const [prPageSize, setPrPageSize] = useState<number>(5);
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [editingPrId, setEditingPrId] = useState<string | null>(null);
   const [warehouseId, setWarehouseId] = useState<string>(
-    activeWarehouses[0]?.id ?? warehouses[0]?.id ?? "wh_jkt",
+    activeWarehouses[0]?.id ?? warehouses[0]?.id ?? "",
   );
   const [notes, setNotes] = useState<string>("");
   const [lineItems, setLineItems] = useState<
     { productId: string; quantity: number }[]
   >([
     {
-      productId: activeProducts[0]?.id ?? products[0]?.id ?? "prd_01",
+      productId: activeProducts[0]?.id ?? products[0]?.id ?? "",
       quantity: 25,
     },
   ]);
@@ -57,6 +60,10 @@ export const PurchaseRequestsTab: React.FC<PurchaseRequestsTabProps> = ({
 
   const filteredPRs = purchaseRequests.filter(
     (pr) => statusFilter === "ALL" || pr.status === statusFilter,
+  );
+  const paginatedPRs = filteredPRs.slice(
+    (prPage - 1) * prPageSize,
+    prPage * prPageSize,
   );
 
   const handleOpenCreateModal = (): void => {
@@ -228,7 +235,9 @@ export const PurchaseRequestsTab: React.FC<PurchaseRequestsTabProps> = ({
           className="px-4 py-2.5 font-mono text-xs uppercase tracking-wider font-semibold flex items-center gap-2 cursor-pointer self-start sm:self-auto shrink-0"
         >
           <Plus style={{ color: "var(--kr-accent)" }} className="w-3.5 h-3.5" />
-          <span>+ Buat {branding.documentPrefixPR} Baru</span>
+          <span>
+            {t("mod.pr.createBtn")} ({branding.documentPrefixPR})
+          </span>
         </button>
       </div>
 
@@ -242,7 +251,10 @@ export const PurchaseRequestsTab: React.FC<PurchaseRequestsTabProps> = ({
           <button
             key={st}
             type="button"
-            onClick={() => setStatusFilter(st)}
+            onClick={() => {
+              setStatusFilter(st);
+              setPrPage(1);
+            }}
             style={{
               backgroundColor:
                 statusFilter === st
@@ -256,184 +268,227 @@ export const PurchaseRequestsTab: React.FC<PurchaseRequestsTabProps> = ({
             }}
             className="px-3 py-1.5 border font-mono text-[11px] font-semibold uppercase tracking-wider cursor-pointer transition"
           >
-            {st === "ALL" ? `SEMUA (${purchaseRequests.length})` : st}
+            {st === "ALL"
+              ? `${t("common.all")} (${purchaseRequests.length})`
+              : st}
           </button>
         ))}
       </div>
 
       {/* PR Cards / Ledger List */}
       <div className="space-y-4">
-        {filteredPRs.map((pr) => {
-          const wh = warehouses.find((w) => w.id === pr.warehouseId);
-          return (
-            <div
-              key={pr.id}
-              style={{
-                backgroundColor: "var(--kr-bg-surface)",
-                borderColor: "var(--kr-border)",
-              }}
-              className="border p-5"
-            >
+        {paginatedPRs.length === 0 ? (
+          <div
+            style={{
+              backgroundColor: "var(--kr-bg-surface)",
+              borderColor: "var(--kr-border)",
+              color: "var(--kr-text-muted)",
+            }}
+            className="border p-8 text-center font-mono text-xs"
+          >
+            {t("common.emptyRecords")}
+          </div>
+        ) : (
+          paginatedPRs.map((pr) => {
+            const wh = warehouses.find((w) => w.id === pr.warehouseId);
+            return (
               <div
-                style={{ borderColor: "var(--kr-border)" }}
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3.5 mb-4"
+                key={pr.id}
+                style={{
+                  backgroundColor: "var(--kr-bg-surface)",
+                  borderColor: "var(--kr-border)",
+                }}
+                className="border p-5"
               >
-                <div>
-                  <div className="flex flex-wrap items-center gap-2.5">
-                    <span className="font-mono text-sm font-bold">
-                      {pr.requestNumber}
-                    </span>
-                    <span
-                      className={`px-2 py-0.5 font-mono text-[10px] font-bold border ${getStatusBadgeStyle(pr.status)}`}
-                    >
-                      {pr.status}
-                    </span>
-                    <span
+                <div
+                  style={{ borderColor: "var(--kr-border)" }}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3.5 mb-4"
+                >
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span className="font-mono text-sm font-bold">
+                        {pr.requestNumber}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 font-mono text-[10px] font-bold border ${getStatusBadgeStyle(pr.status)}`}
+                      >
+                        {pr.status}
+                      </span>
+                      <span
+                        style={{ color: "var(--kr-text-muted)" }}
+                        className="font-mono text-[11px]"
+                      >
+                        • {wh?.name ?? pr.warehouseId}
+                      </span>
+                    </div>
+                    <div
                       style={{ color: "var(--kr-text-muted)" }}
-                      className="font-mono text-[11px]"
+                      className="font-mono text-[11px] mt-1"
                     >
-                      • {wh?.name ?? pr.warehouseId}
-                    </span>
+                      {t("common.by")}: {pr.createdBy} •{" "}
+                      {new Date(pr.createdAt).toLocaleString()}
+                      {pr.notes ? ` — "${pr.notes}"` : ""}
+                    </div>
                   </div>
-                  <div
-                    style={{ color: "var(--kr-text-muted)" }}
-                    className="font-mono text-[11px] mt-1"
-                  >
-                    Oleh: {pr.createdBy} •{" "}
-                    {new Date(pr.createdAt).toLocaleString("id-ID", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
-                    {pr.notes ? ` — "${pr.notes}"` : ""}
+
+                  {/* Action Buttons */}
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    {pr.status === "DRAFT" && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditDraft(pr)}
+                          style={{
+                            backgroundColor: "var(--kr-bg-elevated)",
+                            borderColor: "var(--kr-border)",
+                            color: "var(--kr-text-main)",
+                          }}
+                          className="px-3 py-1.5 border font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Pencil className="w-3 h-3" />
+                          <span>{t("mod.pr.editDraftBtn")}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            submitPurchaseRequest(pr.id, currentUser.username)
+                          }
+                          className="px-3 py-1.5 bg-[#8A4B14] text-white font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Send className="w-3 h-3" />
+                          <span>{t("mod.pr.submitBtn")}</span>
+                        </button>
+                      </>
+                    )}
+
+                    {pr.status === "SUBMITTED" &&
+                      (currentUser.role === "APPROVER" ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              approvePurchaseRequest(
+                                pr.id,
+                                currentUser.username,
+                              )
+                            }
+                            className="px-3 py-1.5 bg-[#1D593B] text-white font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                            <span>{t("mod.pr.approveBtn")}</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              rejectPurchaseRequest(
+                                pr.id,
+                                "Rejected by Approver",
+                                currentUser.username,
+                              )
+                            }
+                            className="px-3 py-1.5 bg-[#9E2A20] text-white font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <XCircle className="w-3.5 h-3.5" />
+                            <span>{t("mod.pr.rejectBtn")}</span>
+                          </button>
+                        </>
+                      ) : (
+                        <span className="px-2.5 py-1 font-mono text-[10px] border border-[#DEC19B] bg-[#F9EFE0] text-[#8A4B14]">
+                          {t("mod.pr.onlyApproverHint")}
+                        </span>
+                      ))}
+
+                    {pr.status === "APPROVED" && (
+                      <button
+                        type="button"
+                        onClick={() => onNavigate("purchase-orders")}
+                        style={{
+                          backgroundColor: "var(--kr-bg-sidebar)",
+                          color: "var(--kr-text-sidebar)",
+                        }}
+                        className="px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <span>
+                          {t("mod.pr.issuePoBtn")} ({branding.documentPrefixPO})
+                        </span>
+                        <ArrowUpRight className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex flex-wrap items-center gap-2 shrink-0">
-                  {pr.status === "DRAFT" && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEditDraft(pr)}
+                {/* Line Items Table */}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr
                         style={{
                           backgroundColor: "var(--kr-bg-elevated)",
                           borderColor: "var(--kr-border)",
-                          color: "var(--kr-text-main)",
+                          color: "var(--kr-text-muted)",
                         }}
-                        className="px-3 py-1.5 border font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+                        className="border-b font-mono text-[10px] uppercase"
                       >
-                        <Pencil className="w-3 h-3" />
-                        <span>Edit Draft</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          submitPurchaseRequest(pr.id, currentUser.username)
-                        }
-                        className="px-3 py-1.5 bg-[#8A4B14] text-white font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <Send className="w-3 h-3" />
-                        <span>Ajukan (Submit)</span>
-                      </button>
-                    </>
-                  )}
-
-                  {pr.status === "SUBMITTED" && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          approvePurchaseRequest(pr.id, currentUser.username)
-                        }
-                        className="px-3 py-1.5 bg-[#1D593B] text-white font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <Check className="w-3.5 h-3.5" />
-                        <span>Approve</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          rejectPurchaseRequest(
-                            pr.id,
-                            "Ditolak saat evaluasi stok",
-                            currentUser.username,
-                          )
-                        }
-                        className="px-3 py-1.5 bg-[#9E2A20] text-white font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <XCircle className="w-3.5 h-3.5" />
-                        <span>Reject</span>
-                      </button>
-                    </>
-                  )}
-
-                  {pr.status === "APPROVED" && (
-                    <button
-                      type="button"
-                      onClick={() => onNavigate("purchase-orders")}
-                      style={{
-                        backgroundColor: "var(--kr-bg-sidebar)",
-                        color: "var(--kr-text-sidebar)",
-                      }}
-                      className="px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+                        <th className="py-2 px-3">{t("common.sku")}</th>
+                        <th className="py-2 px-3">
+                          {t("common.name")} {branding.itemTerm}
+                        </th>
+                        <th className="py-2 px-3 text-right">
+                          {t("mod.pr.requestedQty")}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody
+                      style={{ borderColor: "var(--kr-border)" }}
+                      className="divide-y"
                     >
-                      <span>Terbitkan {branding.documentPrefixPO}</span>
-                      <ArrowUpRight className="w-3.5 h-3.5" />
-                    </button>
-                  )}
+                      {pr.items.map((item) => {
+                        const prod = products.find(
+                          (p) => p.id === item.productId,
+                        );
+                        return (
+                          <tr
+                            key={item.id}
+                            style={{ borderColor: "var(--kr-border)" }}
+                          >
+                            <td className="py-2.5 px-3 font-mono font-semibold">
+                              {prod?.sku ?? item.productId}
+                            </td>
+                            <td className="py-2.5 px-3">
+                              {prod?.name ?? item.productId}
+                            </td>
+                            <td className="py-2.5 px-3 text-right font-mono font-bold">
+                              {item.quantity} {prod?.unit ?? "UNIT"}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
+            );
+          })
+        )}
 
-              {/* Line Items Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr
-                      style={{
-                        backgroundColor: "var(--kr-bg-elevated)",
-                        borderColor: "var(--kr-border)",
-                        color: "var(--kr-text-muted)",
-                      }}
-                      className="border-b font-mono text-[10px] uppercase"
-                    >
-                      <th className="py-2 px-3">Kode SKU</th>
-                      <th className="py-2 px-3">Nama {branding.itemTerm}</th>
-                      <th className="py-2 px-3 text-right">
-                        Kuantitas Diminta
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody
-                    style={{ borderColor: "var(--kr-border)" }}
-                    className="divide-y"
-                  >
-                    {pr.items.map((item) => {
-                      const prod = products.find(
-                        (p) => p.id === item.productId,
-                      );
-                      return (
-                        <tr
-                          key={item.id}
-                          style={{ borderColor: "var(--kr-border)" }}
-                        >
-                          <td className="py-2.5 px-3 font-mono font-semibold">
-                            {prod?.sku ?? item.productId}
-                          </td>
-                          <td className="py-2.5 px-3">
-                            {prod?.name ?? "Unknown Item"}
-                          </td>
-                          <td className="py-2.5 px-3 text-right font-mono font-bold">
-                            {item.quantity} {prod?.unit ?? "UNIT"}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          );
-        })}
+        <div
+          style={{
+            backgroundColor: "var(--kr-bg-surface)",
+            borderColor: "var(--kr-border)",
+          }}
+          className="border"
+        >
+          <PaginationBar
+            currentPage={prPage}
+            totalItems={filteredPRs.length}
+            pageSize={prPageSize}
+            onPageChange={setPrPage}
+            onPageSizeChange={(s) => {
+              setPrPageSize(s);
+              setPrPage(1);
+            }}
+          />
+        </div>
       </div>
 
       {/* Create PR Modal */}

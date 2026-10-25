@@ -4,6 +4,7 @@ import { NavigationTab } from "@/types";
 import { useStore } from "@/context/StoreContext";
 import { useAuth } from "@/context/AuthContext";
 import { useKernel } from "@/kernel/KernelContext";
+import { PaginationBar } from "@/components/layout/PaginationBar";
 
 interface GoodsReceiptsTabProps {
   onNavigate: (tab: NavigationTab) => void;
@@ -28,6 +29,8 @@ export const GoodsReceiptsTab: React.FC<GoodsReceiptsTabProps> = ({
   );
 
   const [showReceiveModal, setShowReceiveModal] = useState<boolean>(false);
+  const [grPage, setGrPage] = useState<number>(1);
+  const [grPageSize, setGrPageSize] = useState<number>(5);
   const [selectedPoId, setSelectedPoId] = useState<string>(
     openPOs[0]?.id ?? "",
   );
@@ -37,6 +40,10 @@ export const GoodsReceiptsTab: React.FC<GoodsReceiptsTabProps> = ({
   const [errorMsg, setErrorMsg] = useState<string>("");
 
   const activePO = openPOs.find((p) => p.id === selectedPoId) ?? openPOs[0];
+  const paginatedGRs = goodsReceipts.slice(
+    (grPage - 1) * grPageSize,
+    grPage * grPageSize,
+  );
 
   const handleOpenModal = (): void => {
     const firstPO = openPOs[0];
@@ -138,116 +145,150 @@ export const GoodsReceiptsTab: React.FC<GoodsReceiptsTabProps> = ({
           className="px-4 py-2.5 font-mono text-xs uppercase tracking-wider font-semibold flex items-center gap-2 cursor-pointer self-start sm:self-auto shrink-0"
         >
           <Plus style={{ color: "var(--kr-accent)" }} className="w-3.5 h-3.5" />
-          <span>+ Catat Timbang Terima ({branding.documentPrefixGR})</span>
+          <span>
+            {t("mod.gr.recordBtn")} ({branding.documentPrefixGR})
+          </span>
         </button>
       </div>
 
       {/* GR History List */}
       <div className="space-y-4">
-        {goodsReceipts.map((gr) => {
-          const po = purchaseOrders.find((p) => p.id === gr.purchaseOrderId);
-          const wh = warehouses.find((w) => w.id === po?.warehouseId);
-          const sup = suppliers.find((s) => s.id === po?.supplierId);
+        {paginatedGRs.length === 0 ? (
+          <div
+            style={{
+              backgroundColor: "var(--kr-bg-surface)",
+              borderColor: "var(--kr-border)",
+              color: "var(--kr-text-muted)",
+            }}
+            className="border p-8 text-center font-mono text-xs"
+          >
+            {t("common.emptyRecords")}
+          </div>
+        ) : (
+          paginatedGRs.map((gr) => {
+            const po = purchaseOrders.find((p) => p.id === gr.purchaseOrderId);
+            const wh = warehouses.find((w) => w.id === po?.warehouseId);
+            const sup = suppliers.find((s) => s.id === po?.supplierId);
 
-          return (
-            <div
-              key={gr.id}
-              style={{
-                backgroundColor: "var(--kr-bg-surface)",
-                borderColor: "var(--kr-border)",
-              }}
-              className="border p-5"
-            >
+            return (
               <div
-                style={{ borderColor: "var(--kr-border)" }}
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3.5 mb-4"
+                key={gr.id}
+                style={{
+                  backgroundColor: "var(--kr-bg-surface)",
+                  borderColor: "var(--kr-border)",
+                }}
+                className="border p-5"
               >
-                <div>
-                  <div className="flex flex-wrap items-center gap-2.5">
-                    <span className="font-mono text-sm font-bold">
-                      {gr.grNumber}
-                    </span>
-                    <span className="px-2 py-0.5 font-mono text-[10px] font-bold border bg-[#E7F2EC] text-[#1D593B] border-[#B2D3C1] inline-flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3" />
-                      <span>STOCK COMMITTED</span>
-                    </span>
-                    <span className="font-mono text-xs font-semibold">
-                      Ref PO: {po?.poNumber ?? gr.purchaseOrderId}
-                    </span>
+                <div
+                  style={{ borderColor: "var(--kr-border)" }}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3.5 mb-4"
+                >
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span className="font-mono text-sm font-bold">
+                        {gr.grNumber}
+                      </span>
+                      <span className="px-2 py-0.5 font-mono text-[10px] font-bold border bg-[#E7F2EC] text-[#1D593B] border-[#B2D3C1] inline-flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" />
+                        <span>STOCK COMMITTED</span>
+                      </span>
+                      <span className="font-mono text-xs font-semibold">
+                        Ref PO: {po?.poNumber ?? gr.purchaseOrderId}
+                      </span>
+                    </div>
+                    <div
+                      style={{ color: "var(--kr-text-muted)" }}
+                      className="font-mono text-[11px] mt-1"
+                    >
+                      {t("common.warehouse")}: {wh?.name ?? "-"} •{" "}
+                      {t("common.supplier")}: {sup?.name ?? "-"} •{" "}
+                      {t("common.by")}: {gr.receivedBy} •{" "}
+                      {new Date(gr.receivedAt).toLocaleString()}
+                    </div>
                   </div>
-                  <div
-                    style={{ color: "var(--kr-text-muted)" }}
-                    className="font-mono text-[11px] mt-1"
+
+                  <button
+                    type="button"
+                    onClick={() => onNavigate("inventory")}
+                    style={{ borderColor: "var(--kr-border)" }}
+                    className="px-3 py-1.5 border font-mono text-[11px] font-semibold uppercase flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
                   >
-                    Gudang: {wh?.name ?? "-"} • Pemasok: {sup?.name ?? "-"} •
-                    Petugas: {gr.receivedBy} •{" "}
-                    {new Date(gr.receivedAt).toLocaleString("id-ID", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
-                  </div>
+                    <span>{t("mod.gr.viewMovementsBtn")}</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => onNavigate("inventory")}
-                  style={{ borderColor: "var(--kr-border)" }}
-                  className="px-3 py-1.5 border font-mono text-[11px] font-semibold uppercase flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
-                >
-                  <span>Lihat Mutasi Stok</span>
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr
-                      style={{
-                        backgroundColor: "var(--kr-bg-elevated)",
-                        borderColor: "var(--kr-border)",
-                        color: "var(--kr-text-muted)",
-                      }}
-                      className="border-b font-mono text-[10px] uppercase"
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr
+                        style={{
+                          backgroundColor: "var(--kr-bg-elevated)",
+                          borderColor: "var(--kr-border)",
+                          color: "var(--kr-text-muted)",
+                        }}
+                        className="border-b font-mono text-[10px] uppercase"
+                      >
+                        <th className="py-2 px-3">{t("common.sku")}</th>
+                        <th className="py-2 px-3">
+                          {t("common.name")} {branding.itemTerm}
+                        </th>
+                        <th className="py-2 px-3 text-right">
+                          {t("mod.gr.receivedInQty")}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody
+                      style={{ borderColor: "var(--kr-border)" }}
+                      className="divide-y"
                     >
-                      <th className="py-2 px-3">SKU</th>
-                      <th className="py-2 px-3">Nama {branding.itemTerm}</th>
-                      <th className="py-2 px-3 text-right">
-                        Kuantitas Masuk (+Stok)
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody
-                    style={{ borderColor: "var(--kr-border)" }}
-                    className="divide-y"
-                  >
-                    {gr.items.map((item) => {
-                      const prod = products.find(
-                        (p) => p.id === item.productId,
-                      );
-                      return (
-                        <tr
-                          key={item.id}
-                          style={{ borderColor: "var(--kr-border)" }}
-                        >
-                          <td className="py-2.5 px-3 font-mono font-semibold">
-                            {prod?.sku ?? item.productId}
-                          </td>
-                          <td className="py-2.5 px-3">
-                            {prod?.name ?? item.productId}
-                          </td>
-                          <td className="py-2.5 px-3 text-right font-mono font-bold text-[#1D593B]">
-                            +{item.quantity} {prod?.unit}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                      {gr.items.map((item) => {
+                        const prod = products.find(
+                          (p) => p.id === item.productId,
+                        );
+                        return (
+                          <tr
+                            key={item.id}
+                            style={{ borderColor: "var(--kr-border)" }}
+                          >
+                            <td className="py-2.5 px-3 font-mono font-semibold">
+                              {prod?.sku ?? item.productId}
+                            </td>
+                            <td className="py-2.5 px-3">
+                              {prod?.name ?? item.productId}
+                            </td>
+                            <td className="py-2.5 px-3 text-right font-mono font-bold text-[#1D593B]">
+                              +{item.quantity} {prod?.unit}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
+
+        <div
+          style={{
+            backgroundColor: "var(--kr-bg-surface)",
+            borderColor: "var(--kr-border)",
+          }}
+          className="border"
+        >
+          <PaginationBar
+            currentPage={grPage}
+            totalItems={goodsReceipts.length}
+            pageSize={grPageSize}
+            onPageChange={setGrPage}
+            onPageSizeChange={(s) => {
+              setGrPageSize(s);
+              setGrPage(1);
+            }}
+          />
+        </div>
       </div>
 
       {/* Modal Record Goods Receipt */}

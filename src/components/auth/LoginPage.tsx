@@ -13,12 +13,14 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useKernel } from "@/kernel/KernelContext";
+import { useStore } from "@/context/StoreContext";
 import { TranslationKey } from "@/kernel/i18n";
 
 export const LoginPage: React.FC = () => {
   const { hasInitializedAccount, registerAccount, loginWithPassword } =
     useAuth();
   const { branding, locale, availableLocales, setLocale, t } = useKernel();
+  const { warehouses } = useStore();
 
   const [mode, setMode] = useState<"LOGIN" | "REGISTER">(
     hasInitializedAccount ? "LOGIN" : "REGISTER",
@@ -93,7 +95,7 @@ export const LoginPage: React.FC = () => {
       setRegConfirmPassword("");
       setMode("LOGIN");
       setPendingNotice(
-        `Pengajuan pendaftaran akun @${submittedUser} berhasil dikirim! Status akun Anda saat ini adalah MENUNGGU PERSETUJUAN (PENDING). Silakan minta Admin / Approver yang sedang aktif untuk meng-approve akun Anda melalui menu Panel Kontrol → Manajemen Akun Pengguna.`,
+        `@${submittedUser} — ${t("login.pendingSubmittedNotice")}`,
       );
     }
   };
@@ -106,7 +108,7 @@ export const LoginPage: React.FC = () => {
     },
     {
       code: "02 / REV",
-      title: "APPROVER CLEARANCE",
+      title: t("login.stage2Title"),
       desc: "APPROVED / REJECTED",
     },
     {
@@ -175,7 +177,10 @@ export const LoginPage: React.FC = () => {
             </div>
             <div className="hidden sm:block text-right font-mono text-[10px] opacity-60 leading-relaxed">
               <div>{t("login.docStamp")}</div>
-              <div>{t("login.activeWarehouses")}</div>
+              <div>
+                {warehouses.filter((w) => w.isActive).length}{" "}
+                {t("common.warehouses").toUpperCase()}
+              </div>
             </div>
           </div>
 
@@ -345,7 +350,7 @@ export const LoginPage: React.FC = () => {
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="cth: Muhammad Riyansyah"
+                    placeholder={t("login.fullNamePlaceholder")}
                     style={{
                       backgroundColor: "var(--kr-bg-surface)",
                       borderColor: "var(--kr-border)",
@@ -373,7 +378,7 @@ export const LoginPage: React.FC = () => {
                       required
                       value={regUsername}
                       onChange={(e) => setRegUsername(e.target.value)}
-                      placeholder="admin_utama"
+                      placeholder={t("login.usernamePlaceholder")}
                       style={{
                         backgroundColor: "var(--kr-bg-surface)",
                         borderColor: "var(--kr-border)",
@@ -400,7 +405,7 @@ export const LoginPage: React.FC = () => {
                       required
                       value={regEmail}
                       onChange={(e) => setRegEmail(e.target.value)}
-                      placeholder="admin@perusahaan.id"
+                      placeholder={t("login.emailPlaceholder")}
                       style={{
                         backgroundColor: "var(--kr-bg-surface)",
                         borderColor: "var(--kr-border)",
@@ -421,14 +426,10 @@ export const LoginPage: React.FC = () => {
                   className="p-3 border font-mono text-[11px] leading-relaxed"
                 >
                   <span className="font-bold text-[#8A4B14] block uppercase mb-0.5">
-                    ● MEKANISME OTORISASI AKUN BARU (APPROVAL REQUIRED)
+                    {t("login.approvalRequiredTitle")}
                   </span>
                   <span style={{ color: "var(--kr-text-muted)" }}>
-                    Pendaftaran mandiri dari halaman ini tidak langsung masuk ke
-                    sistem, melainkan berstatus{" "}
-                    <strong>PENDING (Menunggu Persetujuan)</strong> hingga
-                    disetujui oleh <strong>Admin / Approver</strong> di Panel
-                    Kontrol.
+                    {t("login.approvalRequiredDesc")}
                   </span>
                 </div>
               )}

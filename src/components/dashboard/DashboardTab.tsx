@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   FileText,
   AlertTriangle,
@@ -12,6 +12,7 @@ import { NavigationTab } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 import { useKernel } from "@/kernel/KernelContext";
 import { useStore } from "@/context/StoreContext";
+import { PaginationBar } from "@/components/layout/PaginationBar";
 
 interface DashboardTabProps {
   onNavigate: (tab: NavigationTab) => void;
@@ -149,9 +150,14 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
         targetTab: "goods-receipts" as NavigationTab,
       };
     }),
-  ]
-    .sort((a, b) => b.timestamp - a.timestamp)
-    .slice(0, 6);
+  ].sort((a, b) => b.timestamp - a.timestamp);
+
+  const [txPage, setTxPage] = useState<number>(1);
+  const [txPageSize, setTxPageSize] = useState<number>(5);
+  const paginatedTransactions = recentTransactions.slice(
+    (txPage - 1) * txPageSize,
+    txPage * txPageSize,
+  );
 
   const dayLabels = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"] as const;
   const dayBuckets: Record<string, number> = {
@@ -503,7 +509,8 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
                   {totalGrVolume} UNIT/KG
                 </div>
                 <div className="font-mono text-[10px] text-[#1D593B] font-semibold whitespace-nowrap">
-                  {goodsReceipts.length} DOKUMEN {branding.documentPrefixGR}
+                  {goodsReceipts.length} {t("dashboard.docsRecorded")}{" "}
+                  {branding.documentPrefixGR}
                 </div>
               </div>
             </div>
@@ -634,7 +641,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
                   }}
                   className="p-4 border font-mono text-xs text-center"
                 >
-                  Belum ada defisit stok kritis (0 SKU di bawah ambang batas).
+                  {t("dashboard.emptyAlert")}
                 </div>
               ) : (
                 criticalItems.map((item, idx) => (
@@ -782,15 +789,14 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
               style={{ borderColor: "var(--kr-border)" }}
               className="divide-y"
             >
-              {recentTransactions.length === 0 ? (
+              {paginatedTransactions.length === 0 ? (
                 <tr>
                   <td
                     colSpan={6}
                     style={{ color: "var(--kr-text-muted)" }}
                     className="py-8 px-5 text-center font-mono text-xs"
                   >
-                    Database masih kosong (0 dokumen transaksi). Silakan mulai
-                    dengan mendaftarkan Gudang, Pemasok, dan SKU di menu{" "}
+                    {t("dashboard.emptyTx")}{" "}
                     <button
                       type="button"
                       onClick={() => onNavigate("products")}
@@ -798,11 +804,10 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
                     >
                       {t("plugin.products.name")}
                     </button>
-                    .
                   </td>
                 </tr>
               ) : (
-                recentTransactions.map((tx) => (
+                paginatedTransactions.map((tx) => (
                   <tr
                     key={tx.id}
                     style={{ borderColor: "var(--kr-border)" }}
@@ -852,6 +857,13 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
             </tbody>
           </table>
         </div>
+        <PaginationBar
+          totalItems={recentTransactions.length}
+          currentPage={txPage}
+          pageSize={txPageSize}
+          onPageChange={setTxPage}
+          onPageSizeChange={setTxPageSize}
+        />
       </div>
     </div>
   );
