@@ -39,11 +39,31 @@ interface AuthContextType {
   switchRole: (role: UserRole) => void;
   login: (username: string, role?: UserRole) => void;
   logout: () => void;
+  resetAllAccounts: () => void;
 }
 
+const LEGACY_AUTH_KEYS = [
+  "kr_accounts_v1",
+  "kr_accounts_v2",
+  "kr_active_user_v1",
+  "kr_active_user_v2",
+];
+
+function purgeLegacyAuthStorage(): void {
+  try {
+    for (const k of LEGACY_AUTH_KEYS) {
+      window.localStorage.removeItem(k);
+    }
+  } catch {
+    // ignore storage errors
+  }
+}
+
+purgeLegacyAuthStorage();
+
 const AUTH_STORAGE_KEYS = {
-  ACCOUNTS: "kr_accounts_v2",
-  ACTIVE_USER: "kr_active_user_v2",
+  ACCOUNTS: "kr_auth_accounts_v3",
+  ACTIVE_USER: "kr_auth_active_user_v3",
 } as const;
 
 const FALLBACK_GUEST_PROFILE: UserProfile = {
@@ -287,6 +307,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const resetAllAccounts = (): void => {
+    setAccounts([]);
+    setActiveSessionUser(null);
+    try {
+      window.localStorage.removeItem(AUTH_STORAGE_KEYS.ACCOUNTS);
+      window.localStorage.removeItem(AUTH_STORAGE_KEYS.ACTIVE_USER);
+    } catch {
+      // ignore
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -303,6 +334,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         switchRole,
         login,
         logout,
+        resetAllAccounts,
       }}
     >
       {children}
