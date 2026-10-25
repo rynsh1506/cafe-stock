@@ -14,7 +14,7 @@ import { useKernel } from "@/kernel/KernelContext";
 export const LoginPage: React.FC = () => {
   const { login } = useAuth();
   const { branding, locale, availableLocales, setLocale, t } = useKernel();
-  const [username, setUsername] = useState<string>("admin_operational");
+  const [username, setUsername] = useState<string>("user_procurement");
   const [password, setPassword] = useState<string>("password123");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [rememberMe, setRememberMe] = useState<boolean>(true);
@@ -24,7 +24,7 @@ export const LoginPage: React.FC = () => {
     e.preventDefault();
     setIsLoading(true);
     setTimeout(() => {
-      login(username, "APPROVER");
+      login(username);
       setIsLoading(false);
     }, 250);
   };
