@@ -1,7 +1,6 @@
 import React from "react";
-import { Coffee, Menu, X, ArrowRightLeft, Sliders, Globe } from "lucide-react";
+import { Coffee, Menu, X, Sliders, Globe } from "lucide-react";
 import { NavigationTab } from "@/types";
-import { useAuth } from "@/context/AuthContext";
 import { useKernel } from "@/kernel/KernelContext";
 import { TranslationKey } from "@/kernel/i18n";
 
@@ -29,7 +28,6 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   onToggleDrawer,
   onSelectTab,
 }) => {
-  const { currentUser, switchRole } = useAuth();
   const { plugins, branding, locale, availableLocales, setLocale, t } =
     useKernel();
 
@@ -37,11 +35,6 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   const titleText = currentPlugin
     ? `${currentPlugin.code} // ${t(PLUGIN_NAME_KEY_MAP[activeTab])}`
     : branding.appName;
-
-  const toggleRole = (): void => {
-    const nextRole = currentUser.role === "USER" ? "APPROVER" : "USER";
-    switchRole(nextRole);
-  };
 
   return (
     <header
@@ -89,7 +82,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
       </div>
 
       <div className="flex items-center gap-1.5 shrink-0">
-        {/* Compact Scalable Language Dropdown for Mobile (Supports Unlimited Languages) */}
+        {/* Compact Language Code Dropdown for Mobile (Code Only) */}
         <div
           style={{
             backgroundColor: "var(--kr-bg-sidebar-header)",
@@ -106,11 +99,11 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
               backgroundColor: "var(--kr-bg-sidebar-header)",
               color: "var(--kr-text-sidebar)",
             }}
-            className="font-mono text-[10px] font-bold uppercase focus:outline-none cursor-pointer max-w-[56px]"
+            className="font-mono text-[10px] font-bold uppercase focus:outline-none cursor-pointer"
           >
             {availableLocales.map((loc) => (
               <option key={loc.code} value={loc.code}>
-                {loc.flagCode} — {loc.nativeName}
+                {loc.code.toUpperCase()}
               </option>
             ))}
           </select>
@@ -128,20 +121,6 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
           title={t("common.controlPanel")}
         >
           <Sliders className="w-3.5 h-3.5" />
-        </button>
-
-        <button
-          onClick={toggleRole}
-          type="button"
-          className={`flex items-center gap-1 px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-wider border transition whitespace-nowrap ${
-            currentUser.role === "APPROVER"
-              ? "bg-[#3B2616] text-[#F0C18C] border-[#6E472A]"
-              : "bg-[#1B2C3B] text-[#9AC7EE] border-[#2F4E68]"
-          }`}
-          title={t("common.switchRole")}
-        >
-          <ArrowRightLeft className="w-2.5 h-2.5 shrink-0" />
-          <span>{currentUser.role}</span>
         </button>
       </div>
     </header>

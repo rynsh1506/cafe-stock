@@ -10,7 +10,6 @@ import {
   ShieldCheck,
   Sliders,
   LogOut,
-  ArrowRightLeft,
 } from "lucide-react";
 import { NavigationTab } from "@/types";
 import { useAuth } from "@/context/AuthContext";
@@ -58,7 +57,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSelectTab,
   onCloseMobile,
 }) => {
-  const { currentUser, switchRole, logout } = useAuth();
+  const { currentUser, logout } = useAuth();
   const { enabledPlugins, branding, t } = useKernel();
 
   const handleTabClick = (tab: NavigationTab): void => {
@@ -66,11 +65,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     if (onCloseMobile) {
       onCloseMobile();
     }
-  };
-
-  const toggleRole = (): void => {
-    const nextRole = currentUser.role === "USER" ? "APPROVER" : "USER";
-    switchRole(nextRole);
   };
 
   return (
@@ -116,40 +110,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {branding.appSubtitle}
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Otorisasi Role Shift */}
-      <div
-        style={{
-          backgroundColor: "var(--kr-bg-sidebar-header)",
-          borderColor: "var(--kr-border-sidebar)",
-        }}
-        className="px-4 py-3 border-b"
-      >
-        <div className="font-mono text-[9px] uppercase tracking-widest opacity-60 mb-1.5">
-          {t("common.activeStaff")}
-        </div>
-        <div className="flex items-center justify-between gap-2">
-          {currentUser.role === "APPROVER" ? (
-            <span className="font-mono text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 bg-[#3B2616] text-[#F0C18C] border border-[#6E472A] truncate">
-              ROLE // APPROVER
-            </span>
-          ) : (
-            <span className="font-mono text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 bg-[#1B2C3B] text-[#9AC7EE] border border-[#2F4E68] truncate">
-              ROLE // USER
-            </span>
-          )}
-          <button
-            onClick={toggleRole}
-            type="button"
-            style={{ borderColor: "var(--kr-border-sidebar)" }}
-            className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider opacity-85 hover:opacity-100 px-2 py-1 transition border cursor-pointer shrink-0"
-            title="Switch Role (USER / APPROVER)"
-          >
-            <ArrowRightLeft className="w-3 h-3" />
-            <span>{t("common.switchRole")}</span>
-          </button>
         </div>
       </div>
 

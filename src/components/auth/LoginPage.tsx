@@ -5,42 +5,28 @@ import {
   User,
   Eye,
   EyeOff,
-  ArrowUpRight,
   ArrowRight,
   Globe,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useKernel } from "@/kernel/KernelContext";
-import { UserRole } from "@/types";
 
 export const LoginPage: React.FC = () => {
   const { login } = useAuth();
   const { branding, locale, availableLocales, setLocale, t } = useKernel();
-  const [username, setUsername] = useState<string>("user_procurement");
+  const [username, setUsername] = useState<string>("admin_operational");
   const [password, setPassword] = useState<string>("password123");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [rememberMe, setRememberMe] = useState<boolean>(true);
-  const [selectedRole, setSelectedRole] = useState<UserRole>("USER");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
     setIsLoading(true);
     setTimeout(() => {
-      login(username, selectedRole);
+      login(username, "APPROVER");
       setIsLoading(false);
-    }, 300);
-  };
-
-  const handleQuickDemo = (role: UserRole, demoUsername: string): void => {
-    setSelectedRole(role);
-    setUsername(demoUsername);
-    setPassword("password123");
-    setIsLoading(true);
-    setTimeout(() => {
-      login(demoUsername, role);
-      setIsLoading(false);
-    }, 200);
+    }, 250);
   };
 
   const workflowStages = [
@@ -229,7 +215,7 @@ export const LoginPage: React.FC = () => {
               >
                 {availableLocales.map((loc) => (
                   <option key={loc.code} value={loc.code}>
-                    [{loc.flagCode}] {loc.nativeName}
+                    {loc.code.toUpperCase()}
                   </option>
                 ))}
               </select>
@@ -368,94 +354,6 @@ export const LoginPage: React.FC = () => {
               )}
             </button>
           </form>
-
-          <div
-            style={{ borderColor: "var(--kr-border)" }}
-            className="mt-8 pt-6 border-t"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span
-                style={{ color: "var(--kr-text-muted)" }}
-                className="font-mono text-[10px] font-semibold uppercase tracking-widest"
-              >
-                {t("login.seederTitle")}
-              </span>
-              <span
-                style={{ color: "var(--kr-text-muted)" }}
-                className="font-mono text-[10px]"
-              >
-                PRD SEC.2
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => handleQuickDemo("USER", "user_procurement")}
-                style={{
-                  backgroundColor: "var(--kr-bg-surface)",
-                  borderColor: "var(--kr-border)",
-                }}
-                className="p-3.5 text-left border hover:opacity-90 transition group cursor-pointer relative"
-              >
-                <div
-                  style={{ borderColor: "var(--kr-border)" }}
-                  className="flex items-center justify-between border-b pb-2 mb-2"
-                >
-                  <span className="font-mono text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 bg-[#E6EEF4] text-[#1E4A6D] border border-[#BDD2E4]">
-                    ROLE: USER
-                  </span>
-                  <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition" />
-                </div>
-                <div className="text-xs font-bold">Budi Santoso</div>
-                <div
-                  style={{ color: "var(--kr-text-muted)" }}
-                  className="font-mono text-[11px] mt-0.5"
-                >
-                  user_procurement
-                </div>
-                <div
-                  style={{ color: "var(--kr-text-muted)" }}
-                  className="text-[11px] mt-2 leading-snug"
-                >
-                  {t("login.userPassDesc")}
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickDemo("APPROVER", "approver_manager")}
-                style={{
-                  backgroundColor: "var(--kr-bg-surface)",
-                  borderColor: "var(--kr-border)",
-                }}
-                className="p-3.5 text-left border hover:opacity-90 transition group cursor-pointer relative"
-              >
-                <div
-                  style={{ borderColor: "var(--kr-border)" }}
-                  className="flex items-center justify-between border-b pb-2 mb-2"
-                >
-                  <span className="font-mono text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 bg-[#F6E8D8] text-[#7C4218] border border-[#E2C4A3]">
-                    ROLE: APPROVER
-                  </span>
-                  <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition" />
-                </div>
-                <div className="text-xs font-bold">Siti Aminah</div>
-                <div
-                  style={{ color: "var(--kr-text-muted)" }}
-                  className="font-mono text-[11px] mt-0.5"
-                >
-                  approver_manager
-                </div>
-                <div
-                  style={{ color: "var(--kr-text-muted)" }}
-                  className="text-[11px] mt-2 leading-snug"
-                >
-                  {t("login.approverPassDesc")}
-                </div>
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
