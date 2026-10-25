@@ -1,16 +1,10 @@
 import React from "react";
 import {
-  Package,
   FileText,
-  ShoppingCart,
-  Truck,
   AlertTriangle,
-  Clock,
   ArrowUpRight,
-  TrendingUp,
+  Plus,
   Warehouse,
-  Boxes,
-  CheckCircle2,
 } from "lucide-react";
 import { NavigationTab } from "@/types";
 import { useAuth } from "@/context/AuthContext";
@@ -34,6 +28,9 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
   const pendingPRs = INITIAL_PURCHASE_REQUESTS.filter(
     (pr) => pr.status === "SUBMITTED",
   ).length;
+  const approvedPRs = INITIAL_PURCHASE_REQUESTS.filter(
+    (pr) => pr.status === "APPROVED",
+  ).length;
   const activePOs = INITIAL_PURCHASE_ORDERS.filter(
     (po) => po.status === "ORDERED" || po.status === "PARTIALLY_RECEIVED",
   ).length;
@@ -47,88 +44,107 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
     const warehouse = INITIAL_WAREHOUSES.find(
       (w) => w.id === balance.warehouseId,
     )!;
+    const deficit = Math.max(0, product.minStock - balance.stock);
+    const fillRatio = Math.min(
+      100,
+      Math.round((balance.stock / product.minStock) * 100),
+    );
     return {
       product,
       warehouse,
       currentStock: balance.stock,
       minStock: product.minStock,
+      deficit,
+      fillRatio,
     };
   });
 
-  // Recent combined transactions
+  // Recent combined transactions with procurement stage context
   const recentTransactions = [
     {
       id: "tx_1",
       number: "PR-2026-000001",
+      stage: "TAHAP 01 // PR",
       type: "Purchase Request",
       warehouse: "Gudang Utama Jakarta",
       date: "23 Okt 2026",
       status: "SUBMITTED",
-      statusColor: "bg-[#FFF8E1] text-[#B45309] border-[#FDE68A]",
+      statusStyle: "bg-[#F9EFE0] text-[#8A4B14] border-[#DEC19B]",
       targetTab: "purchase-requests" as NavigationTab,
     },
     {
       id: "tx_2",
       number: "PO-2026-000001",
+      stage: "TAHAP 02 // PO",
       type: "Purchase Order",
       warehouse: "Gudang Roastery Bandung",
       date: "22 Okt 2026",
       status: "ORDERED",
-      statusColor: "bg-[#EFF6FF] text-[#1D4ED8] border-[#BFDBFE]",
+      statusStyle: "bg-[#E8F0F6] text-[#1E4A6D] border-[#B8CEE0]",
       targetTab: "purchase-orders" as NavigationTab,
     },
     {
       id: "tx_3",
       number: "GR-2026-000001",
+      stage: "TAHAP 03 // GR",
       type: "Goods Receipt",
       warehouse: "Gudang Utama Jakarta",
       date: "21 Okt 2026",
       status: "RECEIVED",
-      statusColor: "bg-[#ECFDF5] text-[#047857] border-[#A7F3D0]",
+      statusStyle: "bg-[#E7F2EC] text-[#1D593B] border-[#B2D3C1]",
       targetTab: "goods-receipts" as NavigationTab,
     },
     {
       id: "tx_4",
       number: "PR-2026-000003",
+      stage: "TAHAP 01 // PR",
       type: "Purchase Request",
       warehouse: "Gudang Roastery Bandung",
       date: "22 Okt 2026",
       status: "APPROVED",
-      statusColor: "bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]",
+      statusStyle: "bg-[#E7F2EC] text-[#1D593B] border-[#B2D3C1]",
       targetTab: "purchase-requests" as NavigationTab,
     },
   ];
 
-  // Bar chart weekly mockup data from Figma
+  // Daily weighing intake log
   const weeklyVolume = [
-    { day: "Sen", value: 12.4, height: "55%" },
-    { day: "Sel", value: 15.8, height: "70%" },
-    { day: "Rab", value: 19.2, height: "85%" },
-    { day: "Kam", value: 14.7, height: "65%", active: true },
-    { day: "Jum", value: 22.0, height: "100%" },
-    { day: "Sab", value: 17.5, height: "78%" },
-    { day: "Min", value: 10.2, height: "45%" },
+    { day: "SEN", date: "20/10", value: 12.4, height: "54%", lot: "Dairy" },
+    { day: "SEL", date: "21/10", value: 15.8, height: "68%", lot: "Arabica" },
+    { day: "RAB", date: "22/10", value: 19.2, height: "84%", lot: "Syrup" },
+    {
+      day: "KAM",
+      date: "23/10",
+      value: 14.7,
+      height: "64%",
+      lot: "Robusta",
+      active: true,
+    },
+    { day: "JUM", date: "24/10", value: 22.0, height: "96%", lot: "Arabica" },
+    { day: "SAB", date: "25/10", value: 17.5, height: "76%", lot: "Dairy" },
+    { day: "MIN", date: "26/10", value: 10.2, height: "45%", lot: "Cup/Lid" },
   ];
 
   return (
     <div className="space-y-6">
-      {/* Top Banner Sesuai Figma */}
-      <div className="bg-gradient-to-r from-[#2C1E18] to-[#4A2D1D] rounded-2xl p-5 sm:p-7 text-white shadow-md border border-[#523323] flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      {/* 1. Editorial Masthead (Menggantikan Banner AI Generik) */}
+      <div className="border-b border-[#D8CFC0] pb-5 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <div className="flex items-center justify-between sm:justify-start gap-2 text-[11px] font-semibold uppercase tracking-wider text-[#D8A57A] mb-1.5">
-            <span>Sistem Pengadaan & Stok</span>
-            <span className="opacity-60">•</span>
-            <span className="px-2 py-0.5 rounded-full bg-[#5A3825] text-white text-[10px] font-bold border border-[#7A4D33] whitespace-nowrap shrink-0">
-              Role: {currentUser.role}
+          <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-[#7A6858]">
+            <span>LAPORAN HARIAN ROASTERY</span>
+            <span>•</span>
+            <span>2 GUDANG OPERASIONAL</span>
+            <span>•</span>
+            <span className="px-1.5 py-0.5 bg-[#EFEAD8] text-[#4A3828] border border-[#D4C8B4] font-semibold">
+              PETUGAS: {currentUser.role}
             </span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-serif font-bold text-white tracking-tight">
-            Selamat Datang di CafeStock, {currentUser.name}
+          <h1 className="font-serif text-2xl sm:text-3xl font-normal text-[#1A1411] tracking-tight mt-1.5">
+            Buku Ikhtisar &amp; Kendali Pengadaan
           </h1>
-          <p className="text-xs sm:text-sm text-[#D7CBC1] mt-1 max-w-2xl leading-relaxed">
-            Kelola seluruh alur pembelian dari Purchase Request, Approval
-            manajerial, Purchase Order, hingga pencatatan Goods Receipt dan stok
-            gudang terupdate secara konsisten.
+          <p className="text-xs sm:text-sm text-[#6E5E50] mt-1 max-w-2xl">
+            Pemantauan langsung dokumen permintaan bahan baku, pesanan pemasok,
+            hingga timbang terima fisik di Gudang Jakarta dan Roastery Bandung.
           </p>
         </div>
 
@@ -137,197 +153,258 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
             <button
               onClick={() => onNavigate("purchase-requests")}
               type="button"
-              className="px-4 py-2.5 rounded-xl bg-[#C68B59] hover:bg-[#B37948] active:bg-[#9B6437] text-white text-xs font-bold transition shadow-sm flex items-center gap-2 cursor-pointer"
+              className="px-4 py-2.5 bg-[#1F1612] hover:bg-[#33241D] text-[#F7F3EC] font-mono text-xs uppercase tracking-wider font-semibold transition flex items-center gap-2 cursor-pointer border border-[#1F1612]"
             >
-              <FileText className="w-4 h-4" />
-              <span>Tinjau 2 Permintaan</span>
+              <FileText className="w-3.5 h-3.5 text-[#D49B6A]" />
+              <span>Periksa {pendingPRs} Dokumen PR</span>
             </button>
           ) : (
             <button
               onClick={() => onNavigate("purchase-requests")}
               type="button"
-              className="px-4 py-2.5 rounded-xl bg-[#C68B59] hover:bg-[#B37948] active:bg-[#9B6437] text-white text-xs font-bold transition shadow-sm flex items-center gap-2 cursor-pointer"
+              className="px-4 py-2.5 bg-[#1F1612] hover:bg-[#33241D] text-[#F7F3EC] font-mono text-xs uppercase tracking-wider font-semibold transition flex items-center gap-2 cursor-pointer border border-[#1F1612]"
             >
-              <FileText className="w-4 h-4" />
-              <span>+ Buat Purchase Request</span>
+              <Plus className="w-3.5 h-3.5 text-[#D49B6A]" />
+              <span>Buat Purchase Request</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* 4 Kartu KPI Metrik Utama */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {/* Total Master Produk */}
+      {/* 2. Architectural Ledger Strip (Menggantikan 4 Kotak KPI Generik) */}
+      <div className="bg-[#FDFBF7] border border-[#D8CFC0] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-[#DFD6C7]">
+        {/* Index 01: Master Produk */}
         <div
           onClick={() => onNavigate("products")}
-          className="bg-white p-3.5 sm:p-5 rounded-2xl border border-[#EDE4D8] shadow-xs hover:border-[#D5C5B5] transition cursor-pointer flex flex-col justify-between group"
+          className="p-4 sm:p-5 hover:bg-[#F7F2E7] transition cursor-pointer flex flex-col justify-between group"
         >
-          <div className="flex items-start justify-between gap-2">
-            <div className="text-[10px] sm:text-[11px] font-bold text-[#8C7665] uppercase tracking-wider leading-tight">
-              Total Master Produk
-            </div>
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#F7F2EB] text-[#5A3825] flex items-center justify-center shrink-0 group-hover:scale-105 transition">
-              <Package className="w-4 h-4 sm:w-5 sm:h-5" />
-            </div>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-[#7A6858]">
+              01 // KATALOG BAHAN
+            </span>
+            <ArrowUpRight className="w-3.5 h-3.5 text-[#9C8B7A] group-hover:text-[#1A1411] transition shrink-0" />
           </div>
-          <div className="mt-2.5">
-            <div className="text-lg sm:text-2xl font-bold text-[#2E1F16] group-hover:text-[#5A3825] transition truncate">
-              {totalProducts} SKU
-            </div>
-            <div className="text-[10px] sm:text-[11px] text-[#2E7D32] flex items-center gap-1 mt-1 font-medium truncate">
-              <CheckCircle2 className="w-3 h-3 shrink-0" />
-              <span className="truncate">Semua aktif di transaksi</span>
-            </div>
+          <div className="my-3 flex items-baseline gap-2">
+            <span className="font-mono text-2xl sm:text-3xl font-bold text-[#1A1411]">
+              {totalProducts}
+            </span>
+            <span className="text-xs font-medium text-[#5E4F42]">
+              SKU Terdaftar
+            </span>
+          </div>
+          <div className="pt-2.5 border-t border-[#EAE3D5] flex items-center justify-between font-mono text-[10px]">
+            <span className="text-[#6E5E50]">STATUS MASTER</span>
+            <span className="text-[#1D593B] font-semibold">100% AKTIF</span>
           </div>
         </div>
 
-        {/* PR Perlu Review */}
+        {/* Index 02: Antrean PR */}
         <div
           onClick={() => onNavigate("purchase-requests")}
-          className="bg-white p-3.5 sm:p-5 rounded-2xl border border-[#EDE4D8] shadow-xs hover:border-[#D5C5B5] transition cursor-pointer flex flex-col justify-between group"
+          className="p-4 sm:p-5 hover:bg-[#F7F2E7] transition cursor-pointer flex flex-col justify-between group sm:border-b lg:border-b-0 border-[#DFD6C7]"
         >
-          <div className="flex items-start justify-between gap-2">
-            <div className="text-[10px] sm:text-[11px] font-bold text-[#8C7665] uppercase tracking-wider leading-tight">
-              PR Perlu Review
-            </div>
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#FFF8E1] text-[#D97706] flex items-center justify-center shrink-0 group-hover:scale-105 transition">
-              <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
-            </div>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-[#7A6858]">
+              02 // ANTREAN OTORISASI
+            </span>
+            <ArrowUpRight className="w-3.5 h-3.5 text-[#9C8B7A] group-hover:text-[#1A1411] transition shrink-0" />
           </div>
-          <div className="mt-2.5">
-            <div className="text-lg sm:text-2xl font-bold text-[#2E1F16] group-hover:text-[#B45309] transition truncate">
-              {pendingPRs} Pengajuan
-            </div>
-            <div className="text-[10px] sm:text-[11px] text-[#D97706] flex items-center gap-1 mt-1 font-medium truncate">
-              <Clock className="w-3 h-3 shrink-0" />
-              <span className="truncate">Status SUBMITTED</span>
-            </div>
+          <div className="my-3 flex items-baseline gap-2">
+            <span className="font-mono text-2xl sm:text-3xl font-bold text-[#8A4B14]">
+              {pendingPRs}
+            </span>
+            <span className="text-xs font-medium text-[#5E4F42]">
+              Dokumen PR
+            </span>
+          </div>
+          <div className="pt-2.5 border-t border-[#EAE3D5] flex items-center justify-between font-mono text-[10px]">
+            <span className="text-[#6E5E50]">SIAP JADI PO</span>
+            <span className="text-[#8A4B14] font-semibold">
+              {approvedPRs} APPROVED
+            </span>
           </div>
         </div>
 
-        {/* PO Aktif / Menunggu GR */}
+        {/* Index 03: PO Dalam Pengiriman */}
         <div
           onClick={() => onNavigate("purchase-orders")}
-          className="bg-white p-3.5 sm:p-5 rounded-2xl border border-[#EDE4D8] shadow-xs hover:border-[#D5C5B5] transition cursor-pointer flex flex-col justify-between group"
+          className="p-4 sm:p-5 hover:bg-[#F7F2E7] transition cursor-pointer flex flex-col justify-between group"
         >
-          <div className="flex items-start justify-between gap-2">
-            <div className="text-[10px] sm:text-[11px] font-bold text-[#8C7665] uppercase tracking-wider leading-tight">
-              PO Aktif / Penerimaan
-            </div>
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#F7F2EB] text-[#5A3825] flex items-center justify-center shrink-0 group-hover:scale-105 transition">
-              <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
-            </div>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-[#7A6858]">
+              03 // PESANAN PEMASOK
+            </span>
+            <ArrowUpRight className="w-3.5 h-3.5 text-[#9C8B7A] group-hover:text-[#1A1411] transition shrink-0" />
           </div>
-          <div className="mt-2.5">
-            <div className="text-lg sm:text-2xl font-bold text-[#2E1F16] group-hover:text-[#5A3825] transition truncate">
-              {activePOs} Pesanan
-            </div>
-            <div className="text-[10px] sm:text-[11px] text-[#5A3825] flex items-center gap-1 mt-1 font-medium truncate">
-              <Truck className="w-3 h-3 shrink-0" />
-              <span className="truncate">ORDERED / PARTIAL</span>
-            </div>
+          <div className="my-3 flex items-baseline gap-2">
+            <span className="font-mono text-2xl sm:text-3xl font-bold text-[#1A1411]">
+              {activePOs}
+            </span>
+            <span className="text-xs font-medium text-[#5E4F42]">
+              PO Terbuka
+            </span>
+          </div>
+          <div className="pt-2.5 border-t border-[#EAE3D5] flex items-center justify-between font-mono text-[10px]">
+            <span className="text-[#6E5E50]">TAHAP TERIMA</span>
+            <span className="text-[#1E4A6D] font-semibold">
+              ORDERED / PARTIAL
+            </span>
           </div>
         </div>
 
-        {/* Stok Kritis Gudang */}
+        {/* Index 04: Ambang Kritis */}
         <div
           onClick={() => onNavigate("inventory")}
-          className="bg-white p-3.5 sm:p-5 rounded-2xl border border-[#EDE4D8] shadow-xs hover:border-[#D5C5B5] transition cursor-pointer flex flex-col justify-between group"
+          className="p-4 sm:p-5 hover:bg-[#F7F2E7] transition cursor-pointer flex flex-col justify-between group"
         >
-          <div className="flex items-start justify-between gap-2">
-            <div className="text-[10px] sm:text-[11px] font-bold text-[#8C7665] uppercase tracking-wider leading-tight">
-              Stok Kritis Gudang
-            </div>
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#FFEBEE] text-[#C62828] flex items-center justify-center shrink-0 group-hover:scale-105 transition">
-              <Boxes className="w-4 h-4 sm:w-5 sm:h-5" />
-            </div>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-[#9E2A20]">
+              04 // AMBANG MINIMUM
+            </span>
+            <ArrowUpRight className="w-3.5 h-3.5 text-[#9E2A20] transition shrink-0" />
           </div>
-          <div className="mt-2.5">
-            <div className="text-lg sm:text-2xl font-bold text-[#C62828] truncate">
-              {criticalItems.length} Item
-            </div>
-            <div className="text-[10px] sm:text-[11px] text-[#C62828] flex items-center gap-1 mt-1 font-medium truncate">
-              <AlertTriangle className="w-3 h-3 shrink-0" />
-              <span className="truncate">Saldo di bawah min</span>
-            </div>
+          <div className="my-3 flex items-baseline gap-2">
+            <span className="font-mono text-2xl sm:text-3xl font-bold text-[#9E2A20]">
+              {criticalItems.length}
+            </span>
+            <span className="text-xs font-medium text-[#7A271F]">
+              Bahan Kritis
+            </span>
+          </div>
+          <div className="pt-2.5 border-t border-[#EAE3D5] flex items-center justify-between font-mono text-[10px]">
+            <span className="text-[#6E5E50]">TINDAKAN</span>
+            <span className="text-[#9E2A20] font-semibold">WAJIB RESTOCK</span>
           </div>
         </div>
       </div>
 
-      {/* Bagian Tengah: Visual Grafik Bar Aktivitas & Widget Stok Kritis Sesuai Figma */}
+      {/* 3. Bagian Tengah: Log Timbangan Bahan Masuk & Kartu Peringatan Stok */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Kolom Kiri: Visual Grafik Penerimaan Bahan Baku Mingguan (2 Kolom) */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-[#EDE4D8] p-5 sm:p-6 shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#F0E7DD] pb-4 mb-5">
-            <div>
-              <div className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#8C7665]">
-                Aktivitas Pengadaan
+        {/* Kolom Kiri (2 Kolom): Log Timbangan Penerimaan Fisik (Goods Receipt) */}
+        <div className="lg:col-span-2 bg-[#FDFBF7] border border-[#D8CFC0] p-5 sm:p-6 flex flex-col justify-between">
+          <div>
+            {/* Header Log Timbangan — Anti-Wrapping pada Mobile */}
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-[#DFD6C7] pb-4 mb-5">
+              <div>
+                <div className="font-mono text-[10px] font-semibold uppercase tracking-widest text-[#7A6858]">
+                  CATATAN TIMBANGAN FISIK // GOODS RECEIPT
+                </div>
+                <h2 className="font-serif text-lg sm:text-xl font-medium text-[#1A1411] mt-0.5">
+                  Akumulasi Tonase Bahan Baku Masuk
+                </h2>
+                <p className="text-xs text-[#6E5E50] mt-0.5">
+                  Rekapitulasi berat bersih penerimaan barang selama 7 hari
+                  terakhir
+                </p>
               </div>
-              <h2 className="text-sm sm:text-base font-bold text-[#2E1F16] mt-0.5">
-                Volume Bahan Baku Masuk{" "}
-                <span className="text-xs font-normal text-[#8A7566] whitespace-nowrap">
-                  (Minggu Ini)
-                </span>
-              </h2>
+
+              {/* Stamped Total Box */}
+              <div className="bg-[#F4EFE4] border border-[#D8CFC0] px-3.5 py-2 flex sm:flex-col items-baseline sm:items-end justify-between gap-3 sm:gap-0.5 shrink-0">
+                <div className="font-mono text-[10px] uppercase tracking-wider text-[#6E5E50]">
+                  TOTAL MINGGU INI
+                </div>
+                <div className="font-mono text-lg sm:text-xl font-bold text-[#1A1411] whitespace-nowrap">
+                  111.8 KG
+                </div>
+                <div className="font-mono text-[10px] text-[#1D593B] font-semibold whitespace-nowrap">
+                  +14.2% vs minggu lalu
+                </div>
+              </div>
             </div>
-            <div className="flex items-baseline sm:flex-col sm:items-end justify-between sm:justify-center gap-1.5 sm:gap-0">
-              <div className="text-lg sm:text-xl font-bold text-[#2E1F16] whitespace-nowrap">
-                101.9 KG
+
+            {/* Grafik Kolom Timbangan Berbasis Ledger Grid */}
+            <div className="relative pt-4 pb-2">
+              {/* Garis Panduan Horizontal */}
+              <div className="grid grid-cols-7 gap-2 sm:gap-3.5 h-44 sm:h-48 items-end pt-6 px-1 border-b border-[#CFC5B5] relative">
+                {weeklyVolume.map((item) => (
+                  <div
+                    key={item.day}
+                    className="flex flex-col items-center justify-end h-full group"
+                  >
+                    {/* Angka Timbangan Selalu Terbaca di Atas Bar */}
+                    <div
+                      className={`font-mono text-[10px] mb-1.5 ${
+                        item.active
+                          ? "font-bold text-[#1A1411]"
+                          : "text-[#7A6858]"
+                      }`}
+                    >
+                      {item.value}
+                    </div>
+                    <div className="w-full max-w-[40px] bg-[#EFEAD8] border border-[#DED5C5] h-full flex items-end p-0.5">
+                      <div
+                        style={{ height: item.height }}
+                        className={`w-full transition-all duration-300 ${
+                          item.active
+                            ? "bg-[#1F1612]"
+                            : "bg-[#8C6239] group-hover:bg-[#5A3825]"
+                        }`}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="text-[10px] sm:text-xs text-[#2E7D32] flex items-center gap-1 font-semibold whitespace-nowrap">
-                <TrendingUp className="w-3.5 h-3.5" />
-                <span>+14% vs minggu lalu</span>
+
+              {/* Label Hari & Lot */}
+              <div className="grid grid-cols-7 gap-2 sm:gap-3.5 pt-2 px-1 text-center">
+                {weeklyVolume.map((item) => (
+                  <div key={item.day}>
+                    <div
+                      className={`font-mono text-[10px] ${
+                        item.active
+                          ? "font-bold text-[#1A1411]"
+                          : "font-medium text-[#6E5E50]"
+                      }`}
+                    >
+                      {item.day}
+                    </div>
+                    <div className="font-mono text-[9px] text-[#9C8B7A] hidden sm:block">
+                      {item.lot}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
 
-          {/* Bar Chart Sesuai Figma Screen 2 */}
-          <div className="h-44 sm:h-52 flex items-end justify-between gap-2 sm:gap-4 px-2 pt-6 pb-2">
-            {weeklyVolume.map((item) => (
-              <div
-                key={item.day}
-                className="flex-1 flex flex-col items-center gap-2 h-full justify-end group"
-              >
-                <div className="text-[10px] font-bold text-[#8C7665] opacity-0 group-hover:opacity-100 transition">
-                  {item.value} kg
-                </div>
-                <div className="w-full max-w-[36px] bg-[#EDE4D8] rounded-t-lg relative overflow-hidden h-full flex items-end">
-                  <div
-                    style={{ height: item.height }}
-                    className={`w-full rounded-t-lg transition-all duration-300 ${
-                      item.active
-                        ? "bg-[#5A3825] shadow-md"
-                        : "bg-[#C68B59] hover:bg-[#A86F3E]"
-                    }`}
-                  />
-                </div>
-                <div
-                  className={`text-xs font-semibold ${
-                    item.active ? "text-[#5A3825] font-bold" : "text-[#8A7566]"
-                  }`}
-                >
-                  {item.day}
-                </div>
-              </div>
-            ))}
+          {/* Ringkasan Komposisi Lot di Bawah Grafik */}
+          <div className="mt-5 pt-3.5 border-t border-[#EAE3D5] grid grid-cols-3 gap-2 font-mono text-[10px]">
+            <div>
+              <span className="text-[#8C7B6B] block">LOT DOMINAN</span>
+              <span className="font-semibold text-[#1A1411]">
+                Arabica &amp; House Blend
+              </span>
+            </div>
+            <div>
+              <span className="text-[#8C7B6B] block">RATA-RATA HARIAN</span>
+              <span className="font-semibold text-[#1A1411]">
+                15.97 KG / Hari
+              </span>
+            </div>
+            <div className="text-right">
+              <span className="text-[#8C7B6B] block">SELISIH TIMBANG</span>
+              <span className="font-semibold text-[#1D593B]">
+                0.0% (Sesuai)
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Kolom Kanan: Widget Stok Perlu Perhatian (1 Kolom) */}
-        <div className="bg-white rounded-2xl border border-[#EDE4D8] p-5 sm:p-6 shadow-xs flex flex-col justify-between">
+        {/* Kolom Kanan (1 Kolom): Bon Peringatan Saldo Minimum */}
+        <div className="bg-[#FDFBF7] border border-[#D8CFC0] border-t-2 border-t-[#9E2A20] p-5 sm:p-6 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between border-b border-[#F0E7DD] pb-4 mb-4">
+            <div className="flex items-start justify-between border-b border-[#DFD6C7] pb-3.5 mb-4">
               <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-[#C62828] flex items-center gap-1.5">
-                  <AlertTriangle className="w-3.5 h-3.5 text-[#C62828]" />
-                  Perhatian Stok
+                <div className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#9E2A20] flex items-center gap-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  <span>BON PERINGATAN GUDANG</span>
                 </div>
-                <h3 className="text-base font-bold text-[#2E1F16] mt-0.5">
-                  Bahan Kritis / Menipis
+                <h3 className="font-serif text-lg font-medium text-[#1A1411] mt-0.5">
+                  Saldo di Bawah Minimum
                 </h3>
               </div>
-              <span className="text-xs font-bold text-[#C62828] bg-[#FFEBEE] px-2 py-0.5 rounded-full">
-                {criticalItems.length} SKU
+              <span className="font-mono text-[10px] font-bold text-[#9E2A20] bg-[#FCEAE8] border border-[#E6B8B3] px-2 py-0.5">
+                {criticalItems.length} ITEM
               </span>
             </div>
 
@@ -335,101 +412,118 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
               {criticalItems.map((item, idx) => (
                 <div
                   key={idx}
-                  className="p-3 rounded-xl border border-[#F3E7DC] bg-[#FCFAF7] hover:border-[#D5C5B5] transition"
+                  className="p-3 border border-[#E2D8C8] bg-[#F8F4EC]"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#2E1F16] truncate max-w-[170px]">
-                      {item.product.name}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-[10px] font-semibold text-[#7A6858]">
+                      {item.product.sku}
                     </span>
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#FFEBEE] text-[#C62828] border border-[#FFCDD2] shrink-0">
-                      Kritis
+                    <span className="font-mono text-[10px] font-bold text-[#9E2A20]">
+                      KURANG {item.deficit} {item.product.unit}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between mt-2 text-[11px] text-[#7A685B]">
-                    <span className="flex items-center gap-1 text-[10px] text-[#8C7665]">
-                      <Warehouse className="w-3 h-3" />
-                      {item.warehouse.name}
+                  <div className="text-xs font-bold text-[#1A1411] mt-0.5">
+                    {item.product.name}
+                  </div>
+                  <div className="flex items-center justify-between mt-2 font-mono text-[10px] text-[#6E5E50]">
+                    <span className="flex items-center gap-1 truncate">
+                      <Warehouse className="w-3 h-3 shrink-0" />
+                      <span className="truncate">{item.warehouse.name}</span>
                     </span>
-                    <span className="font-bold text-[#C62828]">
-                      {item.currentStock} / Min {item.minStock}{" "}
-                      {item.product.unit}
+                    <span className="font-bold text-[#1A1411] shrink-0">
+                      {item.currentStock} / {item.minStock} {item.product.unit}
                     </span>
+                  </div>
+                  {/* Bar Indikator Deplesi Stok */}
+                  <div className="w-full h-1.5 bg-[#E5DEC9] mt-2 overflow-hidden">
+                    <div
+                      style={{ width: `${item.fillRatio}%` }}
+                      className="h-full bg-[#9E2A20]"
+                    />
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="pt-4 border-t border-[#F0E7DD] mt-4">
+          <div className="pt-4 border-t border-[#DFD6C7] mt-4">
             <button
               onClick={() => onNavigate("purchase-requests")}
               type="button"
-              className="w-full py-2.5 px-3 rounded-xl bg-[#5A3825] hover:bg-[#432718] text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+              className="w-full py-2.5 px-3 bg-[#1F1612] hover:bg-[#33241D] text-[#F7F3EC] font-mono text-[11px] uppercase tracking-wider font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer"
             >
-              <span>+ Buat Permintaan Pembelian</span>
-              <ArrowUpRight className="w-4 h-4" />
+              <span>Susun PR Pengadaan Baru</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Tabel Transaksi Terkini Sesuai Figma Screen 2 */}
-      <div className="bg-white rounded-2xl border border-[#EDE4D8] p-5 sm:p-6 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#F0E7DD] pb-4 mb-4">
+      {/* 4. Jurnal Ekspedisi Dokumen (Tabel Riwayat Transaksi) */}
+      <div className="bg-[#FDFBF7] border border-[#D8CFC0]">
+        <div className="p-5 sm:p-6 border-b border-[#DFD6C7] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-[#8C7665]">
-              Riwayat Sistem
+            <div className="font-mono text-[10px] font-semibold uppercase tracking-widest text-[#7A6858]">
+              JURNAL EKSPEDISI DOKUMEN
             </div>
-            <h3 className="text-base font-bold text-[#2E1F16] mt-0.5">
-              Transaksi Terkini
+            <h3 className="font-serif text-lg font-medium text-[#1A1411] mt-0.5">
+              Mutasi Dokumen Pengadaan Terkini
             </h3>
           </div>
-          <div className="text-xs text-[#8C7665]">
-            Siklus: PR → Approval → PO → Goods Receipt
+          <div className="font-mono text-[11px] text-[#6E5E50] bg-[#F4EFE4] border border-[#DFD6C7] px-3 py-1.5">
+            ALUR BAKU: PR → APPROVAL → PO → GOODS RECEIPT
           </div>
         </div>
 
-        {/* Tabel Responsif */}
-        <div className="overflow-x-auto -mx-5 sm:mx-0">
+        <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-[#EDE4D8] text-[#8C7665] font-bold uppercase text-[10px] tracking-wider">
-                <th className="py-3 px-4">No. Dokumen</th>
-                <th className="py-3 px-4">Jenis Dokumen</th>
-                <th className="py-3 px-4">Gudang Tujuan</th>
-                <th className="py-3 px-4">Tanggal</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right">Aksi</th>
+              <tr className="border-b border-[#DFD6C7] bg-[#F6F2E9] font-mono text-[10px] text-[#6E5E50] uppercase tracking-wider">
+                <th className="py-3 px-5 font-semibold">No. Registrasi</th>
+                <th className="py-3 px-4 font-semibold">Tahap Siklus</th>
+                <th className="py-3 px-4 font-semibold">Gudang Tujuan</th>
+                <th className="py-3 px-4 font-semibold">Tanggal Catat</th>
+                <th className="py-3 px-4 font-semibold">Status Dokumen</th>
+                <th className="py-3 px-5 text-right font-semibold">Berkas</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#F5EDE4]">
+            <tbody className="divide-y divide-[#EAE3D5]">
               {recentTransactions.map((tx) => (
                 <tr
                   key={tx.id}
-                  className="hover:bg-[#FAF7F2] transition text-[#2E1F16]"
+                  className="hover:bg-[#F7F3EA] transition text-[#1A1411]"
                 >
-                  <td className="py-3 px-4 font-mono font-bold text-[#5A3825]">
+                  <td className="py-3.5 px-5 font-mono font-bold text-[#1A1411] whitespace-nowrap">
                     {tx.number}
                   </td>
-                  <td className="py-3 px-4 font-medium text-[#4A382C]">
-                    {tx.type}
+                  <td className="py-3.5 px-4 whitespace-nowrap">
+                    <span className="font-mono text-[10px] text-[#7A6858] block">
+                      {tx.stage}
+                    </span>
+                    <span className="font-medium text-[#2E231C]">
+                      {tx.type}
+                    </span>
                   </td>
-                  <td className="py-3 px-4 text-[#6A574A]">{tx.warehouse}</td>
-                  <td className="py-3 px-4 text-[#8C7665]">{tx.date}</td>
-                  <td className="py-3 px-4">
+                  <td className="py-3.5 px-4 text-[#4A3B30] whitespace-nowrap">
+                    {tx.warehouse}
+                  </td>
+                  <td className="py-3.5 px-4 font-mono text-[11px] text-[#6E5E50] whitespace-nowrap">
+                    {tx.date}
+                  </td>
+                  <td className="py-3.5 px-4 whitespace-nowrap">
                     <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${tx.statusColor} whitespace-nowrap`}
+                      className={`px-2 py-0.5 font-mono text-[10px] font-bold border ${tx.statusStyle}`}
                     >
                       {tx.status}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-right">
+                  <td className="py-3.5 px-5 text-right whitespace-nowrap">
                     <button
                       onClick={() => onNavigate(tx.targetTab)}
                       type="button"
-                      className="text-xs text-[#5A3825] hover:text-[#2E1F16] font-bold hover:underline inline-flex items-center gap-1"
+                      className="font-mono text-[11px] text-[#5A3825] hover:text-[#1A1411] font-semibold inline-flex items-center gap-1 cursor-pointer"
                     >
-                      <span>Lihat</span>
+                      <span>BUKA</span>
                       <ArrowUpRight className="w-3.5 h-3.5" />
                     </button>
                   </td>
