@@ -16,6 +16,7 @@ import { NavigationTab } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 import { useKernel } from "@/kernel/KernelContext";
 import { PluginCategory } from "@/kernel/types";
+import { TranslationKey } from "@/kernel/i18n";
 
 interface SidebarProps {
   activeTab: NavigationTab;
@@ -34,11 +35,22 @@ const PLUGIN_ICON_MAP: Record<NavigationTab, React.ElementType> = {
   "control-panel": Sliders,
 };
 
-const CATEGORY_TITLES: { key: PluginCategory; label: string }[] = [
-  { key: "CORE_OVERVIEW", label: "IKHTISAR & MASTER" },
-  { key: "PROCUREMENT_FLOW", label: "SIKLUS TRANSAKSI" },
-  { key: "WAREHOUSE_AUDIT", label: "GUDANG & KEPATUHAN" },
-  { key: "SYSTEM_EXTENSION", label: "KERNEL & KONFIGURASI" },
+const PLUGIN_NAME_KEY_MAP: Record<NavigationTab, TranslationKey> = {
+  dashboard: "plugin.dashboard.name",
+  products: "plugin.products.name",
+  "purchase-requests": "plugin.purchaseRequests.name",
+  "purchase-orders": "plugin.purchaseOrders.name",
+  "goods-receipts": "plugin.goodsReceipts.name",
+  inventory: "plugin.inventory.name",
+  "audit-logs": "plugin.auditLogs.name",
+  "control-panel": "plugin.controlPanel.name",
+};
+
+const CATEGORY_TITLES: { key: PluginCategory; labelKey: TranslationKey }[] = [
+  { key: "CORE_OVERVIEW", labelKey: "nav.cat.overview" },
+  { key: "PROCUREMENT_FLOW", labelKey: "nav.cat.procurement" },
+  { key: "WAREHOUSE_AUDIT", labelKey: "nav.cat.warehouse" },
+  { key: "SYSTEM_EXTENSION", labelKey: "nav.cat.system" },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -47,7 +59,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onCloseMobile,
 }) => {
   const { currentUser, switchRole, logout } = useAuth();
-  const { enabledPlugins, branding } = useKernel();
+  const { enabledPlugins, branding, t } = useKernel();
 
   const handleTabClick = (tab: NavigationTab): void => {
     onSelectTab(tab);
@@ -116,7 +128,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         className="px-4 py-3 border-b"
       >
         <div className="font-mono text-[9px] uppercase tracking-widest opacity-60 mb-1.5">
-          OTORISASI PETUGAS AKTIF
+          {t("common.activeStaff")}
         </div>
         <div className="flex items-center justify-between gap-2">
           {currentUser.role === "APPROVER" ? (
@@ -133,10 +145,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
             type="button"
             style={{ borderColor: "var(--kr-border-sidebar)" }}
             className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider opacity-85 hover:opacity-100 px-2 py-1 transition border cursor-pointer shrink-0"
-            title="Ubah role untuk menguji otorisasi USER vs APPROVER"
+            title="Switch Role (USER / APPROVER)"
           >
             <ArrowRightLeft className="w-3 h-3" />
-            <span>Ganti</span>
+            <span>{t("common.switchRole")}</span>
           </button>
         </div>
       </div>
@@ -153,12 +165,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
           return (
             <div key={cat.key}>
               <div className="px-2.5 pb-1.5 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] opacity-55">
-                {cat.label}
+                {t(cat.labelKey)}
               </div>
               <div className="space-y-0.5">
                 {groupItems.map((item) => {
                   const Icon = PLUGIN_ICON_MAP[item.id] ?? Package;
                   const isActive = activeTab === item.id;
+                  const translatedName = t(
+                    PLUGIN_NAME_KEY_MAP[item.id] ?? "plugin.dashboard.name",
+                  );
                   const badge =
                     item.id === "purchase-requests" &&
                     currentUser.role === "APPROVER"
@@ -199,7 +214,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           }}
                           className="w-3.5 h-3.5 shrink-0"
                         />
-                        <span className="truncate">{item.name}</span>
+                        <span className="truncate">{translatedName}</span>
                       </div>
                       {badge && (
                         <span className="font-mono text-[9px] font-bold px-1.5 py-0.5 bg-[#7C2D23] text-[#FCE8E6] border border-[#A64236] shrink-0">
@@ -251,7 +266,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={logout}
             type="button"
             className="p-1.5 opacity-70 hover:opacity-100 hover:text-[#E57373] transition cursor-pointer shrink-0"
-            title="Tutup Buku Kerja (Logout)"
+            title="Logout"
           >
             <LogOut className="w-4 h-4" />
           </button>

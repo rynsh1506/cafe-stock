@@ -8,6 +8,7 @@ import React, {
 import { NavigationTab } from "@/types";
 import {
   BrandingConfig,
+  DatabaseConnectionConfig,
   EmailDispatchLog,
   EmailNotificationConfig,
   IndustryPresetId,
@@ -22,6 +23,13 @@ import {
   KERNEL_PLUGINS,
   THEME_PALETTES,
 } from "@/kernel/registry";
+import {
+  BUILTIN_TRANSLATIONS,
+  LocaleCode,
+  SUPPORTED_LOCALES,
+  TranslationDictionary,
+  TranslationKey,
+} from "@/kernel/i18n";
 
 const STORAGE_KEYS = {
   ENABLED_PLUGINS: "kr_enabled_plugins_v1",
@@ -30,7 +38,18 @@ const STORAGE_KEYS = {
   BRANDING: "kr_branding_v1",
   EMAIL_CONFIG: "kr_email_config_v1",
   EMAIL_LOGS: "kr_email_logs_v1",
+  LOCALE: "kr_locale_v1",
+  CUSTOM_DICT: "kr_custom_dict_v1",
+  DB_CONN: "kr_db_conn_v1",
 } as const;
+
+const DEFAULT_DB_CONNECTION: DatabaseConnectionConfig = {
+  mode: "LOCAL_EMBEDDED",
+  remoteEndpointUrl: "http://192.168.1.50:3000",
+  instanceToken: "kr_live_node_99482a",
+  autoSyncIntervalSec: 15,
+  lastHandshakeStatus: "STANDALONE_LOCAL",
+};
 
 const INITIAL_DISPATCH_LOGS: EmailDispatchLog[] = [
   {
@@ -78,6 +97,14 @@ interface KernelContextValue {
   branding: BrandingConfig;
   updateBranding: (partial: Partial<BrandingConfig>) => void;
   applyIndustryPreset: (presetId: IndustryPresetId) => void;
+  locale: LocaleCode;
+  setLocale: (code: LocaleCode) => void;
+  t: (key: TranslationKey) => string;
+  customTranslations: Partial<TranslationDictionary>;
+  updateCustomTranslation: (key: TranslationKey, value: string) => void;
+  resetCustomTranslations: () => void;
+  dbConnection: DatabaseConnectionConfig;
+  updateDbConnection: (partial: Partial<DatabaseConnectionConfig>) => void;
   emailConfig: EmailNotificationConfig;
   updateEmailConfig: (partial: Partial<EmailNotificationConfig>) => void;
   toggleEmailTrigger: (
@@ -130,6 +157,27 @@ export const KernelProvider: React.FC<{ children: React.ReactNode }> = ({
     ),
   );
 
+  const [locale, setLocaleState] = useState<LocaleCode>(() =>
+    readPersistedJson<LocaleCode>(STORAGE_KEYS.LOCALE, "id"),
+  );
+
+  const [customTranslations, setCustomTranslations] = useState<
+    Partial<TranslationDictionary>
+  >(() =>
+    readPersistedJson<Partial<TranslationDictionary>>(
+      STORAGE_KEYS.CUSTOM_DICT,
+      {},
+    ),
+  );
+
+  const [dbConnection, setDbConnection] = useState<DatabaseConnectionConfig>(
+    () =>
+      readPersistedJson<DatabaseConnectionConfig>(
+        STORAGE_KEYS.DB_CONN,
+        DEFAULT_DB_CONNECTION,
+      ),
+  );
+
   const [emailConfig, setEmailConfig] = useState<EmailNotificationConfig>(() =>
     readPersistedJson<EmailNotificationConfig>(
       STORAGE_KEYS.EMAIL_CONFIG,
@@ -160,7 +208,6 @@ export const KernelProvider: React.FC<{ children: React.ReactNode }> = ({
     [baseTheme, customColors],
   );
 
-  // Inject CSS Variables into :root for 0ms real-time theme & color palette switching
   useEffect(() => {
     const root = document.documentElement;
     root.style.setProperty("--kr-bg-main", activeColors.bgMain);
@@ -180,10 +227,10 @@ export const KernelProvider: React.FC<{ children: React.ReactNode }> = ({
     root.style.setProperty("--kr-accent-text", activeColors.accentText);
   }, [activeColors]);
 
-  // Dynamically synchronize window document title with Branding Config
   useEffect(() => {
     document.title = `${branding.appName} — ${branding.appSubtitle}`;
-  }, [branding.appName, branding.appSubtitle]);
+    document.documentElement.lang = locale;
+  }, [branding.appName, branding.appSubtitle, locale]);
 
   const persistWithTiming = <T,>(key: string, value: T): void => {
     const t0 = performance.now();
@@ -194,6 +241,56 @@ export const KernelProvider: React.FC<{ children: React.ReactNode }> = ({
     }
     const elapsed = Number(Math.max(0.08, performance.now() - t0).toFixed(2));
     setLastWriteMs(elapsed);
+  };
+
+  const setLocale = (code: LocaleCode): void => {
+    if (!SUPPORTED_LOCALES.some((l) => l.code === code)) {
+      return;
+    }
+    setLocaleState(code);
+    persistWithTiming(STORAGE_KEYS.LOCALE, code);
+  };
+
+  const t = (key: TranslationKey): string => {
+    const customVal = customTranslations[key];
+    if (customVal && customVal.trim().length > 0) {
+      return customVal;
+    }
+    const dict = BUILTIN_TRANSLATIONS[locale] ?? BUILTIN_TRANSLATIONS.id;
+    return dict[key] ?? BUILTIN_TRANSLATIONS.id[key];
+  };
+
+  const updateCustomTranslation = (
+    key: TranslationKey,
+    value: string,
+  ): void => {
+    setCustomTranslations((prev) => {
+      const next = { ...prev, [key]: value };
+      persistWithTiming(STORAGE_KEYS.CUSTOM_DICT, next);
+      return next;
+    });
+  };
+
+  const resetCustomTranslations = (): void => {
+    setCustomTranslations({});
+    persistWithTiming(STORAGE_KEYS.CUSTOM_DICT, {});
+  };
+
+  const updateDbConnection = (
+    partial: Partial<DatabaseConnectionConfig>,
+  ): void => {
+    setDbConnection((prev) => {
+      const next: DatabaseConnectionConfig = {
+        ...prev,
+        ...partial,
+        lastHandshakeStatus:
+          (partial.mode ?? prev.mode) === "REMOTE_SERVER_NODE"
+            ? "CONNECTED"
+            : "STANDALONE_LOCAL",
+      };
+      persistWithTiming(STORAGE_KEYS.DB_CONN, next);
+      return next;
+    });
   };
 
   const isPluginEnabled = (id: NavigationTab): boolean => {
@@ -290,10 +387,10 @@ export const KernelProvider: React.FC<{ children: React.ReactNode }> = ({
     });
     const newLog: EmailDispatchLog = {
       id: `mail_${Date.now()}`,
-      timestamp: `Hari ini, ${formattedTime}`,
+      timestamp: `${formattedTime}`,
       eventHook: "mailer:testDispatch",
       recipient: emailConfig.coreAdminEmail,
-      subject: `${emailConfig.subjectPrefix} Uji Koneksi Gateway dari ${branding.appName} (${branding.orgName})`,
+      subject: `${emailConfig.subjectPrefix} Test Gateway — ${branding.appName} (${branding.orgName})`,
       status: emailConfig.enabled ? "DELIVERED" : "QUEUED",
       latencyMs: 0.24,
     };
@@ -317,6 +414,9 @@ export const KernelProvider: React.FC<{ children: React.ReactNode }> = ({
     setActiveThemeId("roastery-ledger");
     setCustomColors({});
     setBranding(INDUSTRY_PRESETS.ROASTERY_CAFE);
+    setLocaleState("id");
+    setCustomTranslations({});
+    setDbConnection(DEFAULT_DB_CONNECTION);
     setEmailConfig(DEFAULT_EMAIL_CONFIG);
     setEmailLogs(INITIAL_DISPATCH_LOGS);
     Object.values(STORAGE_KEYS).forEach((k) => {
@@ -334,9 +434,15 @@ export const KernelProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   const storageMetrics: KernelStorageMetrics = {
-    engineName: "Tauri Native LocalStore + Memory WAL",
-    journalMode: "SYNCHRONOUS_ZERO_COPY",
-    avgReadLatencyMs: 0.09,
+    engineName:
+      dbConnection.mode === "LOCAL_EMBEDDED"
+        ? "Tauri Native LocalStore + Memory WAL"
+        : `Hybrid Sync → ${dbConnection.remoteEndpointUrl}`,
+    journalMode:
+      dbConnection.mode === "LOCAL_EMBEDDED"
+        ? "SYNCHRONOUS_ZERO_COPY"
+        : "REMOTE_WAL_REPLICATION",
+    avgReadLatencyMs: dbConnection.mode === "LOCAL_EMBEDDED" ? 0.09 : 1.45,
     avgWriteLatencyMs: lastWriteMs,
     persistedKeysCount: Object.keys(STORAGE_KEYS).length,
   };
@@ -357,6 +463,14 @@ export const KernelProvider: React.FC<{ children: React.ReactNode }> = ({
         branding,
         updateBranding,
         applyIndustryPreset,
+        locale,
+        setLocale,
+        t,
+        customTranslations,
+        updateCustomTranslation,
+        resetCustomTranslations,
+        dbConnection,
+        updateDbConnection,
         emailConfig,
         updateEmailConfig,
         toggleEmailTrigger,

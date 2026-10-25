@@ -1,8 +1,9 @@
 import React from "react";
-import { Coffee, Menu, X, ArrowRightLeft, Sliders } from "lucide-react";
+import { Coffee, Menu, X, ArrowRightLeft, Sliders, Globe } from "lucide-react";
 import { NavigationTab } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 import { useKernel } from "@/kernel/KernelContext";
+import { LocaleCode, SUPPORTED_LOCALES, TranslationKey } from "@/kernel/i18n";
 
 interface MobileHeaderProps {
   activeTab: NavigationTab;
@@ -11,6 +12,17 @@ interface MobileHeaderProps {
   onSelectTab: (tab: NavigationTab) => void;
 }
 
+const PLUGIN_NAME_KEY_MAP: Record<NavigationTab, TranslationKey> = {
+  dashboard: "plugin.dashboard.name",
+  products: "plugin.products.name",
+  "purchase-requests": "plugin.purchaseRequests.name",
+  "purchase-orders": "plugin.purchaseOrders.name",
+  "goods-receipts": "plugin.goodsReceipts.name",
+  inventory: "plugin.inventory.name",
+  "audit-logs": "plugin.auditLogs.name",
+  "control-panel": "plugin.controlPanel.name",
+};
+
 export const MobileHeader: React.FC<MobileHeaderProps> = ({
   activeTab,
   isDrawerOpen,
@@ -18,16 +30,23 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   onSelectTab,
 }) => {
   const { currentUser, switchRole } = useAuth();
-  const { plugins, branding } = useKernel();
+  const { plugins, branding, locale, setLocale, t } = useKernel();
 
   const currentPlugin = plugins.find((p) => p.id === activeTab);
   const titleText = currentPlugin
-    ? `${currentPlugin.code} // ${currentPlugin.name}`
+    ? `${currentPlugin.code} // ${t(PLUGIN_NAME_KEY_MAP[activeTab])}`
     : branding.appName;
 
   const toggleRole = (): void => {
     const nextRole = currentUser.role === "USER" ? "APPROVER" : "USER";
     switchRole(nextRole);
+  };
+
+  const cycleLocale = (): void => {
+    const idx = SUPPORTED_LOCALES.findIndex((l) => l.code === locale);
+    const nextLocale: LocaleCode =
+      SUPPORTED_LOCALES[(idx + 1) % SUPPORTED_LOCALES.length].code;
+    setLocale(nextLocale);
   };
 
   return (
@@ -37,15 +56,15 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
         color: "var(--kr-text-sidebar)",
         borderColor: "var(--kr-border-sidebar)",
       }}
-      className="md:hidden sticky top-0 z-40 border-b px-3.5 py-2.5 flex items-center justify-between"
+      className="md:hidden sticky top-0 z-40 border-b px-3 py-2.5 flex items-center justify-between"
     >
-      <div className="flex items-center gap-2.5 min-w-0">
+      <div className="flex items-center gap-2 min-w-0">
         <button
           onClick={onToggleDrawer}
           type="button"
           style={{ color: "var(--kr-accent)" }}
           className="p-1.5 -ml-1 transition shrink-0"
-          aria-label="Buka Navigasi"
+          aria-label="Open Navigation"
         >
           {isDrawerOpen ? (
             <X className="w-5 h-5" />
@@ -76,6 +95,18 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
       </div>
 
       <div className="flex items-center gap-1.5 shrink-0">
+        {/* 1-Click Mobile Language Cycle */}
+        <button
+          onClick={cycleLocale}
+          type="button"
+          style={{ borderColor: "var(--kr-border-sidebar)" }}
+          className="px-1.5 py-1 border font-mono text-[10px] font-bold uppercase flex items-center gap-1"
+          title="Switch Language (ID / EN / JA)"
+        >
+          <Globe className="w-3 h-3" />
+          <span>{locale.toUpperCase()}</span>
+        </button>
+
         <button
           onClick={() => onSelectTab("control-panel")}
           type="button"
@@ -85,10 +116,11 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
               activeTab === "control-panel" ? "var(--kr-accent)" : undefined,
           }}
           className="p-1.5 border transition"
-          title="Panel Kontrol Sistem"
+          title={t("common.controlPanel")}
         >
           <Sliders className="w-3.5 h-3.5" />
         </button>
+
         <button
           onClick={toggleRole}
           type="button"
@@ -97,7 +129,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
               ? "bg-[#3B2616] text-[#F0C18C] border-[#6E472A]"
               : "bg-[#1B2C3B] text-[#9AC7EE] border-[#2F4E68]"
           }`}
-          title="Beralih Role"
+          title={t("common.switchRole")}
         >
           <ArrowRightLeft className="w-2.5 h-2.5 shrink-0" />
           <span>{currentUser.role}</span>

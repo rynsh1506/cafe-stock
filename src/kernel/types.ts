@@ -97,3 +97,13 @@ export interface KernelStorageMetrics {
   avgWriteLatencyMs: number;
   persistedKeysCount: number;
 }
+
+export type DatabaseConnectionMode = "LOCAL_EMBEDDED" | "REMOTE_SERVER_NODE";
+
+export interface DatabaseConnectionConfig {
+  mode: DatabaseConnectionMode;
+  remoteEndpointUrl: string;
+  instanceToken: string;
+  autoSyncIntervalSec: number;
+  lastHandshakeStatus: "CONNECTED" | "STANDALONE_LOCAL";
+}
