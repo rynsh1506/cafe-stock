@@ -17,10 +17,14 @@ import { useStore } from "@/context/StoreContext";
 import { TranslationKey } from "@/kernel/i18n";
 
 export const LoginPage: React.FC = () => {
-  const { hasInitializedAccount, registerAccount, loginWithPassword } =
-    useAuth();
+  const {
+    hasInitializedAccount,
+    registerAccount,
+    loginWithPassword,
+    resetAllAccounts,
+  } = useAuth();
   const { branding, locale, availableLocales, setLocale, t } = useKernel();
-  const { warehouses } = useStore();
+  const { warehouses, wipeAllDatabase } = useStore();
 
   const [mode, setMode] = useState<"LOGIN" | "REGISTER">(
     hasInitializedAccount ? "LOGIN" : "REGISTER",
@@ -636,7 +640,7 @@ export const LoginPage: React.FC = () => {
 
               <div
                 style={{ borderColor: "var(--kr-border)" }}
-                className="pt-4 border-t text-center"
+                className="pt-4 border-t flex flex-col sm:flex-row items-center justify-between gap-2 text-center"
               >
                 <button
                   type="button"
@@ -647,6 +651,20 @@ export const LoginPage: React.FC = () => {
                   className="font-mono text-xs underline cursor-pointer"
                 >
                   {t("login.switchToRegister")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setErrorMessage("");
+                    setPendingNotice("");
+                    wipeAllDatabase();
+                    resetAllAccounts();
+                    setMode("REGISTER");
+                  }}
+                  style={{ color: "var(--kr-text-muted)" }}
+                  className="font-mono text-[10px] hover:underline cursor-pointer"
+                >
+                  [{t("common.reset")} DB]
                 </button>
               </div>
             </form>

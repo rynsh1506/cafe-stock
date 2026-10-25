@@ -8,12 +8,25 @@ import {
   PurchaseOrder,
   PurchaseRequest,
   Supplier,
+  UserRole,
   Warehouse,
 } from "@/types";
+
+export interface SqliteUserRow {
+  id: string;
+  name: string;
+  username: string;
+  email: string;
+  role: UserRole;
+  passwordHash: string;
+  status?: "ACTIVE" | "PENDING" | "REJECTED";
+  createdAt: string;
+}
 
 export interface DatabaseSnapshot {
   version: number;
   updatedAt: string;
+  users?: SqliteUserRow[];
   products: Product[];
   suppliers: Supplier[];
   warehouses: Warehouse[];
@@ -47,6 +60,7 @@ const LEGACY_MOCK_KEYS = [
 ];
 
 export const DB_TABLE_KEYS = {
+  USERS: "users",
   PRODUCTS: "products",
   SUPPLIERS: "suppliers",
   WAREHOUSES: "warehouses",
@@ -62,7 +76,7 @@ const IDB_NAME = "cafe_stock_db";
 const IDB_STORE = "tables";
 
 /**
- * Purges legacy v1 mock keys so old pre-populated dummy data is removed.
+ * Purges legacy v1/v2 mock keys so old pre-populated dummy data is removed.
  */
 export function purgeLegacyMockStorage(): void {
   try {
@@ -116,22 +130,93 @@ export function writeTableSync<T>(tableKey: string, rows: T): void {
   }
 }
 
+/**
+ * Persists user accounts directly into the `users` table of `database/cafe_stock.sqlite`.
+ */
+export async function syncUsersToSqliteDatabase(
+  users: SqliteUserRow[],
+): Promise<void> {
+  writeTableSync(DB_TABLE_KEYS.USERS, users);
+  try {
+    await fetch("/api/sqlite/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ users }),
+    });
+  } catch {
+    // Fallback when running as standalone packaged Tauri binary without Vite dev server
+  }
+}
+
+/**
+ * Loads user accounts from the `users` table in `database/cafe_stock.sqlite`.
+ */
+export async function loadUsersFromSqliteDatabase(): Promise<
+  SqliteUserRow[] | null
+> {
+  try {
+    const res = await fetch("/api/sqlite/snapshot");
+    if (res.ok) {
+      const data = (await res.json()) as {
+        ok: boolean;
+        snapshot?: DatabaseSnapshot;
+      };
+      if (data.ok && data.snapshot && Array.isArray(data.snapshot.users)) {
+        return data.snapshot.users;
+      }
+    }
+  } catch {
+    // ignore fetch error in standalone packaged binary
+  }
+  return null;
+}
+
 export async function syncSnapshotToNativeDatabase(
   snapshot: DatabaseSnapshot,
 ): Promise<string | null> {
   writeIndexedDbSnapshot(snapshot);
+  try {
+    const res = await fetch("/api/sqlite/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(snapshot),
+    });
+    if (res.ok) {
+      const data = (await res.json()) as { ok: boolean; dbPath?: string };
+      if (data.ok && data.dbPath) {
+        return data.dbPath;
+      }
+    }
+  } catch {
+    // Fallback to Tauri native invoke below
+  }
+
   try {
     const filePath = await invoke<string>("db_save_snapshot", {
       payload: JSON.stringify(snapshot, null, 2),
     });
     return filePath;
   } catch {
-    // Running in browser dev mode outside Tauri binary; IndexedDB + local table storage handles persistence
     return null;
   }
 }
 
 export async function loadSnapshotFromNativeDatabase(): Promise<DatabaseSnapshot | null> {
+  try {
+    const res = await fetch("/api/sqlite/snapshot");
+    if (res.ok) {
+      const data = (await res.json()) as {
+        ok: boolean;
+        snapshot?: DatabaseSnapshot;
+      };
+      if (data.ok && data.snapshot) {
+        return data.snapshot;
+      }
+    }
+  } catch {
+    // Fallback to Tauri native invoke below
+  }
+
   try {
     const raw = await invoke<string | null>("db_load_snapshot");
     if (!raw) {
@@ -143,7 +228,17 @@ export async function loadSnapshotFromNativeDatabase(): Promise<DatabaseSnapshot
   }
 }
 
-export async function clearNativeDatabase(): Promise<void> {
+export async function clearNativeDatabase(includeUsers = false): Promise<void> {
+  try {
+    await fetch("/api/sqlite/wipe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ includeUsers }),
+    });
+  } catch {
+    // ignore when offline
+  }
+
   try {
     await invoke("db_clear_snapshot");
   } catch {
@@ -162,6 +257,7 @@ function escSql(val: string | undefined | null): string {
  * Generates portable SQL DDL + INSERT statements compatible with SQLite3, PostgreSQL, and MariaDB.
  */
 export function generatePortableSqlDump(snapshot: DatabaseSnapshot): string {
+  const users = readTableSync<SqliteUserRow[]>(DB_TABLE_KEYS.USERS, []);
   const lines: string[] = [
     "-- ============================================================================",
     "-- PORTABLE SQL DATABASE DUMP (SQLite3 / PostgreSQL / MariaDB Compatible)",
@@ -169,6 +265,17 @@ export function generatePortableSqlDump(snapshot: DatabaseSnapshot): string {
     "-- ============================================================================",
     "",
     "BEGIN TRANSACTION;",
+    "",
+    "CREATE TABLE IF NOT EXISTS users (",
+    "  id VARCHAR(64) PRIMARY KEY,",
+    "  name VARCHAR(120) NOT NULL,",
+    "  username VARCHAR(64) NOT NULL UNIQUE,",
+    "  email VARCHAR(120) NOT NULL UNIQUE,",
+    "  role VARCHAR(32) NOT NULL,",
+    "  password_hash VARCHAR(255) NOT NULL,",
+    "  status VARCHAR(32) NOT NULL DEFAULT 'ACTIVE',",
+    "  created_at VARCHAR(64) NOT NULL",
+    ");",
     "",
     "CREATE TABLE IF NOT EXISTS warehouses (",
     "  id VARCHAR(64) PRIMARY KEY,",
@@ -234,6 +341,11 @@ export function generatePortableSqlDump(snapshot: DatabaseSnapshot): string {
     "",
   ];
 
+  for (const u of users) {
+    lines.push(
+      `INSERT INTO users (id, name, username, email, role, password_hash, status, created_at) VALUES (${escSql(u.id)}, ${escSql(u.name)}, ${escSql(u.username)}, ${escSql(u.email)}, ${escSql(u.role)}, ${escSql(u.passwordHash)}, ${escSql(u.status ?? "ACTIVE")}, ${escSql(u.createdAt)});`,
+    );
+  }
   for (const w of snapshot.warehouses) {
     lines.push(
       `INSERT INTO warehouses (id, code, name, location, is_active) VALUES (${escSql(w.id)}, ${escSql(w.code)}, ${escSql(w.name)}, ${escSql(w.location)}, ${w.isActive ? "TRUE" : "FALSE"});`,
@@ -264,9 +376,9 @@ export function generatePortableSqlDump(snapshot: DatabaseSnapshot): string {
       `INSERT INTO goods_receipts (id, gr_number, purchase_order_id, received_by, received_at) VALUES (${escSql(gr.id)}, ${escSql(gr.grNumber)}, ${escSql(gr.purchaseOrderId)}, ${escSql(gr.receivedBy)}, ${escSql(gr.receivedAt)});`,
     );
   }
-  for (const b of snapshot.inventoryBalances) {
+  for (const bal of snapshot.inventoryBalances) {
     lines.push(
-      `INSERT INTO inventory_balances (warehouse_id, product_id, stock) VALUES (${escSql(b.warehouseId)}, ${escSql(b.productId)}, ${b.stock});`,
+      `INSERT INTO inventory_balances (warehouse_id, product_id, stock) VALUES (${escSql(bal.warehouseId)}, ${escSql(bal.productId)}, ${bal.stock});`,
     );
   }
 
