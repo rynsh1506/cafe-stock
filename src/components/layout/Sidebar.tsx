@@ -8,11 +8,14 @@ import {
   Truck,
   Boxes,
   ShieldCheck,
+  Sliders,
   LogOut,
   ArrowRightLeft,
 } from "lucide-react";
 import { NavigationTab } from "@/types";
 import { useAuth } from "@/context/AuthContext";
+import { useKernel } from "@/kernel/KernelContext";
+import { PluginCategory } from "@/kernel/types";
 
 interface SidebarProps {
   activeTab: NavigationTab;
@@ -20,79 +23,31 @@ interface SidebarProps {
   onCloseMobile?: () => void;
 }
 
+const PLUGIN_ICON_MAP: Record<NavigationTab, React.ElementType> = {
+  dashboard: LayoutDashboard,
+  products: Package,
+  "purchase-requests": FileText,
+  "purchase-orders": ShoppingCart,
+  "goods-receipts": Truck,
+  inventory: Boxes,
+  "audit-logs": ShieldCheck,
+  "control-panel": Sliders,
+};
+
+const CATEGORY_TITLES: { key: PluginCategory; label: string }[] = [
+  { key: "CORE_OVERVIEW", label: "IKHTISAR & MASTER" },
+  { key: "PROCUREMENT_FLOW", label: "SIKLUS TRANSAKSI" },
+  { key: "WAREHOUSE_AUDIT", label: "GUDANG & KEPATUHAN" },
+  { key: "SYSTEM_EXTENSION", label: "KERNEL & KONFIGURASI" },
+];
+
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   onSelectTab,
   onCloseMobile,
 }) => {
   const { currentUser, switchRole, logout } = useAuth();
-
-  const navGroups = [
-    {
-      groupTitle: "IKHTISAR & KATALOG",
-      items: [
-        {
-          code: "01",
-          id: "dashboard" as NavigationTab,
-          label: "Buku Ikhtisar",
-          icon: LayoutDashboard,
-          badge: undefined,
-        },
-        {
-          code: "02",
-          id: "products" as NavigationTab,
-          label: "Katalog Bahan Baku",
-          icon: Package,
-          badge: undefined,
-        },
-      ],
-    },
-    {
-      groupTitle: "SIKLUS PENGADAAN",
-      items: [
-        {
-          code: "03",
-          id: "purchase-requests" as NavigationTab,
-          label: "Purchase Request",
-          icon: FileText,
-          badge: currentUser.role === "APPROVER" ? "1 REVIEW" : undefined,
-        },
-        {
-          code: "04",
-          id: "purchase-orders" as NavigationTab,
-          label: "Purchase Order",
-          icon: ShoppingCart,
-          badge: undefined,
-        },
-        {
-          code: "05",
-          id: "goods-receipts" as NavigationTab,
-          label: "Timbang Terima (GR)",
-          icon: Truck,
-          badge: undefined,
-        },
-      ],
-    },
-    {
-      groupTitle: "GUDANG & KEPATUHAN",
-      items: [
-        {
-          code: "06",
-          id: "inventory" as NavigationTab,
-          label: "Kartu Stok Gudang",
-          icon: Boxes,
-          badge: undefined,
-        },
-        {
-          code: "07",
-          id: "audit-logs" as NavigationTab,
-          label: "Jurnal Audit",
-          icon: ShieldCheck,
-          badge: undefined,
-        },
-      ],
-    },
-  ];
+  const { enabledPlugins, branding } = useKernel();
 
   const handleTabClick = (tab: NavigationTab): void => {
     onSelectTab(tab);
@@ -107,30 +62,60 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   return (
-    <aside className="w-full md:w-64 bg-[#191310] text-[#EBE4DA] flex flex-col h-full border-r border-[#332720] select-none">
-      {/* Brand Stamp Header */}
-      <div className="px-5 py-4 border-b border-[#332720] flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-[#2A1E18] border border-[#523A2C] flex items-center justify-center text-[#D49B6A] shrink-0">
+    <aside
+      style={{
+        backgroundColor: "var(--kr-bg-sidebar)",
+        color: "var(--kr-text-sidebar)",
+        borderColor: "var(--kr-border-sidebar)",
+      }}
+      className="w-full md:w-64 flex flex-col h-full border-r select-none transition-colors duration-150"
+    >
+      {/* Dynamic White-Label Brand Stamp Header */}
+      <div
+        style={{ borderColor: "var(--kr-border-sidebar)" }}
+        className="px-5 py-4 border-b flex items-center justify-between"
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <div
+            style={{
+              backgroundColor: "var(--kr-bg-sidebar-header)",
+              borderColor: "var(--kr-border-sidebar)",
+              color: "var(--kr-accent)",
+            }}
+            className="w-9 h-9 border flex items-center justify-center shrink-0"
+          >
             <Coffee className="w-4 h-4" />
           </div>
-          <div>
-            <div className="font-serif font-semibold text-lg tracking-tight text-[#F7F3EC] flex items-center gap-2 leading-none">
-              CafeStock
-              <span className="font-mono text-[9px] font-medium uppercase px-1.5 py-0.5 bg-[#2A1E18] text-[#C89666] border border-[#473225]">
-                v1.0
+          <div className="min-w-0">
+            <div className="font-serif font-semibold text-lg tracking-tight flex items-center gap-2 leading-none truncate">
+              <span className="truncate">{branding.appName}</span>
+              <span
+                style={{
+                  backgroundColor: "var(--kr-bg-sidebar-header)",
+                  borderColor: "var(--kr-border-sidebar)",
+                  color: "var(--kr-accent)",
+                }}
+                className="font-mono text-[9px] font-medium uppercase px-1.5 py-0.5 border shrink-0"
+              >
+                KERNEL
               </span>
             </div>
-            <div className="font-mono text-[10px] uppercase tracking-widest text-[#8C7A6B] mt-1">
-              Roastery Ledger
+            <div className="font-mono text-[10px] uppercase tracking-widest opacity-65 mt-1 truncate">
+              {branding.appSubtitle}
             </div>
           </div>
         </div>
       </div>
 
       {/* Otorisasi Role Shift */}
-      <div className="px-4 py-3 bg-[#140F0C] border-b border-[#2E221B]">
-        <div className="font-mono text-[9px] uppercase tracking-widest text-[#7D6C5E] mb-1.5">
+      <div
+        style={{
+          backgroundColor: "var(--kr-bg-sidebar-header)",
+          borderColor: "var(--kr-border-sidebar)",
+        }}
+        className="px-4 py-3 border-b"
+      >
+        <div className="font-mono text-[9px] uppercase tracking-widest opacity-60 mb-1.5">
           OTORISASI PETUGAS AKTIF
         </div>
         <div className="flex items-center justify-between gap-2">
@@ -146,7 +131,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={toggleRole}
             type="button"
-            className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-[#C8B7A6] hover:text-white bg-[#261C17] hover:bg-[#382921] px-2 py-1 transition border border-[#423127] cursor-pointer shrink-0"
+            style={{ borderColor: "var(--kr-border-sidebar)" }}
+            className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider opacity-85 hover:opacity-100 px-2 py-1 transition border cursor-pointer shrink-0"
             title="Ubah role untuk menguji otorisasi USER vs APPROVER"
           >
             <ArrowRightLeft className="w-3 h-3" />
@@ -155,61 +141,97 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* Navigation Ledger Index */}
+      {/* Dynamic Plugin-Driven Navigation Rail */}
       <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
-        {navGroups.map((group) => (
-          <div key={group.groupTitle}>
-            <div className="px-2.5 pb-1.5 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-[#7D6C5E]">
-              {group.groupTitle}
+        {CATEGORY_TITLES.map((cat) => {
+          const groupItems = enabledPlugins.filter(
+            (p) => p.category === cat.key,
+          );
+          if (groupItems.length === 0) {
+            return null;
+          }
+          return (
+            <div key={cat.key}>
+              <div className="px-2.5 pb-1.5 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] opacity-55">
+                {cat.label}
+              </div>
+              <div className="space-y-0.5">
+                {groupItems.map((item) => {
+                  const Icon = PLUGIN_ICON_MAP[item.id] ?? Package;
+                  const isActive = activeTab === item.id;
+                  const badge =
+                    item.id === "purchase-requests" &&
+                    currentUser.role === "APPROVER"
+                      ? "1 REVIEW"
+                      : undefined;
+
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleTabClick(item.id)}
+                      type="button"
+                      style={{
+                        backgroundColor: isActive
+                          ? "var(--kr-bg-sidebar-header)"
+                          : "transparent",
+                        borderLeftColor: isActive
+                          ? "var(--kr-accent)"
+                          : "transparent",
+                      }}
+                      className={`w-full flex items-center justify-between px-2.5 py-2 text-xs transition cursor-pointer border-l-2 ${
+                        isActive
+                          ? "font-semibold opacity-100"
+                          : "opacity-75 hover:opacity-100"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span
+                          style={{
+                            color: isActive ? "var(--kr-accent)" : undefined,
+                          }}
+                          className="font-mono text-[10px] opacity-75"
+                        >
+                          {item.code}
+                        </span>
+                        <Icon
+                          style={{
+                            color: isActive ? "var(--kr-accent)" : undefined,
+                          }}
+                          className="w-3.5 h-3.5 shrink-0"
+                        />
+                        <span className="truncate">{item.name}</span>
+                      </div>
+                      {badge && (
+                        <span className="font-mono text-[9px] font-bold px-1.5 py-0.5 bg-[#7C2D23] text-[#FCE8E6] border border-[#A64236] shrink-0">
+                          {badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            <div className="space-y-0.5">
-              {group.items.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => handleTabClick(item.id)}
-                    type="button"
-                    className={`w-full flex items-center justify-between px-2.5 py-2 text-xs transition cursor-pointer border-l-2 ${
-                      isActive
-                        ? "bg-[#281E19] text-[#F7F3EC] border-[#D49B6A] font-semibold"
-                        : "border-transparent text-[#B8A798] hover:text-[#F2ECE4] hover:bg-[#211814]"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <span
-                        className={`font-mono text-[10px] ${
-                          isActive ? "text-[#D49B6A]" : "text-[#6E5D4F]"
-                        }`}
-                      >
-                        {item.code}
-                      </span>
-                      <Icon
-                        className={`w-3.5 h-3.5 shrink-0 ${
-                          isActive ? "text-[#D49B6A]" : "text-[#8C7A6B]"
-                        }`}
-                      />
-                      <span className="truncate">{item.label}</span>
-                    </div>
-                    {item.badge && (
-                      <span className="font-mono text-[9px] font-bold px-1.5 py-0.5 bg-[#7C2D23] text-[#FCE8E6] border border-[#A64236] shrink-0">
-                        {item.badge}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </nav>
 
       {/* Petugas Footer */}
-      <div className="p-4 border-t border-[#332720] bg-[#140F0C]">
+      <div
+        style={{
+          backgroundColor: "var(--kr-bg-sidebar-header)",
+          borderColor: "var(--kr-border-sidebar)",
+        }}
+        className="p-4 border-t"
+      >
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 bg-[#2A1E18] border border-[#523A2C] flex items-center justify-center font-mono font-bold text-xs text-[#D49B6A] shrink-0">
+            <div
+              style={{
+                borderColor: "var(--kr-border-sidebar)",
+                color: "var(--kr-accent)",
+              }}
+              className="w-8 h-8 border flex items-center justify-center font-mono font-bold text-xs shrink-0"
+            >
               {currentUser.name
                 .split(" ")
                 .map((n) => n[0])
@@ -217,10 +239,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 .join("")}
             </div>
             <div className="truncate">
-              <div className="text-xs font-semibold text-[#F2ECE4] truncate">
+              <div className="text-xs font-semibold truncate">
                 {currentUser.name}
               </div>
-              <div className="font-mono text-[10px] text-[#8C7A6B] truncate">
+              <div className="font-mono text-[10px] opacity-65 truncate">
                 {currentUser.username}
               </div>
             </div>
@@ -228,7 +250,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={logout}
             type="button"
-            className="p-1.5 text-[#8C7A6B] hover:text-[#E57373] hover:bg-[#2A1E18] transition cursor-pointer shrink-0"
+            className="p-1.5 opacity-70 hover:opacity-100 hover:text-[#E57373] transition cursor-pointer shrink-0"
             title="Tutup Buku Kerja (Logout)"
           >
             <LogOut className="w-4 h-4" />

@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { NavigationTab } from "@/types";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { KernelProvider, useKernel } from "@/kernel/KernelContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { LoginPage } from "@/components/auth/LoginPage";
 import { DashboardTab } from "@/components/dashboard/DashboardTab";
+import { ControlPanelTab } from "@/components/control-panel/ControlPanelTab";
 import {
   Boxes,
   Package,
@@ -16,6 +18,7 @@ import {
 const AppContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<NavigationTab>("dashboard");
   const { isAuthenticated } = useAuth();
+  const { branding } = useKernel();
 
   if (!isAuthenticated) {
     return <LoginPage />;
@@ -27,16 +30,29 @@ const AppContent: React.FC = () => {
     description: string,
     IconComponent: React.ElementType,
   ): React.ReactNode => (
-    <div className="bg-[#FDFBF7] border border-[#D8CFC0] p-8 sm:p-12">
+    <div
+      style={{
+        backgroundColor: "var(--kr-bg-surface)",
+        borderColor: "var(--kr-border)",
+      }}
+      className="border p-8 sm:p-12"
+    >
       <div className="max-w-lg">
-        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-[#7A6858] mb-3">
-          <IconComponent className="w-3.5 h-3.5 text-[#8C6239]" />
+        <div
+          style={{ color: "var(--kr-text-muted)" }}
+          className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest mb-3"
+        >
+          <IconComponent
+            style={{ color: "var(--kr-accent)" }}
+            className="w-3.5 h-3.5"
+          />
           <span>{code}</span>
         </div>
-        <h2 className="font-serif text-2xl font-normal text-[#1A1411]">
-          {title}
-        </h2>
-        <p className="text-xs sm:text-sm text-[#6E5E50] mt-2 leading-relaxed">
+        <h2 className="font-serif text-2xl font-normal">{title}</h2>
+        <p
+          style={{ color: "var(--kr-text-muted)" }}
+          className="text-xs sm:text-sm mt-2 leading-relaxed"
+        >
           {description}
         </p>
       </div>
@@ -47,31 +63,33 @@ const AppContent: React.FC = () => {
     switch (activeTab) {
       case "dashboard":
         return <DashboardTab onNavigate={setActiveTab} />;
+      case "control-panel":
+        return <ControlPanelTab />;
       case "products":
         return renderLedgerPlaceholder(
           "MODUL 02 // MASTER DATA",
-          "Katalog Bahan Baku, Pemasok & Gudang",
-          "Pencatatan spesifikasi SKU bahan baku, satuan takar, batas stok minimum, serta daftar pemasok resmi dan titik gudang sesuai PRD Bagian 4.2.",
+          `Katalog ${branding.itemTerm}, Pemasok & Gudang`,
+          "Pencatatan spesifikasi SKU item, satuan takar, batas stok minimum, serta daftar pemasok resmi dan titik gudang sesuai PRD Bagian 4.2.",
           Package,
         );
       case "purchase-requests":
         return renderLedgerPlaceholder(
-          "MODUL 03 // PERMINTAAN BARANG",
-          "Buku Dokumen Purchase Request (PR)",
-          "Penyusunan permintaan pengadaan bahan baku menggunakan payload agregat (header + daftar item), mulai dari status DRAFT, SUBMITTED, hingga otorisasi APPROVE / REJECT.",
+          `MODUL 03 // TIKET ${branding.documentPrefixPR}`,
+          `Buku Dokumen Purchase Request (${branding.documentPrefixPR})`,
+          "Penyusunan permintaan pengadaan menggunakan payload agregat (header + daftar item), mulai dari status DRAFT, SUBMITTED, hingga otorisasi APPROVE / REJECT.",
           FileText,
         );
       case "purchase-orders":
         return renderLedgerPlaceholder(
-          "MODUL 04 // PESANAN PEMASOK",
-          "Buku Dokumen Purchase Order (PO)",
-          "Penerbitan pesanan resmi dari PR berstatus APPROVED, penunjukan pemasok aktif, penomoran otomatis PO-2026-XXXXXX, dan pengiriman status ORDERED.",
+          `MODUL 04 // PESANAN ${branding.documentPrefixPO}`,
+          `Buku Dokumen Purchase Order (${branding.documentPrefixPO})`,
+          "Penerbitan pesanan resmi dari permintaan berstatus APPROVED, penunjukan pemasok aktif, penomoran otomatis, dan pengiriman status ORDERED.",
           ShoppingCart,
         );
       case "goods-receipts":
         return renderLedgerPlaceholder(
-          "MODUL 05 // TIMBANG TERIMA",
-          "Bukti Penerimaan Barang (Goods Receipt)",
+          `MODUL 05 // PENERIMAAN ${branding.documentPrefixGR}`,
+          `Bukti Timbang Terima (${branding.documentPrefixGR})`,
           "Verifikasi fisik kedatangan barang terhadap dokumen PO dengan validasi ketat kuantitas sisa pesanan serta pembaruan saldo gudang secara transaksional.",
           Truck,
         );
@@ -103,8 +121,10 @@ const AppContent: React.FC = () => {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <KernelProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </KernelProvider>
   );
 }

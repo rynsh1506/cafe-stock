@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { NavigationTab } from "@/types";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { MobileHeader } from "@/components/layout/MobileHeader";
-import { Search } from "lucide-react";
+import { Search, Sliders } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useKernel } from "@/kernel/KernelContext";
 
 interface AppLayoutProps {
   activeTab: NavigationTab;
@@ -18,68 +19,29 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 }) => {
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState<boolean>(false);
   const { currentUser } = useAuth();
+  const { plugins, branding } = useKernel();
 
-  const getBreadcrumbs = (): {
-    code: string;
-    section: string;
-    title: string;
-  } => {
-    switch (activeTab) {
-      case "dashboard":
-        return {
-          code: "SEC-01",
-          section: "Ikhtisar",
-          title: "Buku Ikhtisar & Alur Pengadaan",
-        };
-      case "products":
-        return {
-          code: "SEC-02",
-          section: "Master Data",
-          title: "Katalog Bahan Baku & Pemasok",
-        };
-      case "purchase-requests":
-        return {
-          code: "SEC-03",
-          section: "Siklus Pengadaan",
-          title: "Dokumen Purchase Request (PR)",
-        };
-      case "purchase-orders":
-        return {
-          code: "SEC-04",
-          section: "Siklus Pengadaan",
-          title: "Dokumen Purchase Order (PO)",
-        };
-      case "goods-receipts":
-        return {
-          code: "SEC-05",
-          section: "Siklus Pengadaan",
-          title: "Bukti Timbang Terima (Goods Receipt)",
-        };
-      case "inventory":
-        return {
-          code: "SEC-06",
-          section: "Gudang",
-          title: "Kartu Saldo & Mutasi Stok",
-        };
-      case "audit-logs":
-        return {
-          code: "SEC-07",
-          section: "Kepatuhan",
-          title: "Jurnal Audit Sistem",
-        };
-      default:
-        return {
-          code: "SEC-00",
-          section: "CafeStock",
-          title: "Roastery Ledger",
-        };
-    }
-  };
-
-  const crumb = getBreadcrumbs();
+  const currentPlugin = plugins.find((p) => p.id === activeTab);
+  const crumb = currentPlugin
+    ? {
+        code: `MOD-${currentPlugin.code}`,
+        section: currentPlugin.sectionLabel,
+        title: currentPlugin.name,
+      }
+    : {
+        code: "MOD-00",
+        section: branding.appName,
+        title: branding.appSubtitle,
+      };
 
   return (
-    <div className="flex h-screen w-full bg-[#F6F3EC] overflow-hidden text-[#1A1411]">
+    <div
+      style={{
+        backgroundColor: "var(--kr-bg-main)",
+        color: "var(--kr-text-main)",
+      }}
+      className="flex h-screen w-full overflow-hidden transition-colors duration-150"
+    >
       {/* Desktop Sidebar */}
       <div className="hidden md:flex h-full shrink-0">
         <Sidebar activeTab={activeTab} onSelectTab={onSelectTab} />
@@ -110,47 +72,106 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
           activeTab={activeTab}
           isDrawerOpen={isMobileDrawerOpen}
           onToggleDrawer={() => setIsMobileDrawerOpen(!isMobileDrawerOpen)}
+          onSelectTab={onSelectTab}
         />
 
         {/* Desktop Top Ledger Header Bar */}
-        <header className="hidden md:flex items-center justify-between px-8 py-3 bg-[#FDFBF7] border-b border-[#DFD6C7] shrink-0">
+        <header
+          style={{
+            backgroundColor: "var(--kr-bg-surface)",
+            borderColor: "var(--kr-border)",
+          }}
+          className="hidden md:flex items-center justify-between px-8 py-3 border-b shrink-0 transition-colors duration-150"
+        >
           {/* Breadcrumb & Document Index */}
           <div className="flex items-center gap-3 text-xs">
-            <span className="font-mono text-[10px] font-semibold px-1.5 py-0.5 bg-[#EFEAD8] text-[#5C4938] border border-[#D8CEBE]">
+            <span
+              style={{
+                backgroundColor: "var(--kr-bg-elevated)",
+                borderColor: "var(--kr-border)",
+                color: "var(--kr-text-main)",
+              }}
+              className="font-mono text-[10px] font-semibold px-1.5 py-0.5 border"
+            >
               {crumb.code}
             </span>
-            <span className="font-mono text-[11px] uppercase tracking-wider text-[#857464]">
+            <span
+              style={{ color: "var(--kr-text-muted)" }}
+              className="font-mono text-[11px] uppercase tracking-wider"
+            >
               {crumb.section}
             </span>
-            <span className="text-[#C7BBAE]">/</span>
-            <span className="font-semibold text-[#1A1411]">{crumb.title}</span>
+            <span style={{ color: "var(--kr-text-muted)" }}>/</span>
+            <span className="font-semibold">{crumb.title}</span>
           </div>
 
           {/* Right Header Utilities */}
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-4">
             {/* Quick Search */}
             <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#8C7B6B]" />
+              <Search
+                style={{ color: "var(--kr-text-muted)" }}
+                className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2"
+              />
               <input
                 type="text"
-                placeholder="Cari No. Dokumen / SKU..."
-                className="pl-8 pr-3 py-1 font-mono text-xs bg-[#F6F3EC] border border-[#D8CFC0] w-52 focus:w-64 transition-all focus:outline-none focus:border-[#261B16] text-[#1A1411] placeholder-[#9E8E7E]"
+                placeholder={`Cari ${branding.documentPrefixPR}, ${branding.documentPrefixPO}, SKU...`}
+                style={{
+                  backgroundColor: "var(--kr-bg-main)",
+                  borderColor: "var(--kr-border)",
+                  color: "var(--kr-text-main)",
+                }}
+                className="pl-8 pr-3 py-1 font-mono text-xs border w-52 focus:w-64 transition-all focus:outline-none"
               />
             </div>
 
+            {/* Gitea-style Site Administration Shortcut */}
+            <button
+              onClick={() => onSelectTab("control-panel")}
+              type="button"
+              style={{
+                backgroundColor:
+                  activeTab === "control-panel"
+                    ? "var(--kr-bg-sidebar)"
+                    : "var(--kr-bg-elevated)",
+                color:
+                  activeTab === "control-panel"
+                    ? "var(--kr-text-sidebar)"
+                    : "var(--kr-text-main)",
+                borderColor: "var(--kr-border)",
+              }}
+              className="px-2.5 py-1 border font-mono text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1.5 transition cursor-pointer hover:opacity-90"
+              title="Buka Panel Kontrol Sistem (Site Administration)"
+            >
+              <Sliders className="w-3 h-3" />
+              <span>Control Panel</span>
+            </button>
+
             {/* Active Staff Stamp */}
-            <div className="flex items-center gap-3 pl-4 border-l border-[#DFD6C7]">
+            <div
+              style={{ borderColor: "var(--kr-border)" }}
+              className="flex items-center gap-3 pl-4 border-l"
+            >
               <div className="text-right">
-                <div className="text-xs font-semibold text-[#1A1411] leading-none">
+                <div className="text-xs font-semibold leading-none">
                   {currentUser.name}
                 </div>
-                <div className="font-mono text-[10px] uppercase tracking-wider text-[#7A6858] mt-1">
+                <div
+                  style={{ color: "var(--kr-text-muted)" }}
+                  className="font-mono text-[10px] uppercase tracking-wider mt-1"
+                >
                   {currentUser.role === "APPROVER"
                     ? "OTORISASI: APPROVER"
                     : "OTORISASI: STAFF USER"}
                 </div>
               </div>
-              <div className="w-7 h-7 bg-[#261B16] text-[#F7F3EC] flex items-center justify-center font-mono font-bold text-[11px]">
+              <div
+                style={{
+                  backgroundColor: "var(--kr-bg-sidebar)",
+                  color: "var(--kr-text-sidebar)",
+                }}
+                className="w-7 h-7 flex items-center justify-center font-mono font-bold text-[11px]"
+              >
                 {currentUser.name
                   .split(" ")
                   .map((n) => n[0])
@@ -162,7 +183,10 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
         </header>
 
         {/* Content Outlet */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 bg-[#F6F3EC]">
+        <main
+          style={{ backgroundColor: "var(--kr-bg-main)" }}
+          className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 transition-colors duration-150"
+        >
           <div className="max-w-7xl mx-auto">{children}</div>
         </main>
       </div>

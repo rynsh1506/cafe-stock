@@ -7,7 +7,8 @@ export type NavigationTab =
   | "purchase-orders"
   | "goods-receipts"
   | "inventory"
-  | "audit-logs";
+  | "audit-logs"
+  | "control-panel";
 
 export interface UserProfile {
   id: string;
