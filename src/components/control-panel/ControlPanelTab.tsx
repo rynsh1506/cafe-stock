@@ -128,6 +128,8 @@ export const ControlPanelTab: React.FC = () => {
     currentUser,
     accounts,
     registerAccount,
+    approveAccount,
+    rejectAccount,
     deleteAccount,
     updateAccountRole,
   } = useAuth();
@@ -1148,6 +1150,84 @@ export const ControlPanelTab: React.FC = () => {
                 </div>
               )}
 
+              {/* Antrean Persetujuan Akun Baru (PENDING APPROVAL) */}
+              {accounts.some((a) => a.status === "PENDING") && (
+                <div className="p-4 border-2 border-[#8A4B14] bg-[#F9EFE0] space-y-3">
+                  <div className="font-mono text-xs font-bold uppercase tracking-wider text-[#8A4B14]">
+                    ● ANTREAN PERSETUJUAN PENDAFTARAN AKUN BARU (
+                    {accounts.filter((a) => a.status === "PENDING").length}{" "}
+                    PENDING)
+                  </div>
+                  <p className="text-xs text-[#5C5346]">
+                    Pengguna berikut mendaftar melalui halaman Login dan tidak
+                    dapat masuk sebelum Anda menyetujui (Approve) akun mereka:
+                  </p>
+                  <div className="space-y-2">
+                    {accounts
+                      .filter((a) => a.status === "PENDING")
+                      .map((pendingAcc) => (
+                        <div
+                          key={pendingAcc.id}
+                          className="p-3 bg-white border border-[#DEC19B] flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                        >
+                          <div>
+                            <div className="font-semibold text-xs text-[#1E1A17]">
+                              {pendingAcc.name}{" "}
+                              <span className="font-mono text-[11px] text-[#8A4B14]">
+                                (@{pendingAcc.username})
+                              </span>
+                            </div>
+                            <div className="font-mono text-[10px] text-[#5C5346]">
+                              {pendingAcc.email} • Diajukan:{" "}
+                              {new Date(pendingAcc.createdAt).toLocaleString(
+                                "id-ID",
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                approveAccount(pendingAcc.id, "USER");
+                                setUsrMessage(
+                                  `Akun @${pendingAcc.username} telah DISETUJUI sebagai USER (Staff Gudang).`,
+                                );
+                              }}
+                              className="px-3 py-1.5 bg-[#1D593B] text-white font-mono text-[10px] font-bold uppercase cursor-pointer"
+                            >
+                              ✓ Approve sbg Staff (USER)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                approveAccount(pendingAcc.id, "APPROVER");
+                                setUsrMessage(
+                                  `Akun @${pendingAcc.username} telah DISETUJUI sebagai APPROVER (Admin).`,
+                                );
+                              }}
+                              className="px-3 py-1.5 bg-[#1E4A6D] text-white font-mono text-[10px] font-bold uppercase cursor-pointer"
+                            >
+                              ✓ Approve sbg Admin (APPROVER)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                rejectAccount(pendingAcc.id);
+                                setUsrMessage(
+                                  `Pendaftaran akun @${pendingAcc.username} telah DITOLAK (REJECTED).`,
+                                );
+                              }}
+                              className="px-3 py-1.5 bg-[#9E2A20] text-white font-mono text-[10px] font-bold uppercase cursor-pointer"
+                            >
+                              ✕ Tolak
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
               {/* Form Tambah Akun Baru */}
               <form
                 onSubmit={handleAdminCreateUser}
@@ -1291,7 +1371,7 @@ export const ControlPanelTab: React.FC = () => {
                     >
                       <th className="py-2.5 px-4">Nama Lengkap</th>
                       <th className="py-2.5 px-4">Username</th>
-                      <th className="py-2.5 px-4">Email</th>
+                      <th className="py-2.5 px-4">Status</th>
                       <th className="py-2.5 px-4">Role Otorisasi</th>
                       <th className="py-2.5 px-4 text-right">Aksi</th>
                     </tr>
@@ -1299,24 +1379,45 @@ export const ControlPanelTab: React.FC = () => {
                   <tbody className="divide-y">
                     {accounts.map((acc) => {
                       const isSelf = acc.id === currentUser.id;
+                      const accStatus = acc.status ?? "ACTIVE";
                       return (
                         <tr
                           key={acc.id}
                           style={{ borderColor: "var(--kr-border)" }}
                         >
                           <td className="py-3 px-4 font-semibold">
-                            {acc.name}{" "}
-                            {isSelf && (
-                              <span className="font-mono text-[9px] px-1.5 py-0.5 bg-[#E7F2EC] text-[#1D593B] border border-[#B2D3C1] ml-1">
-                                SESI AKTIF
-                              </span>
-                            )}
+                            <div>
+                              {acc.name}{" "}
+                              {isSelf && (
+                                <span className="font-mono text-[9px] px-1.5 py-0.5 bg-[#E7F2EC] text-[#1D593B] border border-[#B2D3C1] ml-1">
+                                  SESI AKTIF
+                                </span>
+                              )}
+                            </div>
+                            <div
+                              style={{ color: "var(--kr-text-muted)" }}
+                              className="font-mono text-[10px] font-normal"
+                            >
+                              {acc.email}
+                            </div>
                           </td>
                           <td className="py-3 px-4 font-mono">
-                            {acc.username}
+                            @{acc.username}
                           </td>
-                          <td className="py-3 px-4 font-mono text-[11px]">
-                            {acc.email}
+                          <td className="py-3 px-4 font-mono text-[10px] font-bold">
+                            {accStatus === "ACTIVE" ? (
+                              <span className="px-2 py-0.5 bg-[#E7F2EC] text-[#1D593B] border border-[#B2D3C1]">
+                                ACTIVE
+                              </span>
+                            ) : accStatus === "PENDING" ? (
+                              <span className="px-2 py-0.5 bg-[#F9EFE0] text-[#8A4B14] border border-[#DEC19B]">
+                                PENDING APPROVAL
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 bg-[#FCEAE8] text-[#9E2A20] border border-[#E6B8B3]">
+                                REJECTED
+                              </span>
+                            )}
                           </td>
                           <td className="py-3 px-4">
                             <select
