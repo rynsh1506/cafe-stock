@@ -4,6 +4,7 @@ import { NavigationTab, POStatus } from "@/types";
 import { useStore } from "@/context/StoreContext";
 import { useAuth } from "@/context/AuthContext";
 import { useKernel } from "@/kernel/KernelContext";
+import { PaginationBar } from "@/components/layout/PaginationBar";
 
 interface PurchaseOrdersTabProps {
   onNavigate: (tab: NavigationTab) => void;
@@ -35,6 +36,8 @@ export const PurchaseOrdersTab: React.FC<PurchaseOrdersTabProps> = ({
   const activeSuppliers = suppliers.filter((s) => s.isActive);
 
   const [statusFilter, setStatusFilter] = useState<POStatus | "ALL">("ALL");
+  const [poPage, setPoPage] = useState<number>(1);
+  const [poPageSize, setPoPageSize] = useState<number>(5);
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [selectedPrId, setSelectedPrId] = useState<string>(
     approvedPRs[0]?.id ?? "",
@@ -45,6 +48,10 @@ export const PurchaseOrdersTab: React.FC<PurchaseOrdersTabProps> = ({
 
   const filteredPOs = purchaseOrders.filter(
     (po) => statusFilter === "ALL" || po.status === statusFilter,
+  );
+  const paginatedPOs = filteredPOs.slice(
+    (poPage - 1) * poPageSize,
+    poPage * poPageSize,
   );
 
   const handleOpenCreateModal = (): void => {
@@ -122,8 +129,7 @@ export const PurchaseOrdersTab: React.FC<PurchaseOrdersTabProps> = ({
         >
           <Plus style={{ color: "var(--kr-accent)" }} className="w-3.5 h-3.5" />
           <span>
-            + Terbitkan {branding.documentPrefixPO} dari{" "}
-            {branding.documentPrefixPR}
+            {t("mod.po.createFromPrBtn")} ({branding.documentPrefixPO})
           </span>
         </button>
       </div>
@@ -143,7 +149,10 @@ export const PurchaseOrdersTab: React.FC<PurchaseOrdersTabProps> = ({
           <button
             key={st}
             type="button"
-            onClick={() => setStatusFilter(st)}
+            onClick={() => {
+              setStatusFilter(st);
+              setPoPage(1);
+            }}
             style={{
               backgroundColor:
                 statusFilter === st
@@ -157,156 +166,201 @@ export const PurchaseOrdersTab: React.FC<PurchaseOrdersTabProps> = ({
             }}
             className="px-3 py-1.5 border font-mono text-[10px] font-semibold uppercase tracking-wider cursor-pointer"
           >
-            {st === "ALL" ? `SEMUA (${purchaseOrders.length})` : st}
+            {st === "ALL"
+              ? `${t("common.all")} (${purchaseOrders.length})`
+              : st}
           </button>
         ))}
       </div>
 
       {/* PO List */}
       <div className="space-y-4">
-        {filteredPOs.map((po) => {
-          const sup = suppliers.find((s) => s.id === po.supplierId);
-          const wh = warehouses.find((w) => w.id === po.warehouseId);
-          const pr = purchaseRequests.find(
-            (r) => r.id === po.purchaseRequestId,
-          );
-          return (
-            <div
-              key={po.id}
-              style={{
-                backgroundColor: "var(--kr-bg-surface)",
-                borderColor: "var(--kr-border)",
-              }}
-              className="border p-5"
-            >
+        {paginatedPOs.length === 0 ? (
+          <div
+            style={{
+              backgroundColor: "var(--kr-bg-surface)",
+              borderColor: "var(--kr-border)",
+              color: "var(--kr-text-muted)",
+            }}
+            className="border p-8 text-center font-mono text-xs"
+          >
+            {t("common.emptyRecords")}
+          </div>
+        ) : (
+          paginatedPOs.map((po) => {
+            const sup = suppliers.find((s) => s.id === po.supplierId);
+            const wh = warehouses.find((w) => w.id === po.warehouseId);
+            const pr = purchaseRequests.find(
+              (r) => r.id === po.purchaseRequestId,
+            );
+            return (
               <div
-                style={{ borderColor: "var(--kr-border)" }}
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3.5 mb-4"
+                key={po.id}
+                style={{
+                  backgroundColor: "var(--kr-bg-surface)",
+                  borderColor: "var(--kr-border)",
+                }}
+                className="border p-5"
               >
-                <div>
-                  <div className="flex flex-wrap items-center gap-2.5">
-                    <span className="font-mono text-sm font-bold">
-                      {po.poNumber}
-                    </span>
-                    <span
-                      className={`px-2 py-0.5 font-mono text-[10px] font-bold border ${getStatusStyle(po.status)}`}
+                <div
+                  style={{ borderColor: "var(--kr-border)" }}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3.5 mb-4"
+                >
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span className="font-mono text-sm font-bold">
+                        {po.poNumber}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 font-mono text-[10px] font-bold border ${getStatusStyle(po.status)}`}
+                      >
+                        {po.status}
+                      </span>
+                      <span className="font-mono text-xs font-semibold">
+                        → {sup?.name ?? po.supplierId}
+                      </span>
+                    </div>
+                    <div
+                      style={{ color: "var(--kr-text-muted)" }}
+                      className="font-mono text-[11px] mt-1"
                     >
-                      {po.status}
-                    </span>
-                    <span className="font-mono text-xs font-semibold">
-                      → {sup?.name ?? po.supplierId}
-                    </span>
+                      Ref PR: {pr?.requestNumber ?? po.purchaseRequestId} •{" "}
+                      {t("common.warehouse")}: {wh?.name ?? po.warehouseId} •{" "}
+                      {new Date(po.createdAt).toLocaleDateString()}
+                    </div>
                   </div>
-                  <div
-                    style={{ color: "var(--kr-text-muted)" }}
-                    className="font-mono text-[11px] mt-1"
-                  >
-                    Ref PR: {pr?.requestNumber ?? po.purchaseRequestId} •
-                    Gudang: {wh?.name ?? po.warehouseId} •{" "}
-                    {new Date(po.createdAt).toLocaleDateString("id-ID")}
+
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    {po.status === "DRAFT" && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          markPurchaseOrderOrdered(po.id, currentUser.username)
+                        }
+                        className="px-3 py-1.5 bg-[#1E4A6D] text-white font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Send className="w-3 h-3" />
+                        <span>{t("mod.po.markOrderedBtn")}</span>
+                      </button>
+                    )}
+
+                    {(po.status === "ORDERED" ||
+                      po.status === "PARTIALLY_RECEIVED") && (
+                      <button
+                        type="button"
+                        onClick={() => onNavigate("goods-receipts")}
+                        className="px-3 py-1.5 bg-[#1D593B] text-white font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Truck className="w-3.5 h-3.5" />
+                        <span>
+                          {t("mod.po.receiveGoodsBtn")} (
+                          {branding.documentPrefixGR})
+                        </span>
+                      </button>
+                    )}
+
+                    {(po.status === "DRAFT" || po.status === "ORDERED") && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          cancelPurchaseOrder(po.id, currentUser.username)
+                        }
+                        className="px-2.5 py-1.5 border border-[#9E2A20] text-[#9E2A20] font-mono text-[10px] font-bold uppercase flex items-center gap-1 cursor-pointer"
+                      >
+                        <XCircle className="w-3 h-3" />
+                        <span>{t("common.cancel")}</span>
+                      </button>
+                    )}
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 shrink-0">
-                  {po.status === "DRAFT" && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        markPurchaseOrderOrdered(po.id, currentUser.username)
-                      }
-                      className="px-3 py-1.5 bg-[#1E4A6D] text-white font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr
+                        style={{
+                          backgroundColor: "var(--kr-bg-elevated)",
+                          borderColor: "var(--kr-border)",
+                          color: "var(--kr-text-muted)",
+                        }}
+                        className="border-b font-mono text-[10px] uppercase"
+                      >
+                        <th className="py-2 px-3">{t("common.sku")}</th>
+                        <th className="py-2 px-3">
+                          {t("common.name")} {branding.itemTerm}
+                        </th>
+                        <th className="py-2 px-3 text-right">
+                          {t("mod.po.orderedQty")}
+                        </th>
+                        <th className="py-2 px-3 text-right">
+                          {t("mod.po.receivedQty")}
+                        </th>
+                        <th className="py-2 px-3 text-right">
+                          {t("mod.po.remainingQty")}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody
+                      style={{ borderColor: "var(--kr-border)" }}
+                      className="divide-y"
                     >
-                      <Send className="w-3 h-3" />
-                      <span>Mark as Ordered</span>
-                    </button>
-                  )}
-
-                  {(po.status === "ORDERED" ||
-                    po.status === "PARTIALLY_RECEIVED") && (
-                    <button
-                      type="button"
-                      onClick={() => onNavigate("goods-receipts")}
-                      className="px-3 py-1.5 bg-[#1D593B] text-white font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <Truck className="w-3.5 h-3.5" />
-                      <span>Terima Barang ({branding.documentPrefixGR})</span>
-                    </button>
-                  )}
-
-                  {(po.status === "DRAFT" || po.status === "ORDERED") && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        cancelPurchaseOrder(po.id, currentUser.username)
-                      }
-                      className="px-2.5 py-1.5 border border-[#9E2A20] text-[#9E2A20] font-mono text-[10px] font-bold uppercase flex items-center gap-1 cursor-pointer"
-                    >
-                      <XCircle className="w-3 h-3" />
-                      <span>Batalkan</span>
-                    </button>
-                  )}
+                      {po.items.map((item) => {
+                        const prod = products.find(
+                          (p) => p.id === item.productId,
+                        );
+                        const remaining = Math.max(
+                          0,
+                          item.quantity - item.receivedQuantity,
+                        );
+                        return (
+                          <tr
+                            key={item.id}
+                            style={{ borderColor: "var(--kr-border)" }}
+                          >
+                            <td className="py-2.5 px-3 font-mono font-semibold">
+                              {prod?.sku ?? item.productId}
+                            </td>
+                            <td className="py-2.5 px-3">
+                              {prod?.name ?? item.productId}
+                            </td>
+                            <td className="py-2.5 px-3 text-right font-mono">
+                              {item.quantity} {prod?.unit}
+                            </td>
+                            <td className="py-2.5 px-3 text-right font-mono font-semibold text-[#1D593B]">
+                              {item.receivedQuantity} {prod?.unit}
+                            </td>
+                            <td className="py-2.5 px-3 text-right font-mono font-bold text-[#8A4B14]">
+                              {remaining} {prod?.unit}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
+            );
+          })
+        )}
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr
-                      style={{
-                        backgroundColor: "var(--kr-bg-elevated)",
-                        borderColor: "var(--kr-border)",
-                        color: "var(--kr-text-muted)",
-                      }}
-                      className="border-b font-mono text-[10px] uppercase"
-                    >
-                      <th className="py-2 px-3">SKU</th>
-                      <th className="py-2 px-3">Nama {branding.itemTerm}</th>
-                      <th className="py-2 px-3 text-right">Dipesan</th>
-                      <th className="py-2 px-3 text-right">Sudah Diterima</th>
-                      <th className="py-2 px-3 text-right">Sisa Pesanan</th>
-                    </tr>
-                  </thead>
-                  <tbody
-                    style={{ borderColor: "var(--kr-border)" }}
-                    className="divide-y"
-                  >
-                    {po.items.map((item) => {
-                      const prod = products.find(
-                        (p) => p.id === item.productId,
-                      );
-                      const remaining = Math.max(
-                        0,
-                        item.quantity - item.receivedQuantity,
-                      );
-                      return (
-                        <tr
-                          key={item.id}
-                          style={{ borderColor: "var(--kr-border)" }}
-                        >
-                          <td className="py-2.5 px-3 font-mono font-semibold">
-                            {prod?.sku ?? item.productId}
-                          </td>
-                          <td className="py-2.5 px-3">
-                            {prod?.name ?? item.productId}
-                          </td>
-                          <td className="py-2.5 px-3 text-right font-mono">
-                            {item.quantity} {prod?.unit}
-                          </td>
-                          <td className="py-2.5 px-3 text-right font-mono font-semibold text-[#1D593B]">
-                            {item.receivedQuantity} {prod?.unit}
-                          </td>
-                          <td className="py-2.5 px-3 text-right font-mono font-bold text-[#8A4B14]">
-                            {remaining} {prod?.unit}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          );
-        })}
+        <div
+          style={{
+            backgroundColor: "var(--kr-bg-surface)",
+            borderColor: "var(--kr-border)",
+          }}
+          className="border"
+        >
+          <PaginationBar
+            currentPage={poPage}
+            totalItems={filteredPOs.length}
+            pageSize={poPageSize}
+            onPageChange={setPoPage}
+            onPageSizeChange={(s) => {
+              setPoPageSize(s);
+              setPoPage(1);
+            }}
+          />
+        </div>
       </div>
 
       {/* Create PO Modal */}

@@ -12,6 +12,7 @@ import {
 import { useStore } from "@/context/StoreContext";
 import { useAuth } from "@/context/AuthContext";
 import { useKernel } from "@/kernel/KernelContext";
+import { PaginationBar } from "@/components/layout/PaginationBar";
 
 type MasterSubTab = "PRODUCTS" | "SUPPLIERS" | "WAREHOUSES";
 
@@ -35,6 +36,12 @@ export const ProductsTab: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
+  const [prodPage, setProdPage] = useState<number>(1);
+  const [prodPageSize, setProdPageSize] = useState<number>(10);
+  const [supPage, setSupPage] = useState<number>(1);
+  const [supPageSize, setSupPageSize] = useState<number>(6);
+  const [whPage, setWhPage] = useState<number>(1);
+  const [whPageSize, setWhPageSize] = useState<number>(6);
 
   // Add Product Form State
   const [sku, setSku] = useState<string>("");
@@ -67,6 +74,19 @@ export const ProductsTab: React.FC = () => {
       selectedCategory === "ALL" || p.category === selectedCategory;
     return matchesSearch && matchesCat;
   });
+
+  const paginatedProducts = filteredProducts.slice(
+    (prodPage - 1) * prodPageSize,
+    prodPage * prodPageSize,
+  );
+  const paginatedSuppliers = suppliers.slice(
+    (supPage - 1) * supPageSize,
+    supPage * supPageSize,
+  );
+  const paginatedWarehouses = warehouses.slice(
+    (whPage - 1) * whPageSize,
+    whPage * whPageSize,
+  );
 
   const getTotalStock = (productId: string): number =>
     inventoryBalances
@@ -173,10 +193,10 @@ export const ProductsTab: React.FC = () => {
           <Plus style={{ color: "var(--kr-accent)" }} className="w-3.5 h-3.5" />
           <span>
             {subTab === "PRODUCTS"
-              ? `+ Tambah ${branding.itemTerm}`
+              ? `${t("mod.products.addSku")} ${branding.itemTerm}`
               : subTab === "SUPPLIERS"
-                ? "+ Tambah Pemasok"
-                : "+ Tambah Gudang"}
+                ? t("mod.products.addSupplier")
+                : t("mod.products.addWarehouse")}
           </span>
         </button>
       </div>
@@ -188,7 +208,7 @@ export const ProductsTab: React.FC = () => {
             backgroundColor: "var(--kr-bg-surface)",
             borderColor: "var(--kr-border)",
           }}
-          className="flex border"
+          className="flex flex-wrap border"
         >
           <button
             type="button"
@@ -204,7 +224,9 @@ export const ProductsTab: React.FC = () => {
             className="px-4 py-2 font-mono text-xs font-semibold uppercase tracking-wider flex items-center gap-2 cursor-pointer transition"
           >
             <Package className="w-3.5 h-3.5" />
-            <span>SKU ({products.length})</span>
+            <span>
+              {t("common.sku")} ({products.length})
+            </span>
           </button>
           <button
             type="button"
@@ -221,7 +243,9 @@ export const ProductsTab: React.FC = () => {
             className="px-4 py-2 font-mono text-xs font-semibold uppercase tracking-wider flex items-center gap-2 border-l cursor-pointer transition"
           >
             <Building2 className="w-3.5 h-3.5" />
-            <span>Pemasok ({suppliers.length})</span>
+            <span>
+              {t("common.suppliers")} ({suppliers.length})
+            </span>
           </button>
           <button
             type="button"
@@ -240,7 +264,9 @@ export const ProductsTab: React.FC = () => {
             className="px-4 py-2 font-mono text-xs font-semibold uppercase tracking-wider flex items-center gap-2 border-l cursor-pointer transition"
           >
             <WarehouseIcon className="w-3.5 h-3.5" />
-            <span>Gudang ({warehouses.length})</span>
+            <span>
+              {t("common.warehouses")} ({warehouses.length})
+            </span>
           </button>
         </div>
 
@@ -254,7 +280,10 @@ export const ProductsTab: React.FC = () => {
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setProdPage(1);
+                }}
                 placeholder={t("common.searchPlaceholder")}
                 style={{
                   backgroundColor: "var(--kr-bg-surface)",
@@ -266,7 +295,10 @@ export const ProductsTab: React.FC = () => {
             </div>
             <select
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+                setProdPage(1);
+              }}
               style={{
                 backgroundColor: "var(--kr-bg-surface)",
                 borderColor: "var(--kr-border)",
@@ -276,7 +308,7 @@ export const ProductsTab: React.FC = () => {
             >
               {categories.map((cat) => (
                 <option key={cat} value={cat}>
-                  {cat === "ALL" ? "SEMUA KATEGORI" : cat}
+                  {cat === "ALL" ? t("mod.products.allCategories") : cat}
                 </option>
               ))}
             </select>
@@ -303,203 +335,297 @@ export const ProductsTab: React.FC = () => {
                 }}
                 className="border-b font-mono text-[10px] uppercase tracking-wider"
               >
-                <th className="py-3 px-4">Kode SKU</th>
-                <th className="py-3 px-4">Nama {branding.itemTerm}</th>
-                <th className="py-3 px-4">Kategori</th>
-                <th className="py-3 px-4">Satuan</th>
-                <th className="py-3 px-4">Min. Stok</th>
-                <th className="py-3 px-4">Total Saldo</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right">Aksi</th>
+                <th className="py-3 px-4">{t("common.sku")}</th>
+                <th className="py-3 px-4">
+                  {t("common.name")} {branding.itemTerm}
+                </th>
+                <th className="py-3 px-4">{t("common.category")}</th>
+                <th className="py-3 px-4">{t("common.unit")}</th>
+                <th className="py-3 px-4">{t("common.minStock")}</th>
+                <th className="py-3 px-4">{t("common.totalStock")}</th>
+                <th className="py-3 px-4">{t("common.status")}</th>
+                <th className="py-3 px-4 text-right">{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody
               style={{ borderColor: "var(--kr-border)" }}
               className="divide-y"
             >
-              {filteredProducts.map((product) => {
-                const totalStock = getTotalStock(product.id);
-                const isLow = totalStock < product.minStock;
-                return (
-                  <tr
-                    key={product.id}
-                    style={{ borderColor: "var(--kr-border)" }}
+              {paginatedProducts.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={8}
+                    style={{ color: "var(--kr-text-muted)" }}
+                    className="py-8 px-4 text-center font-mono text-xs"
                   >
-                    <td className="py-3.5 px-4 font-mono font-bold whitespace-nowrap">
-                      {product.sku}
-                    </td>
-                    <td className="py-3.5 px-4 font-semibold">
-                      {product.name}
-                    </td>
-                    <td className="py-3.5 px-4 font-mono text-[11px]">
-                      {product.category}
-                    </td>
-                    <td className="py-3.5 px-4 font-mono font-semibold">
-                      {product.unit}
-                    </td>
-                    <td className="py-3.5 px-4 font-mono">
-                      {product.minStock} {product.unit}
-                    </td>
-                    <td className="py-3.5 px-4 font-mono font-bold">
-                      <span
-                        className={`inline-flex items-center gap-1 ${
-                          isLow ? "text-[#9E2A20]" : "text-[#1D593B]"
-                        }`}
-                      >
-                        {isLow ? (
-                          <AlertTriangle className="w-3.5 h-3.5" />
-                        ) : (
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                        )}
-                        {totalStock} {product.unit}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span
-                        className={`px-2 py-0.5 font-mono text-[10px] font-bold border ${
-                          product.isActive
-                            ? "bg-[#E7F2EC] text-[#1D593B] border-[#B2D3C1]"
-                            : "bg-[#F2EFE9] text-[#786E65] border-[#D8D0C0]"
-                        }`}
-                      >
-                        {product.isActive
-                          ? t("common.active")
-                          : t("common.inactive")}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          toggleProductStatus(product.id, currentUser.username)
-                        }
-                        style={{ borderColor: "var(--kr-border)" }}
-                        className="px-2.5 py-1 border font-mono text-[10px] uppercase cursor-pointer hover:opacity-80"
-                      >
-                        {product.isActive ? "Nonaktifkan" : "Aktifkan"}
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+                    {t("common.emptyRecords")}
+                  </td>
+                </tr>
+              ) : (
+                paginatedProducts.map((product) => {
+                  const totalStock = getTotalStock(product.id);
+                  const isLow = totalStock < product.minStock;
+                  return (
+                    <tr
+                      key={product.id}
+                      style={{ borderColor: "var(--kr-border)" }}
+                    >
+                      <td className="py-3.5 px-4 font-mono font-bold whitespace-nowrap">
+                        {product.sku}
+                      </td>
+                      <td className="py-3.5 px-4 font-semibold">
+                        {product.name}
+                      </td>
+                      <td className="py-3.5 px-4 font-mono text-[11px]">
+                        {product.category}
+                      </td>
+                      <td className="py-3.5 px-4 font-mono font-semibold">
+                        {product.unit}
+                      </td>
+                      <td className="py-3.5 px-4 font-mono">
+                        {product.minStock} {product.unit}
+                      </td>
+                      <td className="py-3.5 px-4 font-mono font-bold">
+                        <span
+                          className={`inline-flex items-center gap-1 ${
+                            isLow ? "text-[#9E2A20]" : "text-[#1D593B]"
+                          }`}
+                        >
+                          {isLow ? (
+                            <AlertTriangle className="w-3.5 h-3.5" />
+                          ) : (
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                          )}
+                          {totalStock} {product.unit}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`px-2 py-0.5 font-mono text-[10px] font-bold border ${
+                            product.isActive
+                              ? "bg-[#E7F2EC] text-[#1D593B] border-[#B2D3C1]"
+                              : "bg-[#F2EFE9] text-[#786E65] border-[#D8D0C0]"
+                          }`}
+                        >
+                          {product.isActive
+                            ? t("common.active")
+                            : t("common.inactive")}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            toggleProductStatus(
+                              product.id,
+                              currentUser.username,
+                            )
+                          }
+                          style={{ borderColor: "var(--kr-border)" }}
+                          className="px-2.5 py-1 border font-mono text-[10px] uppercase cursor-pointer hover:opacity-80"
+                        >
+                          {product.isActive
+                            ? t("common.deactivate")
+                            : t("common.activate")}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
+          <PaginationBar
+            currentPage={prodPage}
+            totalItems={filteredProducts.length}
+            pageSize={prodPageSize}
+            onPageChange={setProdPage}
+            onPageSizeChange={(s) => {
+              setProdPageSize(s);
+              setProdPage(1);
+            }}
+          />
         </div>
       )}
 
       {/* Sub-Tab 2: SUPPLIERS */}
       {subTab === "SUPPLIERS" && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {suppliers.map((sup) => (
+        <div
+          style={{
+            backgroundColor: "var(--kr-bg-surface)",
+            borderColor: "var(--kr-border)",
+          }}
+          className="border"
+        >
+          {paginatedSuppliers.length === 0 ? (
             <div
-              key={sup.id}
-              style={{
-                backgroundColor: "var(--kr-bg-surface)",
-                borderColor: "var(--kr-border)",
-              }}
-              className="border p-5 flex flex-col justify-between"
+              style={{ color: "var(--kr-text-muted)" }}
+              className="p-8 text-center font-mono text-xs"
             >
-              <div>
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <span
-                    style={{ color: "var(--kr-text-muted)" }}
-                    className="font-mono text-[10px] uppercase"
-                  >
-                    ID // {sup.id.toUpperCase()}
-                  </span>
-                  <span
-                    className={`px-2 py-0.5 font-mono text-[9px] font-bold border ${
-                      sup.isActive
-                        ? "bg-[#E7F2EC] text-[#1D593B] border-[#B2D3C1]"
-                        : "bg-[#FCEAE8] text-[#9E2A20] border-[#E6B8B3]"
-                    }`}
-                  >
-                    {sup.isActive ? t("common.active") : t("common.inactive")}
-                  </span>
-                </div>
-                <h3 className="font-serif text-lg font-medium">{sup.name}</h3>
-                <div
-                  style={{ color: "var(--kr-text-muted)" }}
-                  className="font-mono text-xs mt-2 space-y-1"
-                >
-                  <div>Email: {sup.email}</div>
-                  <div>Telp: {sup.phone}</div>
-                </div>
-              </div>
-              <div
-                style={{ borderColor: "var(--kr-border)" }}
-                className="mt-4 pt-3 border-t flex justify-end"
-              >
-                <button
-                  type="button"
-                  onClick={() =>
-                    toggleSupplierStatus(sup.id, currentUser.username)
-                  }
-                  style={{ borderColor: "var(--kr-border)" }}
-                  className="px-3 py-1 border font-mono text-[10px] uppercase cursor-pointer"
-                >
-                  {sup.isActive ? "Nonaktifkan" : "Aktifkan"}
-                </button>
-              </div>
+              {t("common.emptyRecords")}
             </div>
-          ))}
+          ) : (
+            <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+              {paginatedSuppliers.map((sup) => (
+                <div
+                  key={sup.id}
+                  style={{
+                    backgroundColor: "var(--kr-bg-main)",
+                    borderColor: "var(--kr-border)",
+                  }}
+                  className="border p-5 flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span
+                        style={{ color: "var(--kr-text-muted)" }}
+                        className="font-mono text-[10px] uppercase"
+                      >
+                        ID // {sup.id.toUpperCase()}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 font-mono text-[9px] font-bold border ${
+                          sup.isActive
+                            ? "bg-[#E7F2EC] text-[#1D593B] border-[#B2D3C1]"
+                            : "bg-[#FCEAE8] text-[#9E2A20] border-[#E6B8B3]"
+                        }`}
+                      >
+                        {sup.isActive
+                          ? t("common.active")
+                          : t("common.inactive")}
+                      </span>
+                    </div>
+                    <h3 className="font-serif text-lg font-medium">
+                      {sup.name}
+                    </h3>
+                    <div
+                      style={{ color: "var(--kr-text-muted)" }}
+                      className="font-mono text-xs mt-2 space-y-1"
+                    >
+                      <div>Email: {sup.email}</div>
+                      <div>Phone: {sup.phone}</div>
+                    </div>
+                  </div>
+                  <div
+                    style={{ borderColor: "var(--kr-border)" }}
+                    className="mt-4 pt-3 border-t flex justify-end"
+                  >
+                    <button
+                      type="button"
+                      onClick={() =>
+                        toggleSupplierStatus(sup.id, currentUser.username)
+                      }
+                      style={{ borderColor: "var(--kr-border)" }}
+                      className="px-3 py-1 border font-mono text-[10px] uppercase cursor-pointer"
+                    >
+                      {sup.isActive
+                        ? t("common.deactivate")
+                        : t("common.activate")}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <PaginationBar
+            currentPage={supPage}
+            totalItems={suppliers.length}
+            pageSize={supPageSize}
+            onPageChange={setSupPage}
+            onPageSizeChange={(s) => {
+              setSupPageSize(s);
+              setSupPage(1);
+            }}
+          />
         </div>
       )}
 
       {/* Sub-Tab 3: WAREHOUSES */}
       {subTab === "WAREHOUSES" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {warehouses.map((wh) => {
-            const whItems = inventoryBalances.filter(
-              (b) => b.warehouseId === wh.id,
-            );
-            const totalUnits = whItems.reduce((sum, i) => sum + i.stock, 0);
-            return (
-              <div
-                key={wh.id}
-                style={{
-                  backgroundColor: "var(--kr-bg-surface)",
-                  borderColor: "var(--kr-border)",
-                }}
-                className="border p-5"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-mono text-xs font-bold px-2 py-0.5 border border-[#C69249] text-[#8A4B14] bg-[#F9EFE0]">
-                    {wh.code}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      toggleWarehouseStatus(wh.id, currentUser.username)
-                    }
-                    className={`font-mono text-[10px] font-semibold px-2 py-0.5 border cursor-pointer ${
-                      wh.isActive
-                        ? "text-[#1D593B] bg-[#E7F2EC] border-[#B2D3C1]"
-                        : "text-[#9E2A20] bg-[#FCEAE8] border-[#E6B8B3]"
-                    }`}
+        <div
+          style={{
+            backgroundColor: "var(--kr-bg-surface)",
+            borderColor: "var(--kr-border)",
+          }}
+          className="border"
+        >
+          {paginatedWarehouses.length === 0 ? (
+            <div
+              style={{ color: "var(--kr-text-muted)" }}
+              className="p-8 text-center font-mono text-xs"
+            >
+              {t("common.emptyRecords")}
+            </div>
+          ) : (
+            <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+              {paginatedWarehouses.map((wh) => {
+                const whItems = inventoryBalances.filter(
+                  (b) => b.warehouseId === wh.id,
+                );
+                const totalUnits = whItems.reduce((sum, i) => sum + i.stock, 0);
+                return (
+                  <div
+                    key={wh.id}
+                    style={{
+                      backgroundColor: "var(--kr-bg-main)",
+                      borderColor: "var(--kr-border)",
+                    }}
+                    className="border p-5"
                   >
-                    ● {wh.isActive ? "OPERATIONAL" : "INACTIVE"}
-                  </button>
-                </div>
-                <h3 className="font-serif text-xl font-medium mt-1">
-                  {wh.name}
-                </h3>
-                <p
-                  style={{ color: "var(--kr-text-muted)" }}
-                  className="text-xs mt-1"
-                >
-                  {wh.location}
-                </p>
-                <div
-                  style={{ borderColor: "var(--kr-border)" }}
-                  className="mt-4 pt-3 border-t flex items-center justify-between font-mono text-xs"
-                >
-                  <span>SKU Tersimpan: {whItems.length} item</span>
-                  <span className="font-bold">Total Volume: {totalUnits}</span>
-                </div>
-              </div>
-            );
-          })}
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-mono text-xs font-bold px-2 py-0.5 border border-[#C69249] text-[#8A4B14] bg-[#F9EFE0]">
+                        {wh.code}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          toggleWarehouseStatus(wh.id, currentUser.username)
+                        }
+                        className={`font-mono text-[10px] font-semibold px-2 py-0.5 border cursor-pointer ${
+                          wh.isActive
+                            ? "text-[#1D593B] bg-[#E7F2EC] border-[#B2D3C1]"
+                            : "text-[#9E2A20] bg-[#FCEAE8] border-[#E6B8B3]"
+                        }`}
+                      >
+                        ●{" "}
+                        {wh.isActive
+                          ? t("common.active")
+                          : t("common.inactive")}
+                      </button>
+                    </div>
+                    <h3 className="font-serif text-xl font-medium mt-1">
+                      {wh.name}
+                    </h3>
+                    <p
+                      style={{ color: "var(--kr-text-muted)" }}
+                      className="text-xs mt-1"
+                    >
+                      {wh.location}
+                    </p>
+                    <div
+                      style={{ borderColor: "var(--kr-border)" }}
+                      className="mt-4 pt-3 border-t flex items-center justify-between font-mono text-xs"
+                    >
+                      <span>SKU: {whItems.length}</span>
+                      <span className="font-bold">
+                        {t("common.totalStock")}: {totalUnits}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <PaginationBar
+            currentPage={whPage}
+            totalItems={warehouses.length}
+            pageSize={whPageSize}
+            onPageChange={setWhPage}
+            onPageSizeChange={(s) => {
+              setWhPageSize(s);
+              setWhPage(1);
+            }}
+          />
         </div>
       )}
 
@@ -520,10 +646,10 @@ export const ProductsTab: React.FC = () => {
             >
               <h3 className="font-mono text-xs font-bold uppercase tracking-wider">
                 {subTab === "PRODUCTS"
-                  ? `REGISTRASI ${branding.itemTerm.toUpperCase()} BARU`
+                  ? `${t("mod.products.addSku")} ${branding.itemTerm.toUpperCase()}`
                   : subTab === "SUPPLIERS"
-                    ? "REGISTRASI MITRA PEMASOK BARU"
-                    : "REGISTRASI LOKASI GUDANG BARU"}
+                    ? t("mod.products.addSupplier")
+                    : t("mod.products.addWarehouse")}
               </h3>
               <button
                 type="button"
@@ -538,14 +664,14 @@ export const ProductsTab: React.FC = () => {
               <form onSubmit={handleCreateProduct} className="space-y-3.5">
                 <div>
                   <label className="block font-mono text-[10px] uppercase mb-1">
-                    Kode SKU Unik
+                    {t("common.sku")}
                   </label>
                   <input
                     type="text"
                     required
                     value={sku}
                     onChange={(e) => setSku(e.target.value)}
-                    placeholder="KOP-AR-009"
+                    placeholder="SKU-001"
                     style={{
                       backgroundColor: "var(--kr-bg-main)",
                       borderColor: "var(--kr-border)",
@@ -556,14 +682,14 @@ export const ProductsTab: React.FC = () => {
                 </div>
                 <div>
                   <label className="block font-mono text-[10px] uppercase mb-1">
-                    Nama {branding.itemTerm}
+                    {t("common.name")} {branding.itemTerm}
                   </label>
                   <input
                     type="text"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Single Origin Flores Bajawa"
+                    placeholder={branding.itemTerm}
                     style={{
                       backgroundColor: "var(--kr-bg-main)",
                       borderColor: "var(--kr-border)",
@@ -575,14 +701,14 @@ export const ProductsTab: React.FC = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block font-mono text-[10px] uppercase mb-1">
-                      Satuan (Unit)
+                      {t("common.unit")}
                     </label>
                     <input
                       type="text"
                       required
                       value={unit}
                       onChange={(e) => setUnit(e.target.value)}
-                      placeholder="KG / LITER / DUS"
+                      placeholder="KG / PCS / LITER"
                       style={{
                         backgroundColor: "var(--kr-bg-main)",
                         borderColor: "var(--kr-border)",
@@ -593,7 +719,7 @@ export const ProductsTab: React.FC = () => {
                   </div>
                   <div>
                     <label className="block font-mono text-[10px] uppercase mb-1">
-                      Batas Stok Minimum
+                      {t("common.minStock")}
                     </label>
                     <input
                       type="number"
@@ -612,7 +738,7 @@ export const ProductsTab: React.FC = () => {
                 </div>
                 <div>
                   <label className="block font-mono text-[10px] uppercase mb-1">
-                    Kategori
+                    {t("common.category")}
                   </label>
                   <input
                     type="text"
@@ -634,7 +760,7 @@ export const ProductsTab: React.FC = () => {
                     style={{ borderColor: "var(--kr-border)" }}
                     className="px-4 py-2 border font-mono text-xs uppercase cursor-pointer"
                   >
-                    Batal
+                    {t("common.cancel")}
                   </button>
                   <button
                     type="submit"
@@ -644,7 +770,7 @@ export const ProductsTab: React.FC = () => {
                     }}
                     className="px-4 py-2 font-mono text-xs font-bold uppercase cursor-pointer"
                   >
-                    Simpan SKU
+                    {t("common.save")}
                   </button>
                 </div>
               </form>
@@ -654,14 +780,14 @@ export const ProductsTab: React.FC = () => {
               <form onSubmit={handleCreateSupplier} className="space-y-3.5">
                 <div>
                   <label className="block font-mono text-[10px] uppercase mb-1">
-                    Nama Perusahaan Pemasok
+                    {t("common.supplier")}
                   </label>
                   <input
                     type="text"
                     required
                     value={supName}
                     onChange={(e) => setSupName(e.target.value)}
-                    placeholder="PT Agro Roastery Nusantara"
+                    placeholder="Supplier Co."
                     style={{
                       backgroundColor: "var(--kr-bg-main)",
                       borderColor: "var(--kr-border)",
@@ -672,14 +798,14 @@ export const ProductsTab: React.FC = () => {
                 </div>
                 <div>
                   <label className="block font-mono text-[10px] uppercase mb-1">
-                    Email Pemesanan (PO)
+                    Email
                   </label>
                   <input
                     type="email"
                     required
                     value={supEmail}
                     onChange={(e) => setSupEmail(e.target.value)}
-                    placeholder="order@agroroastery.co.id"
+                    placeholder="order@supplier.com"
                     style={{
                       backgroundColor: "var(--kr-bg-main)",
                       borderColor: "var(--kr-border)",
@@ -690,14 +816,14 @@ export const ProductsTab: React.FC = () => {
                 </div>
                 <div>
                   <label className="block font-mono text-[10px] uppercase mb-1">
-                    Nomor Telepon / WhatsApp
+                    Phone
                   </label>
                   <input
                     type="text"
                     required
                     value={supPhone}
                     onChange={(e) => setSupPhone(e.target.value)}
-                    placeholder="+62 811-2233-4455"
+                    placeholder="+62 811-0000-0000"
                     style={{
                       backgroundColor: "var(--kr-bg-main)",
                       borderColor: "var(--kr-border)",
@@ -713,7 +839,7 @@ export const ProductsTab: React.FC = () => {
                     style={{ borderColor: "var(--kr-border)" }}
                     className="px-4 py-2 border font-mono text-xs uppercase cursor-pointer"
                   >
-                    Batal
+                    {t("common.cancel")}
                   </button>
                   <button
                     type="submit"
@@ -723,7 +849,7 @@ export const ProductsTab: React.FC = () => {
                     }}
                     className="px-4 py-2 font-mono text-xs font-bold uppercase cursor-pointer"
                   >
-                    Simpan Pemasok
+                    {t("common.save")}
                   </button>
                 </div>
               </form>
@@ -733,14 +859,14 @@ export const ProductsTab: React.FC = () => {
               <form onSubmit={handleCreateWarehouse} className="space-y-3.5">
                 <div>
                   <label className="block font-mono text-[10px] uppercase mb-1">
-                    Kode Gudang
+                    Code
                   </label>
                   <input
                     type="text"
                     required
                     value={whCode}
                     onChange={(e) => setWhCode(e.target.value)}
-                    placeholder="WH-SBY-01"
+                    placeholder="WH-01"
                     style={{
                       backgroundColor: "var(--kr-bg-main)",
                       borderColor: "var(--kr-border)",
@@ -751,14 +877,14 @@ export const ProductsTab: React.FC = () => {
                 </div>
                 <div>
                   <label className="block font-mono text-[10px] uppercase mb-1">
-                    Nama Gudang
+                    {t("common.warehouse")}
                   </label>
                   <input
                     type="text"
                     required
                     value={whName}
                     onChange={(e) => setWhName(e.target.value)}
-                    placeholder="Gudang Cabang Surabaya"
+                    placeholder="Main Warehouse"
                     style={{
                       backgroundColor: "var(--kr-bg-main)",
                       borderColor: "var(--kr-border)",
@@ -769,14 +895,14 @@ export const ProductsTab: React.FC = () => {
                 </div>
                 <div>
                   <label className="block font-mono text-[10px] uppercase mb-1">
-                    Alamat / Lokasi
+                    Location
                   </label>
                   <input
                     type="text"
                     required
                     value={whLocation}
                     onChange={(e) => setWhLocation(e.target.value)}
-                    placeholder="Jl. Tunjungan No. 88, Surabaya"
+                    placeholder="Address"
                     style={{
                       backgroundColor: "var(--kr-bg-main)",
                       borderColor: "var(--kr-border)",
@@ -792,7 +918,7 @@ export const ProductsTab: React.FC = () => {
                     style={{ borderColor: "var(--kr-border)" }}
                     className="px-4 py-2 border font-mono text-xs uppercase cursor-pointer"
                   >
-                    Batal
+                    {t("common.cancel")}
                   </button>
                   <button
                     type="submit"
@@ -802,7 +928,7 @@ export const ProductsTab: React.FC = () => {
                     }}
                     className="px-4 py-2 font-mono text-xs font-bold uppercase cursor-pointer"
                   >
-                    Simpan Gudang
+                    {t("common.save")}
                   </button>
                 </div>
               </form>

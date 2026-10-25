@@ -255,6 +255,103 @@ export interface TranslationDictionary {
   "cp.sdk.step1": string;
   "cp.sdk.step2": string;
   "cp.sdk.step3": string;
+
+  // Pagination & Common Table UI
+  "common.all": string;
+  "common.cancel": string;
+  "common.save": string;
+  "common.showing": string;
+  "common.of": string;
+  "common.rowsPerPage": string;
+  "common.prev": string;
+  "common.next": string;
+  "common.page": string;
+  "common.emptyRecords": string;
+  "common.sku": string;
+  "common.name": string;
+  "common.category": string;
+  "common.unit": string;
+  "common.minStock": string;
+  "common.totalStock": string;
+  "common.status": string;
+  "common.actions": string;
+  "common.warehouse": string;
+  "common.supplier": string;
+  "common.suppliers": string;
+  "common.warehouses": string;
+  "common.quantity": string;
+  "common.notes": string;
+  "common.by": string;
+  "common.activate": string;
+  "common.deactivate": string;
+
+  // Login Approval & Security
+  "login.approvalRequiredTitle": string;
+  "login.approvalRequiredDesc": string;
+  "login.pendingSubmittedNotice": string;
+  "login.errPending": string;
+  "login.errRejected": string;
+  "login.errWeakPass": string;
+  "login.errInvalidUsername": string;
+  "login.fullNamePlaceholder": string;
+  "login.usernamePlaceholder": string;
+  "login.emailPlaceholder": string;
+  "login.stage2Title": string;
+
+  // Dashboard Empty States
+  "dashboard.emptyAlert": string;
+  "dashboard.emptyTx": string;
+  "dashboard.docsRecorded": string;
+
+  // Modules Action Labels
+  "mod.products.addSku": string;
+  "mod.products.addSupplier": string;
+  "mod.products.addWarehouse": string;
+  "mod.products.allCategories": string;
+  "mod.products.storedSkus": string;
+  "mod.products.totalVolume": string;
+  "mod.pr.createBtn": string;
+  "mod.pr.editDraftBtn": string;
+  "mod.pr.submitBtn": string;
+  "mod.pr.approveBtn": string;
+  "mod.pr.rejectBtn": string;
+  "mod.pr.issuePoBtn": string;
+  "mod.pr.requestedQty": string;
+  "mod.pr.addLineBtn": string;
+  "mod.pr.saveDraftBtn": string;
+  "mod.pr.saveSubmitBtn": string;
+  "mod.pr.onlyApproverHint": string;
+  "mod.po.createFromPrBtn": string;
+  "mod.po.markOrderedBtn": string;
+  "mod.po.receiveGoodsBtn": string;
+  "mod.po.cancelBtn": string;
+  "mod.po.orderedQty": string;
+  "mod.po.receivedQty": string;
+  "mod.po.remainingQty": string;
+  "mod.po.orderNowBtn": string;
+  "mod.gr.recordBtn": string;
+  "mod.gr.viewMovementsBtn": string;
+  "mod.gr.receivedInQty": string;
+  "mod.gr.receiveNowQty": string;
+  "mod.gr.saveGrBtn": string;
+  "mod.inv.allWarehouses": string;
+  "mod.inv.stockBalancesTab": string;
+  "mod.inv.movementsTab": string;
+  "mod.inv.physicalStock": string;
+  "mod.inv.stockHealth": string;
+  "mod.inv.lowStock": string;
+  "mod.inv.safeStock": string;
+  "mod.inv.recordedTime": string;
+  "mod.inv.movementType": string;
+  "mod.inv.refNumber": string;
+  "mod.inv.movementQty": string;
+  "mod.audit.allEntities": string;
+  "mod.audit.searchPlaceholder": string;
+  "mod.audit.colEntity": string;
+  "mod.audit.colRefId": string;
+  "mod.audit.colAction": string;
+  "mod.audit.colActor": string;
+  "mod.audit.colDetails": string;
 }
 
 export type TranslationKey = keyof TranslationDictionary;
@@ -493,6 +590,106 @@ export const BUILTIN_TRANSLATIONS: Record<
       "Tambah Bahasa Baru: Bisa langsung lewat menu ADM-03 di atas atau melalui src/kernel/i18n.ts.",
     "cp.sdk.step3":
       "Tambah Tema Palet Baru: Cukup tambahkan objek warna pada THEME_PALETTES di src/kernel/registry.ts.",
+
+    "common.all": "SEMUA",
+    "common.cancel": "Batal",
+    "common.save": "Simpan",
+    "common.showing": "Menampilkan",
+    "common.of": "dari",
+    "common.rowsPerPage": "Baris / hal:",
+    "common.prev": "Sebelumnya",
+    "common.next": " Berikutnya",
+    "common.page": "Hal",
+    "common.emptyRecords": "Belum ada data pada tabel ini.",
+    "common.sku": "Kode SKU",
+    "common.name": "Nama",
+    "common.category": "Kategori",
+    "common.unit": "Satuan",
+    "common.minStock": "Batas Min.",
+    "common.totalStock": "Total Stok",
+    "common.status": "Status",
+    "common.actions": "Aksi",
+    "common.warehouse": "Gudang",
+    "common.supplier": "Pemasok",
+    "common.suppliers": "Pemasok",
+    "common.warehouses": "Gudang",
+    "common.quantity": "Kuantitas",
+    "common.notes": "Catatan Keperluan / Keterangan",
+    "common.by": "Oleh",
+    "common.activate": "Aktifkan",
+    "common.deactivate": "Nonaktifkan",
+
+    "login.approvalRequiredTitle":
+      "● MEKANISME OTORISASI AKUN BARU (APPROVAL REQUIRED)",
+    "login.approvalRequiredDesc":
+      "Pendaftaran mandiri dari halaman ini tidak langsung masuk ke sistem, melainkan berstatus PENDING (Menunggu Persetujuan) hingga disetujui oleh Admin / Approver di Panel Kontrol.",
+    "login.pendingSubmittedNotice":
+      "Pengajuan pendaftaran akun berhasil dikirim! Status akun Anda saat ini adalah MENUNGGU PERSETUJUAN (PENDING). Silakan minta Admin / Approver untuk meng-approve akun Anda melalui menu Panel Kontrol → Manajemen Akun.",
+    "login.errPending":
+      "Akun ini masih berstatus MENUNGGU PERSETUJUAN (PENDING). Silakan minta Admin / Approver untuk menyetujui akun Anda di Panel Kontrol.",
+    "login.errRejected":
+      "Pendaftaran akun ini telah DITOLAK (REJECTED) oleh Admin.",
+    "login.errWeakPass": "Kata sandi minimal harus terdiri dari 6 karakter.",
+    "login.errInvalidUsername":
+      "Username hanya boleh huruf, angka, titik, strip, atau garis bawah (3-32 karakter).",
+    "login.fullNamePlaceholder": "Nama Lengkap Anda",
+    "login.usernamePlaceholder": "username_anda",
+    "login.emailPlaceholder": "nama@organisasi.id",
+    "login.stage2Title": "OTORISASI APPROVER",
+
+    "dashboard.emptyAlert":
+      "Belum ada defisit stok kritis (0 SKU di bawah ambang batas).",
+    "dashboard.emptyTx": "Database masih kosong (0 dokumen transaksi).",
+    "dashboard.docsRecorded": "DOKUMEN",
+
+    "mod.products.addSku": "+ Tambah",
+    "mod.products.addSupplier": "+ Tambah Pemasok",
+    "mod.products.addWarehouse": "+ Tambah Gudang",
+    "mod.products.allCategories": "SEMUA KATEGORI",
+    "mod.products.storedSkus": "SKU Tersimpan",
+    "mod.products.totalVolume": "Total Volume",
+    "mod.pr.createBtn": "+ Buat Baru",
+    "mod.pr.editDraftBtn": "Edit Draft",
+    "mod.pr.submitBtn": "Ajukan (Submit)",
+    "mod.pr.approveBtn": "Approve",
+    "mod.pr.rejectBtn": "Reject",
+    "mod.pr.issuePoBtn": "Terbitkan",
+    "mod.pr.requestedQty": "Kuantitas Diminta",
+    "mod.pr.addLineBtn": "+ Tambah Baris Item",
+    "mod.pr.saveDraftBtn": "Simpan DRAFT",
+    "mod.pr.saveSubmitBtn": "Simpan & Ajukan (SUBMIT)",
+    "mod.pr.onlyApproverHint": "Menunggu otorisasi Approver",
+    "mod.po.createFromPrBtn": "+ Terbitkan dari",
+    "mod.po.markOrderedBtn": "Kirim Pesanan (ORDERED)",
+    "mod.po.receiveGoodsBtn": "Terima Barang",
+    "mod.po.cancelBtn": "Batalkan",
+    "mod.po.orderedQty": "Dipesan",
+    "mod.po.receivedQty": "Sudah Diterima",
+    "mod.po.remainingQty": "Sisa Pesanan",
+    "mod.po.orderNowBtn": "Terbitkan & Kirim (ORDERED)",
+    "mod.gr.recordBtn": "+ Catat Penerimaan",
+    "mod.gr.viewMovementsBtn": "Lihat Mutasi Stok",
+    "mod.gr.receivedInQty": "Kuantitas Masuk (+Stok)",
+    "mod.gr.receiveNowQty": "Terima Sekarang",
+    "mod.gr.saveGrBtn": "Simpan & Tambah Stok",
+    "mod.inv.allWarehouses": "SEMUA GUDANG",
+    "mod.inv.stockBalancesTab": "Saldo Gudang",
+    "mod.inv.movementsTab": "Riwayat Mutasi",
+    "mod.inv.physicalStock": "Saldo Fisik",
+    "mod.inv.stockHealth": "Kesehatan Stok",
+    "mod.inv.lowStock": "STOK RENDAH",
+    "mod.inv.safeStock": "STOK AMAN",
+    "mod.inv.recordedTime": "Waktu Catat",
+    "mod.inv.movementType": "Tipe Mutasi",
+    "mod.inv.refNumber": "No. Referensi",
+    "mod.inv.movementQty": "Kuantitas Mutasi",
+    "mod.audit.allEntities": "SEMUA ENTITAS",
+    "mod.audit.searchPlaceholder": "Cari ID dokumen, aksi, petugas...",
+    "mod.audit.colEntity": "Entitas",
+    "mod.audit.colRefId": "ID Referensi",
+    "mod.audit.colAction": "Aksi Sistem",
+    "mod.audit.colActor": "Petugas",
+    "mod.audit.colDetails": "Rincian Kejadian",
   },
 
   en: {
@@ -724,6 +921,106 @@ export const BUILTIN_TRANSLATIONS: Record<
       "Add New Language: Create it live in ADM-03 above or add to src/kernel/i18n.ts.",
     "cp.sdk.step3":
       "Add New Color Theme: Append a palette object to THEME_PALETTES in src/kernel/registry.ts.",
+
+    "common.all": "ALL",
+    "common.cancel": "Cancel",
+    "common.save": "Save",
+    "common.showing": "Showing",
+    "common.of": "of",
+    "common.rowsPerPage": "Rows / page:",
+    "common.prev": "Prev",
+    "common.next": "Next",
+    "common.page": "Page",
+    "common.emptyRecords": "No records found in this table.",
+    "common.sku": "SKU Code",
+    "common.name": "Name",
+    "common.category": "Category",
+    "common.unit": "Unit",
+    "common.minStock": "Min. Stock",
+    "common.totalStock": "Total Stock",
+    "common.status": "Status",
+    "common.actions": "Actions",
+    "common.warehouse": "Warehouse",
+    "common.supplier": "Supplier",
+    "common.suppliers": "Suppliers",
+    "common.warehouses": "Warehouses",
+    "common.quantity": "Quantity",
+    "common.notes": "Purpose / Remarks",
+    "common.by": "By",
+    "common.activate": "Activate",
+    "common.deactivate": "Deactivate",
+
+    "login.approvalRequiredTitle":
+      "● NEW ACCOUNT AUTHORIZATION POLICY (APPROVAL REQUIRED)",
+    "login.approvalRequiredDesc":
+      "Self-registered accounts from this screen do not log in immediately; they are placed in PENDING status until approved by an Admin / Approver in the Control Panel.",
+    "login.pendingSubmittedNotice":
+      "Account registration request submitted! Your account is currently PENDING APPROVAL. Please ask an active Admin / Approver to approve your account in Control Panel → User Management.",
+    "login.errPending":
+      "This account is still PENDING APPROVAL. Please ask an Admin / Approver to activate your account in the Control Panel.",
+    "login.errRejected":
+      "This account registration request was REJECTED by an Administrator.",
+    "login.errWeakPass": "Password must be at least 6 characters long.",
+    "login.errInvalidUsername":
+      "Username may only contain letters, numbers, dots, hyphens, or underscores (3-32 chars).",
+    "login.fullNamePlaceholder": "Your Full Name",
+    "login.usernamePlaceholder": "your_username",
+    "login.emailPlaceholder": "name@organization.org",
+    "login.stage2Title": "APPROVER CLEARANCE",
+
+    "dashboard.emptyAlert":
+      "No critical stock deficits (0 SKUs below minimum threshold).",
+    "dashboard.emptyTx": "Database is currently empty (0 transaction records).",
+    "dashboard.docsRecorded": "DOCUMENTS",
+
+    "mod.products.addSku": "+ Add",
+    "mod.products.addSupplier": "+ Add Supplier",
+    "mod.products.addWarehouse": "+ Add Warehouse",
+    "mod.products.allCategories": "ALL CATEGORIES",
+    "mod.products.storedSkus": "Stored SKUs",
+    "mod.products.totalVolume": "Total Volume",
+    "mod.pr.createBtn": "+ Create New",
+    "mod.pr.editDraftBtn": "Edit Draft",
+    "mod.pr.submitBtn": "Submit PR",
+    "mod.pr.approveBtn": "Approve",
+    "mod.pr.rejectBtn": "Reject",
+    "mod.pr.issuePoBtn": "Issue",
+    "mod.pr.requestedQty": "Requested Qty",
+    "mod.pr.addLineBtn": "+ Add Line Item",
+    "mod.pr.saveDraftBtn": "Save DRAFT",
+    "mod.pr.saveSubmitBtn": "Save & Submit",
+    "mod.pr.onlyApproverHint": "Awaiting Approver clearance",
+    "mod.po.createFromPrBtn": "+ Issue from",
+    "mod.po.markOrderedBtn": "Mark as Ordered",
+    "mod.po.receiveGoodsBtn": "Receive Goods",
+    "mod.po.cancelBtn": "Cancel PO",
+    "mod.po.orderedQty": "Ordered",
+    "mod.po.receivedQty": "Received",
+    "mod.po.remainingQty": "Remaining",
+    "mod.po.orderNowBtn": "Issue & Dispatch (ORDERED)",
+    "mod.gr.recordBtn": "+ Record Receipt",
+    "mod.gr.viewMovementsBtn": "View Stock Ledger",
+    "mod.gr.receivedInQty": "Received Qty (+Stock)",
+    "mod.gr.receiveNowQty": "Receive Now",
+    "mod.gr.saveGrBtn": "Save & Commit Stock",
+    "mod.inv.allWarehouses": "ALL WAREHOUSES",
+    "mod.inv.stockBalancesTab": "Stock Balances",
+    "mod.inv.movementsTab": "Movement History",
+    "mod.inv.physicalStock": "Physical Balance",
+    "mod.inv.stockHealth": "Stock Health",
+    "mod.inv.lowStock": "LOW STOCK",
+    "mod.inv.safeStock": "SAFE THRESHOLD",
+    "mod.inv.recordedTime": "Recorded At",
+    "mod.inv.movementType": "Movement Type",
+    "mod.inv.refNumber": "Reference No.",
+    "mod.inv.movementQty": "Movement Qty",
+    "mod.audit.allEntities": "ALL ENTITIES",
+    "mod.audit.searchPlaceholder": "Search document ID, action, actor...",
+    "mod.audit.colEntity": "Entity",
+    "mod.audit.colRefId": "Reference ID",
+    "mod.audit.colAction": "System Action",
+    "mod.audit.colActor": "Actor",
+    "mod.audit.colDetails": "Event Details",
   },
 
   ja: {
@@ -952,5 +1249,104 @@ export const BUILTIN_TRANSLATIONS: Record<
       "新規言語の追加: ADM-03画面から直接追加するか、src/kernel/i18n.ts に定義を追加できます。",
     "cp.sdk.step3":
       "新規テーマの追加: src/kernel/registry.ts の THEME_PALETTES に配色オブジェクトを追加します。",
+
+    "common.all": "すべて",
+    "common.cancel": "キャンセル",
+    "common.save": "保存",
+    "common.showing": "表示中:",
+    "common.of": "/",
+    "common.rowsPerPage": "表示件数:",
+    "common.prev": "前へ",
+    "common.next": "次へ",
+    "common.page": "ページ",
+    "common.emptyRecords": "該当するデータがありません。",
+    "common.sku": "SKUコード",
+    "common.name": "名称",
+    "common.category": "カテゴリ",
+    "common.unit": "単位",
+    "common.minStock": "安全在庫数",
+    "common.totalStock": "総在庫数",
+    "common.status": "状態",
+    "common.actions": "操作",
+    "common.warehouse": "倉庫",
+    "common.supplier": "仕入先",
+    "common.suppliers": "仕入先一覧",
+    "common.warehouses": "倉庫拠点",
+    "common.quantity": "数量",
+    "common.notes": "用途・備考メモ",
+    "common.by": "作成者",
+    "common.activate": "有効化",
+    "common.deactivate": "無効化",
+
+    "login.approvalRequiredTitle":
+      "● 新規アカウント承認ポリシー (管理者承認必須)",
+    "login.approvalRequiredDesc":
+      "この画面から自己登録されたアカウントはすぐにはログインできず、管理パネルで管理者(APPROVER)が承認するまで「承認待ち(PENDING)」となります。",
+    "login.pendingSubmittedNotice":
+      "アカウント登録申請が送信されました！現在のステータスは「承認待ち(PENDING)」です。管理者(APPROVER)に管理パネルから承認を依頼してください。",
+    "login.errPending":
+      "このアカウントは現在「承認待ち(PENDING)」です。管理者に承認を依頼してください。",
+    "login.errRejected":
+      "このアカウント申請は管理者により却下(REJECTED)されました。",
+    "login.errWeakPass": "パスワードは6文字以上で入力してください。",
+    "login.errInvalidUsername":
+      "ユーザー名は半角英数字・ドット・ハイフン・アンダースコア(3〜32文字)で入力してください。",
+    "login.fullNamePlaceholder": "氏名を入力",
+    "login.usernamePlaceholder": "username_id",
+    "login.emailPlaceholder": "user@organization.jp",
+    "login.stage2Title": "承認者審査 (APPROVAL)",
+
+    "dashboard.emptyAlert": "安全在庫割れの品目はありません (0 SKU)。",
+    "dashboard.emptyTx": "現在トランザクション履歴はありません (0件)。",
+    "dashboard.docsRecorded": "件の伝票",
+
+    "mod.products.addSku": "+ 追加:",
+    "mod.products.addSupplier": "+ 仕入先を追加",
+    "mod.products.addWarehouse": "+ 倉庫を追加",
+    "mod.products.allCategories": "全カテゴリ",
+    "mod.products.storedSkus": "保管SKU数",
+    "mod.products.totalVolume": "総在庫量",
+    "mod.pr.createBtn": "+ 新規作成",
+    "mod.pr.editDraftBtn": "下書き編集",
+    "mod.pr.submitBtn": "申請する (Submit)",
+    "mod.pr.approveBtn": "承認 (Approve)",
+    "mod.pr.rejectBtn": "却下 (Reject)",
+    "mod.pr.issuePoBtn": "発注書作成",
+    "mod.pr.requestedQty": "依頼数量",
+    "mod.pr.addLineBtn": "+ 明細行を追加",
+    "mod.pr.saveDraftBtn": "下書き保存 (DRAFT)",
+    "mod.pr.saveSubmitBtn": "保存して申請 (SUBMIT)",
+    "mod.pr.onlyApproverHint": "承認者の審査待ち",
+    "mod.po.createFromPrBtn": "+ 発注書発行:",
+    "mod.po.markOrderedBtn": "発注済みにする (ORDERED)",
+    "mod.po.receiveGoodsBtn": "入庫検収",
+    "mod.po.cancelBtn": "キャンセル",
+    "mod.po.orderedQty": "発注数",
+    "mod.po.receivedQty": "入庫済",
+    "mod.po.remainingQty": "発注残",
+    "mod.po.orderNowBtn": "発行して即発注 (ORDERED)",
+    "mod.gr.recordBtn": "+ 入庫検収を記録",
+    "mod.gr.viewMovementsBtn": "受払台帳を見る",
+    "mod.gr.receivedInQty": "入庫数量 (+在庫)",
+    "mod.gr.receiveNowQty": "今回入庫数",
+    "mod.gr.saveGrBtn": "入庫確定・在庫反映",
+    "mod.inv.allWarehouses": "全倉庫拠点",
+    "mod.inv.stockBalancesTab": "倉庫在庫残高",
+    "mod.inv.movementsTab": "受払履歴ログ",
+    "mod.inv.physicalStock": "実在庫残高",
+    "mod.inv.stockHealth": "在庫健全性",
+    "mod.inv.lowStock": "安全在庫割れ",
+    "mod.inv.safeStock": "適正水準",
+    "mod.inv.recordedTime": "記録日時",
+    "mod.inv.movementType": "受払区分",
+    "mod.inv.refNumber": "参照伝票番号",
+    "mod.inv.movementQty": "受払数量",
+    "mod.audit.allEntities": "全エンティティ",
+    "mod.audit.searchPlaceholder": "伝票ID・操作・担当者で検索...",
+    "mod.audit.colEntity": "対象",
+    "mod.audit.colRefId": "参照ID",
+    "mod.audit.colAction": "実行アクション",
+    "mod.audit.colActor": "実行者",
+    "mod.audit.colDetails": "詳細内容",
   },
 };

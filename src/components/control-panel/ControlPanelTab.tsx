@@ -36,6 +36,7 @@ import {
   TranslationKey,
 } from "@/kernel/i18n";
 import { NavigationTab, UserRole } from "@/types";
+import { PaginationBar } from "@/components/layout/PaginationBar";
 
 type AdminSectionId =
   | "status"
@@ -164,6 +165,10 @@ export const ControlPanelTab: React.FC = () => {
   const [usrPassword, setUsrPassword] = useState<string>("");
   const [usrRole, setUsrRole] = useState<UserRole>("USER");
   const [usrMessage, setUsrMessage] = useState<string>("");
+  const [usrPage, setUsrPage] = useState<number>(1);
+  const [usrPageSize, setUsrPageSize] = useState<number>(5);
+  const [dictPage, setDictPage] = useState<number>(1);
+  const [dictPageSize, setDictPageSize] = useState<number>(10);
 
   const customOverrideCount = Object.values(customTranslations).filter(
     (v) => v && v.trim().length > 0,
@@ -333,6 +338,15 @@ export const ControlPanelTab: React.FC = () => {
       defaultVal.includes(q)
     );
   });
+
+  const paginatedDictItems = filteredDictItems.slice(
+    (dictPage - 1) * dictPageSize,
+    dictPage * dictPageSize,
+  );
+  const paginatedAccounts = accounts.slice(
+    (usrPage - 1) * usrPageSize,
+    usrPage * usrPageSize,
+  );
 
   return (
     <div className="space-y-6">
@@ -1069,9 +1083,9 @@ export const ControlPanelTab: React.FC = () => {
 
                 <div
                   style={{ borderColor: "var(--kr-border)" }}
-                  className="border divide-y max-h-80 overflow-y-auto"
+                  className="border divide-y"
                 >
-                  {filteredDictItems.map((item) => {
+                  {paginatedDictItems.map((item) => {
                     const builtinText = getBaseTranslationForCurrentLocale(
                       item.key,
                     );
@@ -1114,6 +1128,16 @@ export const ControlPanelTab: React.FC = () => {
                       </div>
                     );
                   })}
+                  <PaginationBar
+                    currentPage={dictPage}
+                    totalItems={filteredDictItems.length}
+                    pageSize={dictPageSize}
+                    onPageChange={setDictPage}
+                    onPageSizeChange={(s) => {
+                      setDictPageSize(s);
+                      setDictPage(1);
+                    }}
+                  />
                 </div>
               </div>
             </div>
@@ -1268,7 +1292,7 @@ export const ControlPanelTab: React.FC = () => {
                       required
                       value={usrFullName}
                       onChange={(e) => setUsrFullName(e.target.value)}
-                      placeholder="cth: Riko Toni"
+                      placeholder={t("login.fullNamePlaceholder")}
                       style={{
                         backgroundColor: "var(--kr-bg-surface)",
                         borderColor: "var(--kr-border)",
@@ -1286,7 +1310,7 @@ export const ControlPanelTab: React.FC = () => {
                       required
                       value={usrUsername}
                       onChange={(e) => setUsrUsername(e.target.value)}
-                      placeholder="cth: riko_approver"
+                      placeholder={t("login.usernamePlaceholder")}
                       style={{
                         backgroundColor: "var(--kr-bg-surface)",
                         borderColor: "var(--kr-border)",
@@ -1304,7 +1328,7 @@ export const ControlPanelTab: React.FC = () => {
                       required
                       value={usrEmail}
                       onChange={(e) => setUsrEmail(e.target.value)}
-                      placeholder="riko@perusahaan.id"
+                      placeholder={t("login.emailPlaceholder")}
                       style={{
                         backgroundColor: "var(--kr-bg-surface)",
                         borderColor: "var(--kr-border)",
@@ -1357,13 +1381,14 @@ export const ControlPanelTab: React.FC = () => {
 
                   <button
                     type="submit"
+                    disabled={currentUser.role !== "APPROVER"}
                     style={{
                       backgroundColor: "var(--kr-bg-sidebar)",
                       color: "var(--kr-text-sidebar)",
                     }}
-                    className="px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider cursor-pointer"
+                    className="px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider cursor-pointer disabled:opacity-40"
                   >
-                    + Simpan Akun Baru
+                    + {t("common.save")}
                   </button>
                 </div>
               </form>
@@ -1382,15 +1407,21 @@ export const ControlPanelTab: React.FC = () => {
                       }}
                       className="border-b font-mono text-[10px] uppercase"
                     >
-                      <th className="py-2.5 px-4">Nama Lengkap</th>
-                      <th className="py-2.5 px-4">Username</th>
-                      <th className="py-2.5 px-4">Status</th>
-                      <th className="py-2.5 px-4">Role Otorisasi</th>
-                      <th className="py-2.5 px-4 text-right">Aksi</th>
+                      <th className="py-2.5 px-4">
+                        {t("login.fullNameLabel")}
+                      </th>
+                      <th className="py-2.5 px-4">
+                        {t("login.usernameLabel")}
+                      </th>
+                      <th className="py-2.5 px-4">{t("common.status")}</th>
+                      <th className="py-2.5 px-4">{t("login.roleLabel")}</th>
+                      <th className="py-2.5 px-4 text-right">
+                        {t("common.actions")}
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
-                    {accounts.map((acc) => {
+                    {paginatedAccounts.map((acc) => {
                       const isSelf = acc.id === currentUser.id;
                       const accStatus = acc.status ?? "ACTIVE";
                       return (
@@ -1403,7 +1434,7 @@ export const ControlPanelTab: React.FC = () => {
                               {acc.name}{" "}
                               {isSelf && (
                                 <span className="font-mono text-[9px] px-1.5 py-0.5 bg-[#E7F2EC] text-[#1D593B] border border-[#B2D3C1] ml-1">
-                                  SESI AKTIF
+                                  ACTIVE SESSION
                                 </span>
                               )}
                             </div>
@@ -1435,6 +1466,7 @@ export const ControlPanelTab: React.FC = () => {
                           <td className="py-3 px-4">
                             <select
                               value={acc.role}
+                              disabled={currentUser.role !== "APPROVER"}
                               onChange={(e) =>
                                 updateAccountRole(
                                   acc.id,
@@ -1446,29 +1478,41 @@ export const ControlPanelTab: React.FC = () => {
                                 borderColor: "var(--kr-border)",
                                 color: "var(--kr-text-main)",
                               }}
-                              className="px-2 py-1 border font-mono text-[10px] font-bold uppercase cursor-pointer"
+                              className="px-2 py-1 border font-mono text-[10px] font-bold uppercase cursor-pointer disabled:opacity-50"
                             >
                               <option value="APPROVER">APPROVER</option>
                               <option value="USER">USER</option>
                             </select>
                           </td>
                           <td className="py-3 px-4 text-right">
-                            {!isSelf && accounts.length > 1 && (
-                              <button
-                                type="button"
-                                onClick={() => deleteAccount(acc.id)}
-                                className="p-1.5 text-[#9E2A20] hover:opacity-80 cursor-pointer"
-                                title={t("common.delete")}
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            )}
+                            {!isSelf &&
+                              accounts.length > 1 &&
+                              currentUser.role === "APPROVER" && (
+                                <button
+                                  type="button"
+                                  onClick={() => deleteAccount(acc.id)}
+                                  className="p-1.5 text-[#9E2A20] hover:opacity-80 cursor-pointer"
+                                  title={t("common.delete")}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
                           </td>
                         </tr>
                       );
                     })}
                   </tbody>
                 </table>
+                <PaginationBar
+                  currentPage={usrPage}
+                  totalItems={accounts.length}
+                  pageSize={usrPageSize}
+                  onPageChange={setUsrPage}
+                  onPageSizeChange={(s) => {
+                    setUsrPageSize(s);
+                    setUsrPage(1);
+                  }}
+                />
               </div>
             </div>
           )}

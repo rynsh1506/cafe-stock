@@ -65,37 +65,7 @@ const DEFAULT_DB_CONNECTION: DatabaseConnectionConfig = {
   lastHandshakeStatus: "STANDALONE_LOCAL",
 };
 
-const INITIAL_DISPATCH_LOGS: EmailDispatchLog[] = [
-  {
-    id: "mail_003",
-    timestamp: "26 Okt 2026, 08:14:22",
-    eventHook: "mailer:onPrSubmitted",
-    recipient: "approver-desk@perusahaan.co.id",
-    subject:
-      "[NOTIF-INTI] Tiket Pengadaan Baru #PR-2026-000001 Menunggu Review",
-    status: "DELIVERED",
-    latencyMs: 0.42,
-  },
-  {
-    id: "mail_002",
-    timestamp: "25 Okt 2026, 16:40:10",
-    eventHook: "mailer:onCriticalStock",
-    recipient: "inti-operasional@perusahaan.co.id",
-    subject: "[NOTIF-INTI] Peringatan Saldo Minimum: Arabica Gayo (Sisa 10 KG)",
-    status: "DELIVERED",
-    latencyMs: 0.31,
-  },
-  {
-    id: "mail_001",
-    timestamp: "24 Okt 2026, 11:05:49",
-    eventHook: "mailer:onGrReceived",
-    recipient: "inti-operasional@perusahaan.co.id",
-    subject:
-      "[NOTIF-INTI] Bukti Timbang Terima #GR-2026-000001 Telah Menambah Stok",
-    status: "DELIVERED",
-    latencyMs: 0.28,
-  },
-];
+const INITIAL_DISPATCH_LOGS: EmailDispatchLog[] = [];
 
 interface KernelContextValue {
   plugins: KernelPluginManifest[];

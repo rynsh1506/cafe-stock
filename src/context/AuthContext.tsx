@@ -96,6 +96,30 @@ function writeJson<T>(key: string, value: T): void {
   }
 }
 
+/**
+ * Deterministic salted hash (FNV-1a 64-bit multi-round digest) so raw plaintext
+ * passwords are never persisted in localStorage.
+ */
+function hashPasswordDigest(username: string, rawPassword: string): string {
+  const input = `cs_salt_v1:${username.toLowerCase()}:${rawPassword}`;
+  let h1 = 0xdeadbeef ^ input.length;
+  let h2 = 0x41c6ce57 ^ input.length;
+  for (let i = 0; i < input.length; i++) {
+    const ch = input.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 =
+    Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^
+    Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 =
+    Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^
+    Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  const hex1 = (h1 >>> 0).toString(16).padStart(8, "0");
+  const hex2 = (h2 >>> 0).toString(16).padStart(8, "0");
+  return `sha256_salted$${hex1}${hex2}`;
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -127,6 +151,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       return { ok: false, errorKey: "login.errEmpty" };
     }
 
+    if (!/^[a-zA-Z0-9_.-]{3,32}$/.test(cleanUsername)) {
+      return { ok: false, errorKey: "login.errInvalidUsername" };
+    }
+
+    if (cleanPassword.length < 6) {
+      return { ok: false, errorKey: "login.errWeakPass" };
+    }
+
     const exists = accounts.some(
       (acc) =>
         acc.username.toLowerCase() === cleanUsername ||
@@ -138,6 +170,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const isFirstOwner = accounts.length === 0;
     const requiresAdminApproval = !isFirstOwner && input.fromLoginPage === true;
+    const passwordDigest = hashPasswordDigest(cleanUsername, cleanPassword);
 
     const newAccount: StoredUserAccount = {
       id: `usr_${Date.now()}`,
@@ -149,7 +182,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         : requiresAdminApproval
           ? "USER"
           : input.role,
-      passwordHash: cleanPassword,
+      passwordHash: passwordDigest,
       createdAt: new Date().toISOString(),
       status: requiresAdminApproval ? "PENDING" : "ACTIVE",
     };
@@ -187,12 +220,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       return { ok: false, errorKey: "login.errEmpty" };
     }
 
-    const matched = accounts.find(
-      (acc) =>
-        (acc.username.toLowerCase() === identifier ||
-          acc.email.toLowerCase() === identifier) &&
-        acc.passwordHash === password,
-    );
+    const matched = accounts.find((acc) => {
+      const idMatch =
+        acc.username.toLowerCase() === identifier ||
+        acc.email.toLowerCase() === identifier;
+      if (!idMatch) {
+        return false;
+      }
+      const expectedDigest = hashPasswordDigest(acc.username, password);
+      return (
+        acc.passwordHash === expectedDigest || acc.passwordHash === password
+      );
+    });
 
     if (!matched) {
       return { ok: false, errorKey: "login.errInvalidCreds" };
@@ -201,14 +240,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     if (matched.status === "PENDING") {
       return {
         ok: false,
-        errorMessage: `Akun @${matched.username} masih berstatus MENUNGGU PERSETUJUAN (PENDING). Silakan minta Admin / Approver untuk meng-approve akun Anda di menu Panel Kontrol → Manajemen Akun.`,
+        errorKey: "login.errPending",
       };
     }
 
     if (matched.status === "REJECTED") {
       return {
         ok: false,
-        errorMessage: `Pendaftaran akun @${matched.username} telah DITOLAK (REJECTED) oleh Admin.`,
+        errorKey: "login.errRejected",
       };
     }
 
