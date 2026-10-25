@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import {
   AuditLog,
   GoodsReceipt,
@@ -23,37 +23,27 @@ import {
   INITIAL_SUPPLIERS,
   INITIAL_WAREHOUSES,
 } from "@/data/mockData";
+import {
+  clearNativeDatabase,
+  DB_TABLE_KEYS,
+  generatePortableSqlDump,
+  loadSnapshotFromNativeDatabase,
+  purgeLegacyMockStorage,
+  readTableSync,
+  syncSnapshotToNativeDatabase,
+  writeTableSync,
+} from "@/utils/sqliteDatabase";
 
-const STORE_KEYS = {
-  PRODUCTS: "kr_store_products_v1",
-  SUPPLIERS: "kr_store_suppliers_v1",
-  WAREHOUSES: "kr_store_warehouses_v1",
-  PRS: "kr_store_prs_v1",
-  POS: "kr_store_pos_v1",
-  GRS: "kr_store_grs_v1",
-  BALANCES: "kr_store_balances_v1",
-  MOVEMENTS: "kr_store_movements_v1",
-  AUDITS: "kr_store_audits_v1",
-} as const;
+purgeLegacyMockStorage();
+
+const STORE_KEYS = DB_TABLE_KEYS;
 
 function loadStored<T>(key: string, fallback: T): T {
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) {
-      return fallback;
-    }
-    return JSON.parse(raw) as T;
-  } catch {
-    return fallback;
-  }
+  return readTableSync(key, fallback);
 }
 
 function saveStored<T>(key: string, value: T): void {
-  try {
-    window.localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // ignore storage quota errors
-  }
+  writeTableSync(key, value);
 }
 
 export interface CreateProductInput {
@@ -144,6 +134,9 @@ interface StoreContextValue {
 
   getStockBalance: (warehouseId: string, productId: string) => number;
   resetStoreData: () => void;
+  wipeAllDatabase: () => void;
+  seedDemoData: () => void;
+  exportSqlDump: () => string;
 }
 
 const StoreContext = createContext<StoreContextValue | undefined>(undefined);
@@ -152,32 +145,91 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [products, setProducts] = useState<Product[]>(() =>
-    loadStored(STORE_KEYS.PRODUCTS, INITIAL_PRODUCTS),
+    loadStored<Product[]>(STORE_KEYS.PRODUCTS, []),
   );
   const [suppliers, setSuppliers] = useState<Supplier[]>(() =>
-    loadStored(STORE_KEYS.SUPPLIERS, INITIAL_SUPPLIERS),
+    loadStored<Supplier[]>(STORE_KEYS.SUPPLIERS, []),
   );
   const [warehouses, setWarehouses] = useState<Warehouse[]>(() =>
-    loadStored(STORE_KEYS.WAREHOUSES, INITIAL_WAREHOUSES),
+    loadStored<Warehouse[]>(STORE_KEYS.WAREHOUSES, []),
   );
   const [purchaseRequests, setPurchaseRequests] = useState<PurchaseRequest[]>(
-    () => loadStored(STORE_KEYS.PRS, INITIAL_PURCHASE_REQUESTS),
+    () => loadStored<PurchaseRequest[]>(STORE_KEYS.PRS, []),
   );
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>(() =>
-    loadStored(STORE_KEYS.POS, INITIAL_PURCHASE_ORDERS),
+    loadStored<PurchaseOrder[]>(STORE_KEYS.POS, []),
   );
   const [goodsReceipts, setGoodsReceipts] = useState<GoodsReceipt[]>(() =>
-    loadStored(STORE_KEYS.GRS, INITIAL_GOODS_RECEIPTS),
+    loadStored<GoodsReceipt[]>(STORE_KEYS.GRS, []),
   );
   const [inventoryBalances, setInventoryBalances] = useState<
     InventoryBalance[]
-  >(() => loadStored(STORE_KEYS.BALANCES, INITIAL_INVENTORY_BALANCES));
+  >(() => loadStored<InventoryBalance[]>(STORE_KEYS.BALANCES, []));
   const [inventoryMovements, setInventoryMovements] = useState<
     InventoryMovement[]
-  >(() => loadStored(STORE_KEYS.MOVEMENTS, INITIAL_MOVEMENTS));
+  >(() => loadStored<InventoryMovement[]>(STORE_KEYS.MOVEMENTS, []));
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(() =>
-    loadStored(STORE_KEYS.AUDITS, INITIAL_AUDIT_LOGS),
+    loadStored<AuditLog[]>(STORE_KEYS.AUDITS, []),
   );
+
+  // Hydrate from Tauri native database file on initial launch if local cache is empty
+  useEffect(() => {
+    let mounted = true;
+    loadSnapshotFromNativeDatabase().then((snap) => {
+      if (!mounted || !snap) {
+        return;
+      }
+      const hasLocalData =
+        products.length > 0 ||
+        suppliers.length > 0 ||
+        warehouses.length > 0 ||
+        purchaseRequests.length > 0;
+      if (
+        !hasLocalData &&
+        (snap.products.length > 0 || snap.warehouses.length > 0)
+      ) {
+        setProducts(snap.products);
+        setSuppliers(snap.suppliers);
+        setWarehouses(snap.warehouses);
+        setPurchaseRequests(snap.purchaseRequests);
+        setPurchaseOrders(snap.purchaseOrders);
+        setGoodsReceipts(snap.goodsReceipts);
+        setInventoryBalances(snap.inventoryBalances);
+        setInventoryMovements(snap.inventoryMovements);
+        setAuditLogs(snap.auditLogs);
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // Continuously persist relational snapshot to Tauri native DB file & IndexedDB
+  useEffect(() => {
+    syncSnapshotToNativeDatabase({
+      version: 2,
+      updatedAt: new Date().toISOString(),
+      products,
+      suppliers,
+      warehouses,
+      purchaseRequests,
+      purchaseOrders,
+      goodsReceipts,
+      inventoryBalances,
+      inventoryMovements,
+      auditLogs,
+    });
+  }, [
+    products,
+    suppliers,
+    warehouses,
+    purchaseRequests,
+    purchaseOrders,
+    goodsReceipts,
+    inventoryBalances,
+    inventoryMovements,
+    auditLogs,
+  ]);
 
   const appendAudit = (
     entity: string,
@@ -749,7 +801,27 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
     return found ? found.stock : 0;
   };
 
-  const resetStoreData = (): void => {
+  const wipeAllDatabase = (): void => {
+    setProducts([]);
+    setSuppliers([]);
+    setWarehouses([]);
+    setPurchaseRequests([]);
+    setPurchaseOrders([]);
+    setGoodsReceipts([]);
+    setInventoryBalances([]);
+    setInventoryMovements([]);
+    setAuditLogs([]);
+    Object.values(STORE_KEYS).forEach((k) => {
+      try {
+        window.localStorage.removeItem(k);
+      } catch {
+        // ignore
+      }
+    });
+    clearNativeDatabase();
+  };
+
+  const seedDemoData = (): void => {
     setProducts(INITIAL_PRODUCTS);
     setSuppliers(INITIAL_SUPPLIERS);
     setWarehouses(INITIAL_WAREHOUSES);
@@ -759,13 +831,35 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
     setInventoryBalances(INITIAL_INVENTORY_BALANCES);
     setInventoryMovements(INITIAL_MOVEMENTS);
     setAuditLogs(INITIAL_AUDIT_LOGS);
-    Object.values(STORE_KEYS).forEach((k) => {
-      try {
-        window.localStorage.removeItem(k);
-      } catch {
-        // ignore
-      }
+    saveStored(STORE_KEYS.PRODUCTS, INITIAL_PRODUCTS);
+    saveStored(STORE_KEYS.SUPPLIERS, INITIAL_SUPPLIERS);
+    saveStored(STORE_KEYS.WAREHOUSES, INITIAL_WAREHOUSES);
+    saveStored(STORE_KEYS.PRS, INITIAL_PURCHASE_REQUESTS);
+    saveStored(STORE_KEYS.POS, INITIAL_PURCHASE_ORDERS);
+    saveStored(STORE_KEYS.GRS, INITIAL_GOODS_RECEIPTS);
+    saveStored(STORE_KEYS.BALANCES, INITIAL_INVENTORY_BALANCES);
+    saveStored(STORE_KEYS.MOVEMENTS, INITIAL_MOVEMENTS);
+    saveStored(STORE_KEYS.AUDITS, INITIAL_AUDIT_LOGS);
+  };
+
+  const exportSqlDump = (): string => {
+    return generatePortableSqlDump({
+      version: 2,
+      updatedAt: new Date().toISOString(),
+      products,
+      suppliers,
+      warehouses,
+      purchaseRequests,
+      purchaseOrders,
+      goodsReceipts,
+      inventoryBalances,
+      inventoryMovements,
+      auditLogs,
     });
+  };
+
+  const resetStoreData = (): void => {
+    wipeAllDatabase();
   };
 
   return (
@@ -797,6 +891,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
         createGoodsReceipt,
         getStockBalance,
         resetStoreData,
+        wipeAllDatabase,
+        seedDemoData,
+        exportSqlDump,
       }}
     >
       {children}

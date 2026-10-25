@@ -153,22 +153,45 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
     .sort((a, b) => b.timestamp - a.timestamp)
     .slice(0, 6);
 
-  const weeklyVolume = [
-    { day: "MON", date: "20/10", value: 12.4, height: "54%", lot: "Batch-A" },
-    { day: "TUE", date: "21/10", value: 15.8, height: "68%", lot: "Batch-B" },
-    { day: "WED", date: "22/10", value: 19.2, height: "84%", lot: "Batch-C" },
-    {
-      day: "THU",
-      date: "23/10",
-      value: 14.7,
-      height: "64%",
-      lot: "Batch-D",
-      active: true,
-    },
-    { day: "FRI", date: "24/10", value: 22.0, height: "96%", lot: "Batch-E" },
-    { day: "SAT", date: "25/10", value: 17.5, height: "76%", lot: "Batch-F" },
-    { day: "SUN", date: "26/10", value: 10.2, height: "45%", lot: "Batch-G" },
-  ];
+  const dayLabels = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"] as const;
+  const dayBuckets: Record<string, number> = {
+    MON: 0,
+    TUE: 0,
+    WED: 0,
+    THU: 0,
+    FRI: 0,
+    SAT: 0,
+    SUN: 0,
+  };
+
+  for (const gr of goodsReceipts) {
+    const d = new Date(gr.receivedAt);
+    const dayKey =
+      dayLabels[Number.isNaN(d.getDay()) ? 0 : d.getDay()] ?? "MON";
+    const grTotal = gr.items.reduce((sum, item) => sum + item.quantity, 0);
+    dayBuckets[dayKey] = (dayBuckets[dayKey] ?? 0) + grTotal;
+  }
+
+  const orderedDays = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+  const maxDayVal = Math.max(1, ...Object.values(dayBuckets));
+  const todayKey = dayLabels[new Date().getDay()] ?? "MON";
+
+  const weeklyVolume = orderedDays.map((day, idx) => {
+    const val = dayBuckets[day] ?? 0;
+    const pct =
+      val === 0 ? 4 : Math.max(12, Math.round((val / maxDayVal) * 96));
+    return {
+      day,
+      date: `D-${idx + 1}`,
+      value: val,
+      height: `${pct}%`,
+      lot: val > 0 ? `${val} IN` : "0 IN",
+      active: day === todayKey,
+    };
+  });
+
+  const totalGrVolume = Object.values(dayBuckets).reduce((a, b) => a + b, 0);
+  const dailyAvgVolume = (totalGrVolume / 7).toFixed(1);
 
   return (
     <div className="space-y-6">
@@ -477,10 +500,10 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
                   {t("dashboard.chart.weekTotal")}
                 </div>
                 <div className="font-mono text-lg sm:text-xl font-bold whitespace-nowrap">
-                  111.8 UNIT/KG
+                  {totalGrVolume} UNIT/KG
                 </div>
                 <div className="font-mono text-[10px] text-[#1D593B] font-semibold whitespace-nowrap">
-                  {t("dashboard.chart.vsLastWeek")}
+                  {goodsReceipts.length} DOKUMEN {branding.documentPrefixGR}
                 </div>
               </div>
             </div>
@@ -564,7 +587,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
               <span style={{ color: "var(--kr-text-muted)" }} className="block">
                 {t("dashboard.chart.dailyAvg")}
               </span>
-              <span className="font-semibold">15.97 / Day</span>
+              <span className="font-semibold">{dailyAvgVolume} / Day</span>
             </div>
             <div className="text-right">
               <span style={{ color: "var(--kr-text-muted)" }} className="block">
@@ -602,53 +625,67 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
             </div>
 
             <div className="space-y-3">
-              {criticalItems.map((item, idx) => (
+              {criticalItems.length === 0 ? (
                 <div
-                  key={idx}
                   style={{
                     backgroundColor: "var(--kr-bg-main)",
                     borderColor: "var(--kr-border)",
+                    color: "var(--kr-text-muted)",
                   }}
-                  className="p-3 border"
+                  className="p-4 border font-mono text-xs text-center"
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <span
-                      style={{ color: "var(--kr-text-muted)" }}
-                      className="font-mono text-[10px] font-semibold"
-                    >
-                      {item.product.sku}
-                    </span>
-                    <span className="font-mono text-[10px] font-bold text-[#9E2A20]">
-                      {t("dashboard.alert.deficit")} {item.deficit}{" "}
-                      {item.product.unit}
-                    </span>
-                  </div>
-                  <div className="text-xs font-bold mt-0.5">
-                    {item.product.name}
-                  </div>
-                  <div
-                    style={{ color: "var(--kr-text-muted)" }}
-                    className="flex items-center justify-between mt-2 font-mono text-[10px]"
-                  >
-                    <span className="flex items-center gap-1 truncate">
-                      <Warehouse className="w-3 h-3 shrink-0" />
-                      <span className="truncate">{item.warehouse.name}</span>
-                    </span>
-                    <span
-                      style={{ color: "var(--kr-text-main)" }}
-                      className="font-bold shrink-0"
-                    >
-                      {item.currentStock} / {item.minStock} {item.product.unit}
-                    </span>
-                  </div>
-                  <div className="w-full h-1.5 bg-[#E5DEC9] mt-2 overflow-hidden">
-                    <div
-                      style={{ width: `${item.fillRatio}%` }}
-                      className="h-full bg-[#9E2A20]"
-                    />
-                  </div>
+                  Belum ada defisit stok kritis (0 SKU di bawah ambang batas).
                 </div>
-              ))}
+              ) : (
+                criticalItems.map((item, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      backgroundColor: "var(--kr-bg-main)",
+                      borderColor: "var(--kr-border)",
+                    }}
+                    className="p-3 border"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span
+                        style={{ color: "var(--kr-text-muted)" }}
+                        className="font-mono text-[10px] font-semibold"
+                      >
+                        {item.product.sku}
+                      </span>
+                      <span className="font-mono text-[10px] font-bold text-[#9E2A20]">
+                        {t("dashboard.alert.deficit")} {item.deficit}{" "}
+                        {item.product.unit}
+                      </span>
+                    </div>
+                    <div className="text-xs font-bold mt-0.5">
+                      {item.product.name}
+                    </div>
+                    <div
+                      style={{ color: "var(--kr-text-muted)" }}
+                      className="flex items-center justify-between mt-2 font-mono text-[10px]"
+                    >
+                      <span className="flex items-center gap-1 truncate">
+                        <Warehouse className="w-3 h-3 shrink-0" />
+                        <span className="truncate">{item.warehouse.name}</span>
+                      </span>
+                      <span
+                        style={{ color: "var(--kr-text-main)" }}
+                        className="font-bold shrink-0"
+                      >
+                        {item.currentStock} / {item.minStock}{" "}
+                        {item.product.unit}
+                      </span>
+                    </div>
+                    <div className="w-full h-1.5 bg-[#E5DEC9] mt-2 overflow-hidden">
+                      <div
+                        style={{ width: `${item.fillRatio}%` }}
+                        className="h-full bg-[#9E2A20]"
+                      />
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -745,52 +782,73 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
               style={{ borderColor: "var(--kr-border)" }}
               className="divide-y"
             >
-              {recentTransactions.map((tx) => (
-                <tr
-                  key={tx.id}
-                  style={{ borderColor: "var(--kr-border)" }}
-                  className="hover:opacity-90 transition"
-                >
-                  <td className="py-3.5 px-5 font-mono font-bold whitespace-nowrap">
-                    {tx.number}
-                  </td>
-                  <td className="py-3.5 px-4 whitespace-nowrap">
-                    <span
-                      style={{ color: "var(--kr-text-muted)" }}
-                      className="font-mono text-[10px] block"
-                    >
-                      {tx.stage}
-                    </span>
-                    <span className="font-medium">{tx.type}</span>
-                  </td>
-                  <td className="py-3.5 px-4 whitespace-nowrap">
-                    {tx.warehouse}
-                  </td>
+              {recentTransactions.length === 0 ? (
+                <tr>
                   <td
+                    colSpan={6}
                     style={{ color: "var(--kr-text-muted)" }}
-                    className="py-3.5 px-4 font-mono text-[11px] whitespace-nowrap"
+                    className="py-8 px-5 text-center font-mono text-xs"
                   >
-                    {tx.date}
-                  </td>
-                  <td className="py-3.5 px-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 py-0.5 font-mono text-[10px] font-bold border ${tx.statusStyle}`}
-                    >
-                      {tx.status}
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-5 text-right whitespace-nowrap">
+                    Database masih kosong (0 dokumen transaksi). Silakan mulai
+                    dengan mendaftarkan Gudang, Pemasok, dan SKU di menu{" "}
                     <button
-                      onClick={() => onNavigate(tx.targetTab)}
                       type="button"
-                      className="font-mono text-[11px] font-semibold inline-flex items-center gap-1 cursor-pointer hover:underline"
+                      onClick={() => onNavigate("products")}
+                      className="underline font-bold cursor-pointer"
                     >
-                      <span>{t("common.open")}</span>
-                      <ArrowUpRight className="w-3.5 h-3.5" />
+                      {t("plugin.products.name")}
                     </button>
+                    .
                   </td>
                 </tr>
-              ))}
+              ) : (
+                recentTransactions.map((tx) => (
+                  <tr
+                    key={tx.id}
+                    style={{ borderColor: "var(--kr-border)" }}
+                    className="hover:opacity-90 transition"
+                  >
+                    <td className="py-3.5 px-5 font-mono font-bold whitespace-nowrap">
+                      {tx.number}
+                    </td>
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      <span
+                        style={{ color: "var(--kr-text-muted)" }}
+                        className="font-mono text-[10px] block"
+                      >
+                        {tx.stage}
+                      </span>
+                      <span className="font-medium">{tx.type}</span>
+                    </td>
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      {tx.warehouse}
+                    </td>
+                    <td
+                      style={{ color: "var(--kr-text-muted)" }}
+                      className="py-3.5 px-4 font-mono text-[11px] whitespace-nowrap"
+                    >
+                      {tx.date}
+                    </td>
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      <span
+                        className={`px-2 py-0.5 font-mono text-[10px] font-bold border ${tx.statusStyle}`}
+                      >
+                        {tx.status}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-5 text-right whitespace-nowrap">
+                      <button
+                        onClick={() => onNavigate(tx.targetTab)}
+                        type="button"
+                        className="font-mono text-[11px] font-semibold inline-flex items-center gap-1 cursor-pointer hover:underline"
+                      >
+                        <span>{t("common.open")}</span>
+                        <ArrowUpRight className="w-3.5 h-3.5" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
