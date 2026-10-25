@@ -34,16 +34,16 @@ import {
 } from "@/kernel/i18n";
 
 const STORAGE_KEYS = {
-  ENABLED_PLUGINS: "kr_enabled_plugins_v1",
-  THEME_ID: "kr_theme_id_v1",
-  CUSTOM_COLORS: "kr_custom_colors_v1",
-  BRANDING: "kr_branding_v1",
-  EMAIL_CONFIG: "kr_email_config_v1",
-  EMAIL_LOGS: "kr_email_logs_v1",
-  LOCALE: "kr_locale_v1",
-  CUSTOM_LOCALES: "kr_custom_locales_v2",
-  CUSTOM_DICTS_BY_LOCALE: "kr_custom_dicts_by_locale_v2",
-  DB_CONN: "kr_db_conn_v1",
+  ENABLED_PLUGINS: "enabled_plugins",
+  THEME_ID: "theme_id",
+  CUSTOM_COLORS: "custom_colors",
+  BRANDING: "branding",
+  EMAIL_CONFIG: "email_config",
+  EMAIL_LOGS: "email_logs",
+  LOCALE: "locale",
+  CUSTOM_LOCALES: "custom_locales",
+  CUSTOM_DICTS_BY_LOCALE: "custom_translations",
+  DB_CONN: "db_connection",
 } as const;
 
 interface CustomLocaleEntry {
@@ -60,7 +60,7 @@ const DEFAULT_DB_CONNECTION: DatabaseConnectionConfig = {
   dbName: "cafestock_db",
   dbUser: "postgres",
   remoteEndpointUrl: "http://192.168.1.50:3000",
-  instanceToken: "kr_live_node_99482a",
+  instanceToken: "sync_token_local",
   autoSyncIntervalSec: 15,
   lastHandshakeStatus: "STANDALONE_LOCAL",
 };

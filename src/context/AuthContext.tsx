@@ -45,8 +45,10 @@ interface AuthContextType {
 const LEGACY_AUTH_KEYS = [
   "kr_accounts_v1",
   "kr_accounts_v2",
+  "kr_auth_accounts_v3",
   "kr_active_user_v1",
   "kr_active_user_v2",
+  "kr_auth_active_user_v3",
 ];
 
 function purgeLegacyAuthStorage(): void {
@@ -62,8 +64,8 @@ function purgeLegacyAuthStorage(): void {
 purgeLegacyAuthStorage();
 
 const AUTH_STORAGE_KEYS = {
-  ACCOUNTS: "kr_auth_accounts_v3",
-  ACTIVE_USER: "kr_auth_active_user_v3",
+  ACCOUNTS: "accounts",
+  ACTIVE_USER: "active_user",
 } as const;
 
 const FALLBACK_GUEST_PROFILE: UserProfile = {
