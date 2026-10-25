@@ -1,110 +1,224 @@
 import React, { createContext, useContext, useState } from "react";
 import { UserProfile, UserRole } from "@/types";
 
+export interface StoredUserAccount extends UserProfile {
+  passwordHash: string;
+  createdAt: string;
+}
+
+export interface RegisterAccountInput {
+  name: string;
+  username: string;
+  email: string;
+  password: string;
+  role: UserRole;
+}
+
 interface AuthContextType {
   currentUser: UserProfile;
-  registeredAccounts: UserProfile[];
-  switchRole: (role: UserRole) => void;
+  accounts: StoredUserAccount[];
+  hasInitializedAccount: boolean;
   isAuthenticated: boolean;
+  registerAccount: (
+    input: RegisterAccountInput,
+    autoLogin?: boolean,
+  ) => { ok: boolean; errorKey?: string };
+  loginWithPassword: (
+    usernameOrEmail: string,
+    password: string,
+    rememberMe?: boolean,
+  ) => { ok: boolean; errorKey?: string };
+  switchRole: (role: UserRole) => void;
   login: (username: string, role?: UserRole) => void;
   logout: () => void;
 }
 
-export const REGISTERED_ACCOUNTS: UserProfile[] = [
-  {
-    id: "usr_001",
-    name: "Muhammad Riyansyah",
-    username: "user_procurement",
-    role: "USER",
-    email: "riyansyah@cafestock.local",
-  },
-  {
-    id: "usr_002",
-    name: "Riko Toni",
-    username: "approver_manager",
-    role: "APPROVER",
-    email: "riko.toni@cafestock.local",
-  },
-  {
-    id: "usr_003",
-    name: "Andika Pratama Nugroho",
-    username: "andika_warehouse",
-    role: "USER",
-    email: "andika@cafestock.local",
-  },
-  {
-    id: "usr_004",
-    name: "Darmawan",
-    username: "darmawan_inventory",
-    role: "USER",
-    email: "darmawan@cafestock.local",
-  },
-  {
-    id: "usr_005",
-    name: "Reza Adjriel",
-    username: "reza_approver",
-    role: "APPROVER",
-    email: "reza.adjriel@cafestock.local",
-  },
-];
+const AUTH_STORAGE_KEYS = {
+  ACCOUNTS: "kr_accounts_v2",
+  ACTIVE_USER: "kr_active_user_v2",
+} as const;
 
-const DEFAULT_USERS: Record<UserRole, UserProfile> = {
-  USER: REGISTERED_ACCOUNTS[0],
-  APPROVER: REGISTERED_ACCOUNTS[1],
+const FALLBACK_GUEST_PROFILE: UserProfile = {
+  id: "usr_uninitialized",
+  name: "Administrator",
+  username: "admin",
+  role: "APPROVER",
+  email: "admin@local",
 };
+
+function readJson<T>(key: string, fallback: T): T {
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) {
+      return fallback;
+    }
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeJson<T>(key: string, value: T): void {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // ignore storage quota errors
+  }
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [currentUser, setCurrentUser] = useState<UserProfile>(
-    DEFAULT_USERS.USER,
+  const [accounts, setAccounts] = useState<StoredUserAccount[]>(() =>
+    readJson<StoredUserAccount[]>(AUTH_STORAGE_KEYS.ACCOUNTS, []),
   );
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
-  const switchRole = (newRole: UserRole): void => {
-    setCurrentUser(DEFAULT_USERS[newRole]);
-  };
-
-  const login = (username: string, explicitRole?: UserRole): void => {
-    const cleanUsername = username.trim().toLowerCase();
-    const matchedAccount = REGISTERED_ACCOUNTS.find(
-      (acc) => acc.username.toLowerCase() === cleanUsername,
+  const [activeSessionUser, setActiveSessionUser] =
+    useState<UserProfile | null>(() =>
+      readJson<UserProfile | null>(AUTH_STORAGE_KEYS.ACTIVE_USER, null),
     );
 
-    if (matchedAccount) {
-      setCurrentUser(matchedAccount);
-      setIsAuthenticated(true);
-      return;
+  const hasInitializedAccount = accounts.length > 0;
+  const isAuthenticated = hasInitializedAccount && activeSessionUser !== null;
+  const currentUser: UserProfile = activeSessionUser ?? FALLBACK_GUEST_PROFILE;
+
+  const registerAccount = (
+    input: RegisterAccountInput,
+    autoLogin = true,
+  ): { ok: boolean; errorKey?: string } => {
+    const cleanName = input.name.trim();
+    const cleanUsername = input.username.trim().toLowerCase();
+    const cleanEmail = input.email.trim().toLowerCase();
+    const cleanPassword = input.password;
+
+    if (!cleanName || !cleanUsername || !cleanEmail || !cleanPassword) {
+      return { ok: false, errorKey: "login.errEmpty" };
     }
 
-    const inferredRole: UserRole =
-      explicitRole ??
-      (cleanUsername.includes("approver") ||
-      cleanUsername.includes("manager") ||
-      cleanUsername.includes("admin")
-        ? "APPROVER"
-        : "USER");
+    const exists = accounts.some(
+      (acc) =>
+        acc.username.toLowerCase() === cleanUsername ||
+        acc.email.toLowerCase() === cleanEmail,
+    );
+    if (exists) {
+      return { ok: false, errorKey: "login.errUserExists" };
+    }
 
-    setCurrentUser({
-      ...DEFAULT_USERS[inferredRole],
-      username: username.trim() || DEFAULT_USERS[inferredRole].username,
-    });
-    setIsAuthenticated(true);
+    const newAccount: StoredUserAccount = {
+      id: `usr_${Date.now()}`,
+      name: cleanName,
+      username: cleanUsername,
+      email: cleanEmail,
+      role: input.role,
+      passwordHash: cleanPassword,
+      createdAt: new Date().toISOString(),
+    };
+
+    const nextAccounts = [...accounts, newAccount];
+    setAccounts(nextAccounts);
+    writeJson(AUTH_STORAGE_KEYS.ACCOUNTS, nextAccounts);
+
+    if (autoLogin) {
+      const profile: UserProfile = {
+        id: newAccount.id,
+        name: newAccount.name,
+        username: newAccount.username,
+        email: newAccount.email,
+        role: newAccount.role,
+      };
+      setActiveSessionUser(profile);
+      writeJson(AUTH_STORAGE_KEYS.ACTIVE_USER, profile);
+    }
+
+    return { ok: true };
+  };
+
+  const loginWithPassword = (
+    usernameOrEmail: string,
+    password: string,
+    rememberMe = true,
+  ): { ok: boolean; errorKey?: string } => {
+    const identifier = usernameOrEmail.trim().toLowerCase();
+    if (!identifier || !password) {
+      return { ok: false, errorKey: "login.errEmpty" };
+    }
+
+    const matched = accounts.find(
+      (acc) =>
+        (acc.username.toLowerCase() === identifier ||
+          acc.email.toLowerCase() === identifier) &&
+        acc.passwordHash === password,
+    );
+
+    if (!matched) {
+      return { ok: false, errorKey: "login.errInvalidCreds" };
+    }
+
+    const profile: UserProfile = {
+      id: matched.id,
+      name: matched.name,
+      username: matched.username,
+      email: matched.email,
+      role: matched.role,
+    };
+
+    setActiveSessionUser(profile);
+    if (rememberMe) {
+      writeJson(AUTH_STORAGE_KEYS.ACTIVE_USER, profile);
+    }
+    return { ok: true };
+  };
+
+  const switchRole = (newRole: UserRole): void => {
+    if (!activeSessionUser) {
+      return;
+    }
+    const updated: UserProfile = { ...activeSessionUser, role: newRole };
+    setActiveSessionUser(updated);
+    writeJson(AUTH_STORAGE_KEYS.ACTIVE_USER, updated);
+  };
+
+  const login = (username: string, role: UserRole = "APPROVER"): void => {
+    const found = accounts.find(
+      (a) => a.username.toLowerCase() === username.trim().toLowerCase(),
+    );
+    if (found) {
+      setActiveSessionUser(found);
+      writeJson(AUTH_STORAGE_KEYS.ACTIVE_USER, found);
+      return;
+    }
+    const profile: UserProfile = {
+      id: `usr_${Date.now()}`,
+      name: username.trim() || "Administrator",
+      username: username.trim() || "admin",
+      role,
+      email: `${username.trim() || "admin"}@local`,
+    };
+    setActiveSessionUser(profile);
+    writeJson(AUTH_STORAGE_KEYS.ACTIVE_USER, profile);
   };
 
   const logout = (): void => {
-    setIsAuthenticated(false);
+    setActiveSessionUser(null);
+    try {
+      window.localStorage.removeItem(AUTH_STORAGE_KEYS.ACTIVE_USER);
+    } catch {
+      // ignore
+    }
   };
 
   return (
     <AuthContext.Provider
       value={{
         currentUser,
-        registeredAccounts: REGISTERED_ACCOUNTS,
-        switchRole,
+        accounts,
+        hasInitializedAccount,
         isAuthenticated,
+        registerAccount,
+        loginWithPassword,
+        switchRole,
         login,
         logout,
       }}

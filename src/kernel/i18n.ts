@@ -96,6 +96,25 @@ export interface TranslationDictionary {
   "login.seederTitle": string;
   "login.userPassDesc": string;
   "login.approverPassDesc": string;
+  "login.setupTag": string;
+  "login.setupTitle": string;
+  "login.setupDesc": string;
+  "login.registerTitle": string;
+  "login.registerDesc": string;
+  "login.fullNameLabel": string;
+  "login.emailLabel": string;
+  "login.confirmPassLabel": string;
+  "login.roleLabel": string;
+  "login.roleApprover": string;
+  "login.roleUser": string;
+  "login.createFirstBtn": string;
+  "login.registerBtn": string;
+  "login.switchToRegister": string;
+  "login.switchToLogin": string;
+  "login.errEmpty": string;
+  "login.errPassMismatch": string;
+  "login.errInvalidCreds": string;
+  "login.errUserExists": string;
 
   // Dashboard Tab
   "dashboard.activeModules": string;
@@ -309,6 +328,28 @@ export const BUILTIN_TRANSLATIONS: Record<
       "Operasional Gudang: Buat PR, terbitkan PO, & catat GR.",
     "login.approverPassDesc":
       "Manajer Pemeriksa: Verifikasi & Approve/Reject dokumen PR.",
+    "login.setupTag": "INSTALASI AWAL SISTEM // FIRST-RUN SETUP",
+    "login.setupTitle": "Buat Akun Utama Pertama",
+    "login.setupDesc":
+      "Selamat datang! Karena aplikasi ini baru pertama kali dijalankan, silakan buat akun Administrator / Pemilik pertama Anda untuk mengaktifkan buku kerja.",
+    "login.registerTitle": "Daftarkan Akun Petugas Baru",
+    "login.registerDesc":
+      "Tambahkan akun petugas gudang (USER) atau manajer otorisasi (APPROVER) baru ke dalam sistem.",
+    "login.fullNameLabel": "Nama Lengkap",
+    "login.emailLabel": "Alamat Email",
+    "login.confirmPassLabel": "Konfirmasi Kata Sandi",
+    "login.roleLabel": "Peran Otorisasi (Role)",
+    "login.roleApprover": "APPROVER / ADMIN (Bisa Approve PR & Kelola Sistem)",
+    "login.roleUser": "USER / STAFF GUDANG (Buat PR, PO, & Terima Barang)",
+    "login.createFirstBtn": "BUAT AKUN UTAMA & MULAI APLIKASI",
+    "login.registerBtn": "DAFTARKAN AKUN BARU",
+    "login.switchToRegister": "Belum punya akun? Buat Akun Baru",
+    "login.switchToLogin": "Sudah punya akun? Masuk di sini",
+    "login.errEmpty": "Mohon lengkapi seluruh kolom wajib.",
+    "login.errPassMismatch": "Konfirmasi kata sandi tidak cocok.",
+    "login.errInvalidCreds":
+      "Username/Email atau kata sandi tidak ditemukan atau salah.",
+    "login.errUserExists": "Username atau email tersebut sudah terdaftar.",
 
     "dashboard.activeModules": "MODUL AKTIF",
     "dashboard.coreAlert": "NOTIF INTI",
@@ -519,6 +560,27 @@ export const BUILTIN_TRANSLATIONS: Record<
       "Warehouse Operations: Draft PR, issue PO, & record GR.",
     "login.approverPassDesc":
       "Approver Manager: Review & Approve/Reject PR tickets.",
+    "login.setupTag": "INITIAL SYSTEM INSTALLATION // FIRST-RUN SETUP",
+    "login.setupTitle": "Create Primary Admin Account",
+    "login.setupDesc":
+      "Welcome! Since this is a fresh installation, please create your first Administrator / Owner account to initialize the workspace.",
+    "login.registerTitle": "Register New Operator Account",
+    "login.registerDesc":
+      "Add a new warehouse operator (USER) or authorization manager (APPROVER) account to the system.",
+    "login.fullNameLabel": "Full Name",
+    "login.emailLabel": "Email Address",
+    "login.confirmPassLabel": "Confirm Password",
+    "login.roleLabel": "Authorization Role",
+    "login.roleApprover": "APPROVER / ADMIN (Approve PRs & Manage System)",
+    "login.roleUser": "USER / WAREHOUSE STAFF (Draft PR, PO, & Receive Goods)",
+    "login.createFirstBtn": "CREATE PRIMARY ACCOUNT & START",
+    "login.registerBtn": "REGISTER NEW ACCOUNT",
+    "login.switchToRegister": "Need another account? Register New User",
+    "login.switchToLogin": "Already have an account? Sign In here",
+    "login.errEmpty": "Please fill in all required fields.",
+    "login.errPassMismatch": "Password confirmation does not match.",
+    "login.errInvalidCreds": "Invalid username/email or password.",
+    "login.errUserExists": "Username or email is already registered.",
 
     "dashboard.activeModules": "ACTIVE MODULES",
     "dashboard.coreAlert": "CORE ALERT",
@@ -727,6 +789,28 @@ export const BUILTIN_TRANSLATIONS: Record<
     "login.seederTitle": "クイックデモアカウント (1クリックログイン)",
     "login.userPassDesc": "倉庫担当: PR作成・PO発行・GR入庫検収",
     "login.approverPassDesc": "承認責任者: PR内容の審査・承認/却下",
+    "login.setupTag": "初期システムセットアップ // FIRST-RUN SETUP",
+    "login.setupTitle": "初期管理者アカウントの作成",
+    "login.setupDesc":
+      "ようこそ！初回起動のため、システムを利用開始するための最初の管理者（オーナー）アカウントを作成してください。",
+    "login.registerTitle": "新規担当者アカウント登録",
+    "login.registerDesc":
+      "新しい倉庫担当者(USER)または承認責任者(APPROVER)アカウントを追加登録します。",
+    "login.fullNameLabel": "氏名 (フルネーム)",
+    "login.emailLabel": "メールアドレス",
+    "login.confirmPassLabel": "パスワード (確認)",
+    "login.roleLabel": "権限ロール",
+    "login.roleApprover": "APPROVER / 管理者 (PR承認・システム管理)",
+    "login.roleUser": "USER / 倉庫スタッフ (PR作成・PO発注・入庫検収)",
+    "login.createFirstBtn": "初期アカウントを作成して開始",
+    "login.registerBtn": "新規アカウントを登録",
+    "login.switchToRegister": "アカウントを新規作成する",
+    "login.switchToLogin": "既存アカウントでログインする",
+    "login.errEmpty": "すべての必須項目を入力してください。",
+    "login.errPassMismatch": "確認用パスワードが一致しません。",
+    "login.errInvalidCreds": "ユーザー名またはパスワードが正しくありません。",
+    "login.errUserExists":
+      "そのユーザー名またはメールアドレスは既に登録されています。",
 
     "dashboard.activeModules": "有効モジュール",
     "dashboard.coreAlert": "コア通知先",
