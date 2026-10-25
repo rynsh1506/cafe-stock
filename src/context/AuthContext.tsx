@@ -1,9 +1,12 @@
 import React, { createContext, useContext, useState } from "react";
 import { UserProfile, UserRole } from "@/types";
 
+export type AccountApprovalStatus = "ACTIVE" | "PENDING" | "REJECTED";
+
 export interface StoredUserAccount extends UserProfile {
   passwordHash: string;
   createdAt: string;
+  status?: AccountApprovalStatus;
 }
 
 export interface RegisterAccountInput {
@@ -12,6 +15,7 @@ export interface RegisterAccountInput {
   email: string;
   password: string;
   role: UserRole;
+  fromLoginPage?: boolean;
 }
 
 interface AuthContextType {
@@ -22,12 +26,14 @@ interface AuthContextType {
   registerAccount: (
     input: RegisterAccountInput,
     autoLogin?: boolean,
-  ) => { ok: boolean; errorKey?: string };
+  ) => { ok: boolean; errorKey?: string; pendingApproval?: boolean };
   loginWithPassword: (
     usernameOrEmail: string,
     password: string,
     rememberMe?: boolean,
-  ) => { ok: boolean; errorKey?: string };
+  ) => { ok: boolean; errorKey?: string; errorMessage?: string };
+  approveAccount: (id: string, assignedRole?: UserRole) => void;
+  rejectAccount: (id: string) => void;
   deleteAccount: (id: string) => void;
   updateAccountRole: (id: string, role: UserRole) => void;
   switchRole: (role: UserRole) => void;
@@ -89,7 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const registerAccount = (
     input: RegisterAccountInput,
     autoLogin = true,
-  ): { ok: boolean; errorKey?: string } => {
+  ): { ok: boolean; errorKey?: string; pendingApproval?: boolean } => {
     const cleanName = input.name.trim();
     const cleanUsername = input.username.trim().toLowerCase();
     const cleanEmail = input.email.trim().toLowerCase();
@@ -108,19 +114,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       return { ok: false, errorKey: "login.errUserExists" };
     }
 
+    const isFirstOwner = accounts.length === 0;
+    const requiresAdminApproval = !isFirstOwner && input.fromLoginPage === true;
+
     const newAccount: StoredUserAccount = {
       id: `usr_${Date.now()}`,
       name: cleanName,
       username: cleanUsername,
       email: cleanEmail,
-      role: input.role,
+      role: isFirstOwner
+        ? "APPROVER"
+        : requiresAdminApproval
+          ? "USER"
+          : input.role,
       passwordHash: cleanPassword,
       createdAt: new Date().toISOString(),
+      status: requiresAdminApproval ? "PENDING" : "ACTIVE",
     };
 
     const nextAccounts = [...accounts, newAccount];
     setAccounts(nextAccounts);
     writeJson(AUTH_STORAGE_KEYS.ACCOUNTS, nextAccounts);
+
+    if (requiresAdminApproval) {
+      return { ok: true, pendingApproval: true };
+    }
 
     if (autoLogin) {
       const profile: UserProfile = {
@@ -134,14 +152,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       writeJson(AUTH_STORAGE_KEYS.ACTIVE_USER, profile);
     }
 
-    return { ok: true };
+    return { ok: true, pendingApproval: false };
   };
 
   const loginWithPassword = (
     usernameOrEmail: string,
     password: string,
     rememberMe = true,
-  ): { ok: boolean; errorKey?: string } => {
+  ): { ok: boolean; errorKey?: string; errorMessage?: string } => {
     const identifier = usernameOrEmail.trim().toLowerCase();
     if (!identifier || !password) {
       return { ok: false, errorKey: "login.errEmpty" };
@@ -158,6 +176,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       return { ok: false, errorKey: "login.errInvalidCreds" };
     }
 
+    if (matched.status === "PENDING") {
+      return {
+        ok: false,
+        errorMessage: `Akun @${matched.username} masih berstatus MENUNGGU PERSETUJUAN (PENDING). Silakan minta Admin / Approver untuk meng-approve akun Anda di menu Panel Kontrol → Manajemen Akun.`,
+      };
+    }
+
+    if (matched.status === "REJECTED") {
+      return {
+        ok: false,
+        errorMessage: `Pendaftaran akun @${matched.username} telah DITOLAK (REJECTED) oleh Admin.`,
+      };
+    }
+
     const profile: UserProfile = {
       id: matched.id,
       name: matched.name,
@@ -171,6 +203,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       writeJson(AUTH_STORAGE_KEYS.ACTIVE_USER, profile);
     }
     return { ok: true };
+  };
+
+  const approveAccount = (id: string, assignedRole?: UserRole): void => {
+    const next = accounts.map((acc) =>
+      acc.id === id
+        ? {
+            ...acc,
+            status: "ACTIVE" as const,
+            role: assignedRole ?? acc.role,
+          }
+        : acc,
+    );
+    setAccounts(next);
+    writeJson(AUTH_STORAGE_KEYS.ACCOUNTS, next);
+  };
+
+  const rejectAccount = (id: string): void => {
+    const next = accounts.map((acc) =>
+      acc.id === id ? { ...acc, status: "REJECTED" as const } : acc,
+    );
+    setAccounts(next);
+    writeJson(AUTH_STORAGE_KEYS.ACCOUNTS, next);
   };
 
   const deleteAccount = (id: string): void => {
@@ -242,6 +296,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         isAuthenticated,
         registerAccount,
         loginWithPassword,
+        approveAccount,
+        rejectAccount,
         deleteAccount,
         updateAccountRole,
         switchRole,

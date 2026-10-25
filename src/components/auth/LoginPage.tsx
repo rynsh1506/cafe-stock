@@ -14,7 +14,6 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useKernel } from "@/kernel/KernelContext";
 import { TranslationKey } from "@/kernel/i18n";
-import { UserRole } from "@/types";
 
 export const LoginPage: React.FC = () => {
   const { hasInitializedAccount, registerAccount, loginWithPassword } =
@@ -36,10 +35,10 @@ export const LoginPage: React.FC = () => {
   const [regEmail, setRegEmail] = useState<string>("");
   const [regPassword, setRegPassword] = useState<string>("");
   const [regConfirmPassword, setRegConfirmPassword] = useState<string>("");
-  const [regRole, setRegRole] = useState<UserRole>("APPROVER");
 
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [pendingNotice, setPendingNotice] = useState<string>("");
 
   const isFirstRunSetup = !hasInitializedAccount;
   const activeMode = isFirstRunSetup ? "REGISTER" : mode;
@@ -47,15 +46,21 @@ export const LoginPage: React.FC = () => {
   const handleLoginSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
     setErrorMessage("");
+    setPendingNotice("");
     const res = loginWithPassword(loginIdentifier, loginPassword, rememberMe);
-    if (!res.ok && res.errorKey) {
-      setErrorMessage(t(res.errorKey as TranslationKey));
+    if (!res.ok) {
+      if (res.errorMessage) {
+        setErrorMessage(res.errorMessage);
+      } else if (res.errorKey) {
+        setErrorMessage(t(res.errorKey as TranslationKey));
+      }
     }
   };
 
   const handleRegisterSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
     setErrorMessage("");
+    setPendingNotice("");
 
     if (regPassword !== regConfirmPassword) {
       setErrorMessage(t("login.errPassMismatch"));
@@ -68,13 +73,28 @@ export const LoginPage: React.FC = () => {
         username: regUsername,
         email: regEmail,
         password: regPassword,
-        role: isFirstRunSetup ? "APPROVER" : regRole,
+        role: isFirstRunSetup ? "APPROVER" : "USER",
+        fromLoginPage: !isFirstRunSetup,
       },
-      true,
+      isFirstRunSetup,
     );
 
     if (!res.ok && res.errorKey) {
       setErrorMessage(t(res.errorKey as TranslationKey));
+      return;
+    }
+
+    if (res.pendingApproval) {
+      const submittedUser = regUsername.trim().toLowerCase();
+      setFullName("");
+      setRegUsername("");
+      setRegEmail("");
+      setRegPassword("");
+      setRegConfirmPassword("");
+      setMode("LOGIN");
+      setPendingNotice(
+        `Pengajuan pendaftaran akun @${submittedUser} berhasil dikirim! Status akun Anda saat ini adalah MENUNGGU PERSETUJUAN (PENDING). Silakan minta Admin / Approver yang sedang aktif untuk meng-approve akun Anda melalui menu Panel Kontrol → Manajemen Akun Pengguna.`,
+      );
     }
   };
 
@@ -301,6 +321,12 @@ export const LoginPage: React.FC = () => {
             </div>
           )}
 
+          {pendingNotice && (
+            <div className="mb-4 p-3.5 border border-[#8A4B14] bg-[#F9EFE0] text-[#8A4B14] font-mono text-xs leading-relaxed">
+              {pendingNotice}
+            </div>
+          )}
+
           {activeMode === "REGISTER" ? (
             <form onSubmit={handleRegisterSubmit} className="space-y-3.5">
               <div>
@@ -387,23 +413,23 @@ export const LoginPage: React.FC = () => {
               </div>
 
               {!isFirstRunSetup && (
-                <div>
-                  <label className="block font-mono text-[10px] font-semibold uppercase tracking-widest mb-1">
-                    {t("login.roleLabel")}
-                  </label>
-                  <select
-                    value={regRole}
-                    onChange={(e) => setRegRole(e.target.value as UserRole)}
-                    style={{
-                      backgroundColor: "var(--kr-bg-surface)",
-                      borderColor: "var(--kr-border)",
-                      color: "var(--kr-text-main)",
-                    }}
-                    className="w-full px-3 py-2.5 border font-mono text-xs focus:outline-none cursor-pointer"
-                  >
-                    <option value="APPROVER">{t("login.roleApprover")}</option>
-                    <option value="USER">{t("login.roleUser")}</option>
-                  </select>
+                <div
+                  style={{
+                    backgroundColor: "var(--kr-bg-elevated)",
+                    borderColor: "var(--kr-border)",
+                  }}
+                  className="p-3 border font-mono text-[11px] leading-relaxed"
+                >
+                  <span className="font-bold text-[#8A4B14] block uppercase mb-0.5">
+                    ● MEKANISME OTORISASI AKUN BARU (APPROVAL REQUIRED)
+                  </span>
+                  <span style={{ color: "var(--kr-text-muted)" }}>
+                    Pendaftaran mandiri dari halaman ini tidak langsung masuk ke
+                    sistem, melainkan berstatus{" "}
+                    <strong>PENDING (Menunggu Persetujuan)</strong> hingga
+                    disetujui oleh <strong>Admin / Approver</strong> di Panel
+                    Kontrol.
+                  </span>
                 </div>
               )}
 
