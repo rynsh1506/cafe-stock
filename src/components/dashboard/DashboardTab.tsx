@@ -11,13 +11,7 @@ import {
 import { NavigationTab } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 import { useKernel } from "@/kernel/KernelContext";
-import {
-  INITIAL_PRODUCTS,
-  INITIAL_PURCHASE_REQUESTS,
-  INITIAL_PURCHASE_ORDERS,
-  INITIAL_WAREHOUSES,
-  INITIAL_INVENTORY_BALANCES,
-} from "@/data/mockData";
+import { useStore } from "@/context/StoreContext";
 
 interface DashboardTabProps {
   onNavigate: (tab: NavigationTab) => void;
@@ -26,40 +20,55 @@ interface DashboardTabProps {
 export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
   const { currentUser } = useAuth();
   const { branding, emailConfig, enabledPlugins, t } = useKernel();
+  const {
+    products,
+    purchaseRequests,
+    purchaseOrders,
+    warehouses,
+    inventoryBalances,
+  } = useStore();
 
-  const totalProducts = INITIAL_PRODUCTS.length;
-  const pendingPRs = INITIAL_PURCHASE_REQUESTS.filter(
+  const totalProducts = products.length;
+  const pendingPRs = purchaseRequests.filter(
     (pr) => pr.status === "SUBMITTED",
   ).length;
-  const approvedPRs = INITIAL_PURCHASE_REQUESTS.filter(
+  const approvedPRs = purchaseRequests.filter(
     (pr) => pr.status === "APPROVED",
   ).length;
-  const activePOs = INITIAL_PURCHASE_ORDERS.filter(
+  const activePOs = purchaseOrders.filter(
     (po) => po.status === "ORDERED" || po.status === "PARTIALLY_RECEIVED",
   ).length;
 
-  const criticalItems = INITIAL_INVENTORY_BALANCES.filter((balance) => {
-    const product = INITIAL_PRODUCTS.find((p) => p.id === balance.productId);
-    return product ? balance.stock < product.minStock : false;
-  }).map((balance) => {
-    const product = INITIAL_PRODUCTS.find((p) => p.id === balance.productId)!;
-    const warehouse = INITIAL_WAREHOUSES.find(
-      (w) => w.id === balance.warehouseId,
-    )!;
-    const deficit = Math.max(0, product.minStock - balance.stock);
-    const fillRatio = Math.min(
-      100,
-      Math.round((balance.stock / product.minStock) * 100),
-    );
-    return {
-      product,
-      warehouse,
-      currentStock: balance.stock,
-      minStock: product.minStock,
-      deficit,
-      fillRatio,
-    };
-  });
+  const criticalItems = inventoryBalances
+    .filter((balance) => {
+      const product = products.find((p) => p.id === balance.productId);
+      return product ? balance.stock < product.minStock : false;
+    })
+    .map((balance) => {
+      const product = products.find((p) => p.id === balance.productId)!;
+      const warehouse = warehouses.find(
+        (w) => w.id === balance.warehouseId,
+      ) ?? {
+        id: balance.warehouseId,
+        code: "WH",
+        name: balance.warehouseId,
+        location: "-",
+        isActive: true,
+      };
+      const deficit = Math.max(0, product.minStock - balance.stock);
+      const fillRatio = Math.min(
+        100,
+        Math.round((balance.stock / product.minStock) * 100),
+      );
+      return {
+        product,
+        warehouse,
+        currentStock: balance.stock,
+        minStock: product.minStock,
+        deficit,
+        fillRatio,
+      };
+    });
 
   const recentTransactions = [
     {
