@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { NavigationTab } from "@/types";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { MobileHeader } from "@/components/layout/MobileHeader";
-import { Bell, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 interface AppLayoutProps {
@@ -19,31 +19,67 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState<boolean>(false);
   const { currentUser } = useAuth();
 
-  const getBreadcrumbs = (): string[] => {
+  const getBreadcrumbs = (): {
+    code: string;
+    section: string;
+    title: string;
+  } => {
     switch (activeTab) {
       case "dashboard":
-        return ["Beranda", "Dashboard"];
+        return {
+          code: "SEC-01",
+          section: "Ikhtisar",
+          title: "Buku Ikhtisar & Alur Pengadaan",
+        };
       case "products":
-        return ["Master Data", "Data Barang"];
+        return {
+          code: "SEC-02",
+          section: "Master Data",
+          title: "Katalog Bahan Baku & Pemasok",
+        };
       case "purchase-requests":
-        return ["Procurement", "Purchase Request"];
+        return {
+          code: "SEC-03",
+          section: "Siklus Pengadaan",
+          title: "Dokumen Purchase Request (PR)",
+        };
       case "purchase-orders":
-        return ["Procurement", "Purchase Order"];
+        return {
+          code: "SEC-04",
+          section: "Siklus Pengadaan",
+          title: "Dokumen Purchase Order (PO)",
+        };
       case "goods-receipts":
-        return ["Inventory", "Barang Masuk (GR)"];
+        return {
+          code: "SEC-05",
+          section: "Siklus Pengadaan",
+          title: "Bukti Timbang Terima (Goods Receipt)",
+        };
       case "inventory":
-        return ["Inventory", "Stok Gudang"];
+        return {
+          code: "SEC-06",
+          section: "Gudang",
+          title: "Kartu Saldo & Mutasi Stok",
+        };
       case "audit-logs":
-        return ["Sistem", "Audit Trail"];
+        return {
+          code: "SEC-07",
+          section: "Kepatuhan",
+          title: "Jurnal Audit Sistem",
+        };
       default:
-        return ["CafeStock"];
+        return {
+          code: "SEC-00",
+          section: "CafeStock",
+          title: "Roastery Ledger",
+        };
     }
   };
 
-  const breadcrumbs = getBreadcrumbs();
+  const crumb = getBreadcrumbs();
 
   return (
-    <div className="flex h-screen w-full bg-[#FAF7F2] overflow-hidden text-[#2D241E]">
+    <div className="flex h-screen w-full bg-[#F6F3EC] overflow-hidden text-[#1A1411]">
       {/* Desktop Sidebar */}
       <div className="hidden md:flex h-full shrink-0">
         <Sidebar activeTab={activeTab} onSelectTab={onSelectTab} />
@@ -57,7 +93,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             onClick={() => setIsMobileDrawerOpen(false)}
             aria-hidden="true"
           />
-          <div className="relative w-72 max-w-[85vw] h-full shadow-2xl z-10 animate-in slide-in-from-left duration-200 flex flex-col">
+          <div className="relative w-72 max-w-[85vw] h-full shadow-2xl z-10 flex flex-col">
             <Sidebar
               activeTab={activeTab}
               onSelectTab={onSelectTab}
@@ -76,54 +112,45 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
           onToggleDrawer={() => setIsMobileDrawerOpen(!isMobileDrawerOpen)}
         />
 
-        {/* Desktop Top Header Bar */}
-        <header className="hidden md:flex items-center justify-between px-8 py-3.5 bg-white border-b border-[#EDE4D8] shrink-0 shadow-xs">
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-xs font-medium text-[#7D6B5D]">
-            <span>{breadcrumbs[0]}</span>
-            <span>/</span>
-            <span className="font-semibold text-[#3D2C20]">
-              {breadcrumbs[1]}
+        {/* Desktop Top Ledger Header Bar */}
+        <header className="hidden md:flex items-center justify-between px-8 py-3 bg-[#FDFBF7] border-b border-[#DFD6C7] shrink-0">
+          {/* Breadcrumb & Document Index */}
+          <div className="flex items-center gap-3 text-xs">
+            <span className="font-mono text-[10px] font-semibold px-1.5 py-0.5 bg-[#EFEAD8] text-[#5C4938] border border-[#D8CEBE]">
+              {crumb.code}
             </span>
+            <span className="font-mono text-[11px] uppercase tracking-wider text-[#857464]">
+              {crumb.section}
+            </span>
+            <span className="text-[#C7BBAE]">/</span>
+            <span className="font-semibold text-[#1A1411]">{crumb.title}</span>
           </div>
 
           {/* Right Header Utilities */}
-          <div className="flex items-center gap-4">
-            {/* Search Input Preview */}
+          <div className="flex items-center gap-5">
+            {/* Quick Search */}
             <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#A39282]" />
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#8C7B6B]" />
               <input
                 type="text"
-                placeholder="Cari SKU, PR, PO..."
-                className="pl-9 pr-4 py-1.5 text-xs bg-[#FAF7F2] border border-[#E4D9CC] rounded-lg w-52 focus:w-64 transition-all focus:outline-none focus:border-[#7A4D33]"
+                placeholder="Cari No. Dokumen / SKU..."
+                className="pl-8 pr-3 py-1 font-mono text-xs bg-[#F6F3EC] border border-[#D8CFC0] w-52 focus:w-64 transition-all focus:outline-none focus:border-[#261B16] text-[#1A1411] placeholder-[#9E8E7E]"
               />
             </div>
 
-            {/* Notification Bell */}
-            <button
-              type="button"
-              className="relative p-2 text-[#7D6B5D] hover:text-[#3D2C20] hover:bg-[#FAF7F2] rounded-lg transition"
-              title="Notifikasi"
-            >
-              <Bell className="w-4 h-4" />
-              {currentUser.role === "APPROVER" && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#C83E2D]" />
-              )}
-            </button>
-
-            {/* Active User Chip */}
-            <div className="flex items-center gap-2 pl-2 border-l border-[#EDE4D8]">
+            {/* Active Staff Stamp */}
+            <div className="flex items-center gap-3 pl-4 border-l border-[#DFD6C7]">
               <div className="text-right">
-                <div className="text-xs font-bold text-[#2E1F16]">
+                <div className="text-xs font-semibold text-[#1A1411] leading-none">
                   {currentUser.name}
                 </div>
-                <div className="text-[10px] font-semibold text-[#8C7665]">
+                <div className="font-mono text-[10px] uppercase tracking-wider text-[#7A6858] mt-1">
                   {currentUser.role === "APPROVER"
-                    ? "Manager (Approver)"
-                    : "Warehouse Staff (User)"}
+                    ? "OTORISASI: APPROVER"
+                    : "OTORISASI: STAFF USER"}
                 </div>
               </div>
-              <div className="w-8 h-8 rounded-full bg-[#EFE7DE] border border-[#D5C5B5] flex items-center justify-center font-bold text-xs text-[#5A3825]">
+              <div className="w-7 h-7 bg-[#261B16] text-[#F7F3EC] flex items-center justify-center font-mono font-bold text-[11px]">
                 {currentUser.name
                   .split(" ")
                   .map((n) => n[0])
@@ -135,7 +162,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
         </header>
 
         {/* Content Outlet */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-[#FAF7F2]">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 bg-[#F6F3EC]">
           <div className="max-w-7xl mx-auto">{children}</div>
         </main>
       </div>

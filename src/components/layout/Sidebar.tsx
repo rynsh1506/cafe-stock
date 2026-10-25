@@ -8,8 +8,6 @@ import {
   Truck,
   Boxes,
   ShieldCheck,
-  UserCheck,
-  UserCircle,
   LogOut,
   ArrowRightLeft,
 } from "lucide-react";
@@ -29,48 +27,70 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { currentUser, switchRole, logout } = useAuth();
 
-  const navItems = [
+  const navGroups = [
     {
-      id: "dashboard" as NavigationTab,
-      label: "Dashboard",
-      icon: LayoutDashboard,
-      badge: undefined,
+      groupTitle: "IKHTISAR & KATALOG",
+      items: [
+        {
+          code: "01",
+          id: "dashboard" as NavigationTab,
+          label: "Buku Ikhtisar",
+          icon: LayoutDashboard,
+          badge: undefined,
+        },
+        {
+          code: "02",
+          id: "products" as NavigationTab,
+          label: "Katalog Bahan Baku",
+          icon: Package,
+          badge: undefined,
+        },
+      ],
     },
     {
-      id: "products" as NavigationTab,
-      label: "Data Barang",
-      icon: Package,
-      badge: undefined,
+      groupTitle: "SIKLUS PENGADAAN",
+      items: [
+        {
+          code: "03",
+          id: "purchase-requests" as NavigationTab,
+          label: "Purchase Request",
+          icon: FileText,
+          badge: currentUser.role === "APPROVER" ? "1 REVIEW" : undefined,
+        },
+        {
+          code: "04",
+          id: "purchase-orders" as NavigationTab,
+          label: "Purchase Order",
+          icon: ShoppingCart,
+          badge: undefined,
+        },
+        {
+          code: "05",
+          id: "goods-receipts" as NavigationTab,
+          label: "Timbang Terima (GR)",
+          icon: Truck,
+          badge: undefined,
+        },
+      ],
     },
     {
-      id: "purchase-requests" as NavigationTab,
-      label: "Purchase Request",
-      icon: FileText,
-      badge: currentUser.role === "APPROVER" ? "2 Need Review" : undefined,
-    },
-    {
-      id: "purchase-orders" as NavigationTab,
-      label: "Purchase Order",
-      icon: ShoppingCart,
-      badge: undefined,
-    },
-    {
-      id: "goods-receipts" as NavigationTab,
-      label: "Barang Masuk (GR)",
-      icon: Truck,
-      badge: undefined,
-    },
-    {
-      id: "inventory" as NavigationTab,
-      label: "Stok Gudang",
-      icon: Boxes,
-      badge: undefined,
-    },
-    {
-      id: "audit-logs" as NavigationTab,
-      label: "Audit Trail",
-      icon: ShieldCheck,
-      badge: undefined,
+      groupTitle: "GUDANG & KEPATUHAN",
+      items: [
+        {
+          code: "06",
+          id: "inventory" as NavigationTab,
+          label: "Kartu Stok Gudang",
+          icon: Boxes,
+          badge: undefined,
+        },
+        {
+          code: "07",
+          id: "audit-logs" as NavigationTab,
+          label: "Jurnal Audit",
+          icon: ShieldCheck,
+          badge: undefined,
+        },
+      ],
     },
   ];
 
@@ -87,97 +107,109 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   return (
-    <aside className="w-full md:w-64 bg-[#231712] text-[#EFE8E1] flex flex-col h-full border-r border-[#38261E] select-none shadow-xl">
-      {/* Brand Header */}
-      <div className="p-5 border-b border-[#38261E] flex items-center justify-between">
+    <aside className="w-full md:w-64 bg-[#191310] text-[#EBE4DA] flex flex-col h-full border-r border-[#332720] select-none">
+      {/* Brand Stamp Header */}
+      <div className="px-5 py-4 border-b border-[#332720] flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#5A3825] border border-[#7A4D33] flex items-center justify-center text-[#E5B589] shadow-inner">
-            <Coffee className="w-5 h-5" />
+          <div className="w-9 h-9 bg-[#2A1E18] border border-[#523A2C] flex items-center justify-center text-[#D49B6A] shrink-0">
+            <Coffee className="w-4 h-4" />
           </div>
           <div>
-            <div className="font-serif font-bold text-lg tracking-wide text-white flex items-center gap-1.5">
+            <div className="font-serif font-semibold text-lg tracking-tight text-[#F7F3EC] flex items-center gap-2 leading-none">
               CafeStock
-              <span className="text-[10px] font-sans font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#45281A] text-[#D8A57A] border border-[#683C25]">
+              <span className="font-mono text-[9px] font-medium uppercase px-1.5 py-0.5 bg-[#2A1E18] text-[#C89666] border border-[#473225]">
                 v1.0
               </span>
             </div>
-            <div className="text-[11px] text-[#A69080] tracking-tight">
-              Inventory & Procurement
+            <div className="font-mono text-[10px] uppercase tracking-widest text-[#8C7A6B] mt-1">
+              Roastery Ledger
             </div>
           </div>
         </div>
       </div>
 
-      {/* Role Banner / Quick Switcher */}
-      <div className="px-4 py-3 bg-[#1C120D] border-b border-[#332119]">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {currentUser.role === "APPROVER" ? (
-              <span className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-[#4A321E] text-[#F3C592] border border-[#7B532F]">
-                <UserCheck className="w-3 h-3" />
-                Approver
-              </span>
-            ) : (
-              <span className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-[#2D3748] text-[#90CDF4] border border-[#4A5568]">
-                <UserCircle className="w-3 h-3" />
-                Staff (User)
-              </span>
-            )}
-          </div>
+      {/* Otorisasi Role Shift */}
+      <div className="px-4 py-3 bg-[#140F0C] border-b border-[#2E221B]">
+        <div className="font-mono text-[9px] uppercase tracking-widest text-[#7D6C5E] mb-1.5">
+          OTORISASI PETUGAS AKTIF
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          {currentUser.role === "APPROVER" ? (
+            <span className="font-mono text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 bg-[#3B2616] text-[#F0C18C] border border-[#6E472A] truncate">
+              ROLE // APPROVER
+            </span>
+          ) : (
+            <span className="font-mono text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 bg-[#1B2C3B] text-[#9AC7EE] border border-[#2F4E68] truncate">
+              ROLE // USER
+            </span>
+          )}
           <button
             onClick={toggleRole}
             type="button"
-            className="flex items-center gap-1 text-[11px] text-[#CDB8A6] hover:text-white bg-[#301F18] hover:bg-[#422B22] px-2 py-1 rounded transition border border-[#482F24]"
-            title="Klik untuk beralih role demi pengujian otorisasi PRD"
+            className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-[#C8B7A6] hover:text-white bg-[#261C17] hover:bg-[#382921] px-2 py-1 transition border border-[#423127] cursor-pointer shrink-0"
+            title="Ubah role untuk menguji otorisasi USER vs APPROVER"
           >
             <ArrowRightLeft className="w-3 h-3" />
-            <span>Switch</span>
+            <span>Ganti</span>
           </button>
         </div>
       </div>
 
-      {/* Navigation Links */}
-      <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
-        <div className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-wider text-[#8A7566]">
-          Menu Utama
-        </div>
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => handleTabClick(item.id)}
-              type="button"
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
-                isActive
-                  ? "bg-[#5A3825] text-white shadow-md border border-[#7B4E34]"
-                  : "text-[#C4B2A3] hover:text-white hover:bg-[#2F1F18]"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <Icon
-                  className={`w-4 h-4 ${
-                    isActive ? "text-[#F1C89F]" : "text-[#9E8777]"
-                  }`}
-                />
-                <span>{item.label}</span>
-              </div>
-              {item.badge && (
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#8C2E26] text-white">
-                  {item.badge}
-                </span>
-              )}
-            </button>
-          );
-        })}
+      {/* Navigation Ledger Index */}
+      <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
+        {navGroups.map((group) => (
+          <div key={group.groupTitle}>
+            <div className="px-2.5 pb-1.5 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-[#7D6C5E]">
+              {group.groupTitle}
+            </div>
+            <div className="space-y-0.5">
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleTabClick(item.id)}
+                    type="button"
+                    className={`w-full flex items-center justify-between px-2.5 py-2 text-xs transition cursor-pointer border-l-2 ${
+                      isActive
+                        ? "bg-[#281E19] text-[#F7F3EC] border-[#D49B6A] font-semibold"
+                        : "border-transparent text-[#B8A798] hover:text-[#F2ECE4] hover:bg-[#211814]"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span
+                        className={`font-mono text-[10px] ${
+                          isActive ? "text-[#D49B6A]" : "text-[#6E5D4F]"
+                        }`}
+                      >
+                        {item.code}
+                      </span>
+                      <Icon
+                        className={`w-3.5 h-3.5 shrink-0 ${
+                          isActive ? "text-[#D49B6A]" : "text-[#8C7A6B]"
+                        }`}
+                      />
+                      <span className="truncate">{item.label}</span>
+                    </div>
+                    {item.badge && (
+                      <span className="font-mono text-[9px] font-bold px-1.5 py-0.5 bg-[#7C2D23] text-[#FCE8E6] border border-[#A64236] shrink-0">
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
-      {/* User Footer Profile */}
-      <div className="p-4 border-t border-[#38261E] bg-[#1E130E]/80">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="w-8 h-8 rounded-full bg-[#4A3022] border border-[#6B4430] flex items-center justify-center font-bold text-xs text-[#E3B892] shrink-0">
+      {/* Petugas Footer */}
+      <div className="p-4 border-t border-[#332720] bg-[#140F0C]">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 bg-[#2A1E18] border border-[#523A2C] flex items-center justify-center font-mono font-bold text-xs text-[#D49B6A] shrink-0">
               {currentUser.name
                 .split(" ")
                 .map((n) => n[0])
@@ -185,10 +217,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 .join("")}
             </div>
             <div className="truncate">
-              <div className="text-xs font-semibold text-white truncate">
+              <div className="text-xs font-semibold text-[#F2ECE4] truncate">
                 {currentUser.name}
               </div>
-              <div className="text-[10px] text-[#9A8474] truncate">
+              <div className="font-mono text-[10px] text-[#8C7A6B] truncate">
                 {currentUser.username}
               </div>
             </div>
@@ -196,8 +228,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={logout}
             type="button"
-            className="p-1.5 text-[#9A8474] hover:text-[#E57373] hover:bg-[#341F18] rounded-md transition"
-            title="Keluar"
+            className="p-1.5 text-[#8C7A6B] hover:text-[#E57373] hover:bg-[#2A1E18] transition cursor-pointer shrink-0"
+            title="Tutup Buku Kerja (Logout)"
           >
             <LogOut className="w-4 h-4" />
           </button>

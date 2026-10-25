@@ -21,101 +21,73 @@ const AppContent: React.FC = () => {
     return <LoginPage />;
   }
 
+  const renderLedgerPlaceholder = (
+    code: string,
+    title: string,
+    description: string,
+    IconComponent: React.ElementType,
+  ): React.ReactNode => (
+    <div className="bg-[#FDFBF7] border border-[#D8CFC0] p-8 sm:p-12">
+      <div className="max-w-lg">
+        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-[#7A6858] mb-3">
+          <IconComponent className="w-3.5 h-3.5 text-[#8C6239]" />
+          <span>{code}</span>
+        </div>
+        <h2 className="font-serif text-2xl font-normal text-[#1A1411]">
+          {title}
+        </h2>
+        <p className="text-xs sm:text-sm text-[#6E5E50] mt-2 leading-relaxed">
+          {description}
+        </p>
+      </div>
+    </div>
+  );
+
   const renderContent = (): React.ReactNode => {
     switch (activeTab) {
       case "dashboard":
         return <DashboardTab onNavigate={setActiveTab} />;
       case "products":
-        return (
-          <div className="bg-white rounded-2xl border border-[#EDE4D8] p-8 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-[#F7F2EB] text-[#5A3825] flex items-center justify-center mx-auto">
-              <Package className="w-6 h-6" />
-            </div>
-            <h2 className="text-lg font-bold text-[#2E1F16]">
-              Data Barang (Master Data)
-            </h2>
-            <p className="text-xs text-[#8C7665] max-w-md mx-auto">
-              Katalog master produk, satuan unit, stok minimum, status aktif,
-              serta master supplier dan gudang sesuai PRD Bagian 4.2.
-            </p>
-          </div>
+        return renderLedgerPlaceholder(
+          "MODUL 02 // MASTER DATA",
+          "Katalog Bahan Baku, Pemasok & Gudang",
+          "Pencatatan spesifikasi SKU bahan baku, satuan takar, batas stok minimum, serta daftar pemasok resmi dan titik gudang sesuai PRD Bagian 4.2.",
+          Package,
         );
       case "purchase-requests":
-        return (
-          <div className="bg-white rounded-2xl border border-[#EDE4D8] p-8 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-[#FFF8E1] text-[#D97706] flex items-center justify-center mx-auto">
-              <FileText className="w-6 h-6" />
-            </div>
-            <h2 className="text-lg font-bold text-[#2E1F16]">
-              Purchase Request (PR)
-            </h2>
-            <p className="text-xs text-[#8C7665] max-w-md mx-auto">
-              Alur pengajuan PR dengan form agregat, status DRAFT, SUBMITTED,
-              hingga aksi APPROVE / REJECT oleh Approver.
-            </p>
-          </div>
+        return renderLedgerPlaceholder(
+          "MODUL 03 // PERMINTAAN BARANG",
+          "Buku Dokumen Purchase Request (PR)",
+          "Penyusunan permintaan pengadaan bahan baku menggunakan payload agregat (header + daftar item), mulai dari status DRAFT, SUBMITTED, hingga otorisasi APPROVE / REJECT.",
+          FileText,
         );
       case "purchase-orders":
-        return (
-          <div className="bg-white rounded-2xl border border-[#EDE4D8] p-8 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-[#EFF6FF] text-[#1D4ED8] flex items-center justify-center mx-auto">
-              <ShoppingCart className="w-6 h-6" />
-            </div>
-            <h2 className="text-lg font-bold text-[#2E1F16]">
-              Purchase Order (PO)
-            </h2>
-            <p className="text-xs text-[#8C7665] max-w-md mx-auto">
-              Pembuatan PO dari PR yang APPROVED, pemilihan supplier aktif,
-              penomoran otomatis PO-2026-XXXXXX, dan aksi Mark as Ordered.
-            </p>
-          </div>
+        return renderLedgerPlaceholder(
+          "MODUL 04 // PESANAN PEMASOK",
+          "Buku Dokumen Purchase Order (PO)",
+          "Penerbitan pesanan resmi dari PR berstatus APPROVED, penunjukan pemasok aktif, penomoran otomatis PO-2026-XXXXXX, dan pengiriman status ORDERED.",
+          ShoppingCart,
         );
       case "goods-receipts":
-        return (
-          <div className="bg-white rounded-2xl border border-[#EDE4D8] p-8 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-[#ECFDF5] text-[#047857] flex items-center justify-center mx-auto">
-              <Truck className="w-6 h-6" />
-            </div>
-            <h2 className="text-lg font-bold text-[#2E1F16]">
-              Barang Masuk / Goods Receipt (GR)
-            </h2>
-            <p className="text-xs text-[#8C7665] max-w-md mx-auto">
-              Penerimaan barang terhadap PO dengan validasi batas quantity
-              (tidak boleh melebihi sisa ordered) dan update otomatis saldo
-              stok.
-            </p>
-          </div>
+        return renderLedgerPlaceholder(
+          "MODUL 05 // TIMBANG TERIMA",
+          "Bukti Penerimaan Barang (Goods Receipt)",
+          "Verifikasi fisik kedatangan barang terhadap dokumen PO dengan validasi ketat kuantitas sisa pesanan serta pembaruan saldo gudang secara transaksional.",
+          Truck,
         );
       case "inventory":
-        return (
-          <div className="bg-white rounded-2xl border border-[#EDE4D8] p-8 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-[#F7F2EB] text-[#5A3825] flex items-center justify-center mx-auto">
-              <Boxes className="w-6 h-6" />
-            </div>
-            <h2 className="text-lg font-bold text-[#2E1F16]">
-              Stok Gudang & Mutasi
-            </h2>
-            <p className="text-xs text-[#8C7665] max-w-md mx-auto">
-              Tabel saldo stok per gudang dan riwayat mutasi (append-only
-              inventory_movements) yang menjadi acuan audit transaksi.
-            </p>
-          </div>
+        return renderLedgerPlaceholder(
+          "MODUL 06 // KARTU STOK",
+          "Saldo Gudang & Jurnal Mutasi",
+          "Pemisahan tegas antara tabel saldo berjalan (inventory_balances) dan buku riwayat mutasi (append-only inventory_movements) per lokasi gudang.",
+          Boxes,
         );
       case "audit-logs":
-        return (
-          <div className="bg-white rounded-2xl border border-[#EDE4D8] p-8 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-[#F3E8FF] text-[#7E22CE] flex items-center justify-center mx-auto">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
-            <h2 className="text-lg font-bold text-[#2E1F16]">
-              Audit Trail Log
-            </h2>
-            <p className="text-xs text-[#8C7665] max-w-md mx-auto">
-              Pencatatan jejak audit untuk setiap aksi penting (Create, Submit,
-              Approve, Reject, PO Ordered, GR Received) beserta aktor dan
-              timestamp.
-            </p>
-          </div>
+        return renderLedgerPlaceholder(
+          "MODUL 07 // KEPATUHAN",
+          "Jurnal Jejak Audit (Audit Trail)",
+          "Rekaman permanen setiap tindakan krusial (Create, Submit, Approve, Reject, PO Ordered, GR Received) lengkap dengan identitas petugas dan waktu kejadian.",
+          ShieldCheck,
         );
       default:
         return <DashboardTab onNavigate={setActiveTab} />;
