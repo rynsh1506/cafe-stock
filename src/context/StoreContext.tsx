@@ -172,7 +172,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
     loadStored<AuditLog[]>(STORE_KEYS.AUDITS, []),
   );
 
-  // Hydrate from Tauri native database file on initial launch if local cache is empty
+  // Hydrate from SQLite database on initial launch if local cache is empty
   useEffect(() => {
     let mounted = true;
     loadSnapshotFromNativeDatabase().then((snap) => {
@@ -204,7 +204,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   }, []);
 
-  // Continuously persist relational snapshot to Tauri native DB file & IndexedDB
+  // Continuously persist relational snapshot to SQLite database & IndexedDB
   useEffect(() => {
     syncSnapshotToNativeDatabase({
       version: 2,

@@ -520,7 +520,7 @@ export const KernelProvider: React.FC<{ children: React.ReactNode }> = ({
   const storageMetrics: KernelStorageMetrics = {
     engineName:
       dbConnection.mode === "LOCAL_EMBEDDED"
-        ? "Tauri Native LocalStore + Memory WAL"
+        ? "Embedded SQLite LocalStore + Memory WAL"
         : `Hybrid Sync → ${dbConnection.remoteEndpointUrl}`,
     journalMode:
       dbConnection.mode === "LOCAL_EMBEDDED"
