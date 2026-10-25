@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useKernel } from "@/kernel/KernelContext";
 import { useAuth } from "@/context/AuthContext";
+import { useStore } from "@/context/StoreContext";
 import {
   DatabaseEngineType,
   IndustryPresetId,
@@ -130,6 +131,20 @@ export const ControlPanelTab: React.FC = () => {
     deleteAccount,
     updateAccountRole,
   } = useAuth();
+  const {
+    products,
+    suppliers,
+    warehouses,
+    purchaseRequests,
+    purchaseOrders,
+    goodsReceipts,
+    inventoryBalances,
+    auditLogs,
+    wipeAllDatabase,
+    seedDemoData,
+    exportSqlDump,
+  } = useStore();
+  const [sqlPreview, setSqlPreview] = useState<string>("");
 
   const [activeSection, setActiveSection] =
     useState<AdminSectionId>("database");
@@ -1775,6 +1790,133 @@ INSTANCE_TOKEN="${dbConnection.instanceToken}"`}
                     </p>
                   </div>
                 </div>
+              </div>
+
+              {/* 5. Inspektor Tabel Database Aktif & Utilitas SQL / Seeder */}
+              <div
+                style={{
+                  backgroundColor: "var(--kr-bg-main)",
+                  borderColor: "var(--kr-border)",
+                }}
+                className="p-4 border space-y-4"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <div className="font-mono text-[10px] font-bold uppercase tracking-widest">
+                      STATUS TABEL DATABASE RELASIONAL SAAT INI (LIVE ROWS)
+                    </div>
+                    <p
+                      style={{ color: "var(--kr-text-muted)" }}
+                      className="text-xs mt-0.5"
+                    >
+                      Secara bawaan (default), instalasi baru dimulai dalam
+                      keadaan <strong>0 baris (kosong murni)</strong> tanpa data
+                      dummy. Seluruh transaksi yang Anda buat disimpan secara
+                      persisten ke penyimpanan database.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setSqlPreview(exportSqlDump())}
+                      style={{
+                        backgroundColor: "var(--kr-bg-surface)",
+                        borderColor: "var(--kr-border)",
+                        color: "var(--kr-text-main)",
+                      }}
+                      className="px-3 py-1.5 border font-mono text-[10px] font-bold uppercase cursor-pointer"
+                    >
+                      Export SQL (.sql)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        seedDemoData();
+                        setSqlPreview("");
+                      }}
+                      style={{
+                        backgroundColor: "var(--kr-bg-sidebar)",
+                        color: "var(--kr-text-sidebar)",
+                      }}
+                      className="px-3 py-1.5 font-mono text-[10px] font-bold uppercase cursor-pointer"
+                    >
+                      + Muat Data Contoh (Opsional)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        wipeAllDatabase();
+                        setSqlPreview("");
+                      }}
+                      className="px-3 py-1.5 bg-[#9E2A20] text-white font-mono text-[10px] font-bold uppercase cursor-pointer"
+                    >
+                      Kosongkan Database (0 Rows)
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 font-mono text-xs">
+                  {[
+                    { name: "warehouses", count: warehouses.length },
+                    { name: "suppliers", count: suppliers.length },
+                    { name: "products", count: products.length },
+                    {
+                      name: "purchase_requests",
+                      count: purchaseRequests.length,
+                    },
+                    { name: "purchase_orders", count: purchaseOrders.length },
+                    { name: "goods_receipts", count: goodsReceipts.length },
+                    {
+                      name: "inventory_balances",
+                      count: inventoryBalances.length,
+                    },
+                    { name: "audit_logs", count: auditLogs.length },
+                  ].map((tbl) => (
+                    <div
+                      key={tbl.name}
+                      style={{
+                        backgroundColor: "var(--kr-bg-surface)",
+                        borderColor: "var(--kr-border)",
+                      }}
+                      className="p-2.5 border flex items-center justify-between"
+                    >
+                      <span
+                        style={{ color: "var(--kr-text-muted)" }}
+                        className="text-[10px] truncate"
+                      >
+                        {tbl.name}
+                      </span>
+                      <span className="font-bold">{tbl.count} rows</span>
+                    </div>
+                  ))}
+                </div>
+
+                {sqlPreview && (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between font-mono text-[10px]">
+                      <span className="font-bold uppercase">
+                        PORTABLE SQL DUMP (COMPATIBLE WITH SQLITE / POSTGRESQL /
+                        MARIADB)
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setSqlPreview("")}
+                        className="underline cursor-pointer"
+                      >
+                        Tutup Preview SQL
+                      </button>
+                    </div>
+                    <pre
+                      style={{
+                        backgroundColor: "var(--kr-bg-sidebar)",
+                        color: "var(--kr-text-sidebar)",
+                      }}
+                      className="p-3 font-mono text-[10px] max-h-60 overflow-auto"
+                    >
+                      {sqlPreview}
+                    </pre>
+                  </div>
+                )}
               </div>
             </div>
           )}
