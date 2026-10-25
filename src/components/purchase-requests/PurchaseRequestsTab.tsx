@@ -7,9 +7,10 @@ import {
   Send,
   ArrowUpRight,
   Trash2,
+  Pencil,
   X,
 } from "lucide-react";
-import { NavigationTab, PRStatus } from "@/types";
+import { NavigationTab, PRStatus, PurchaseRequest } from "@/types";
 import { useStore } from "@/context/StoreContext";
 import { useAuth } from "@/context/AuthContext";
 import { useKernel } from "@/kernel/KernelContext";
@@ -26,6 +27,7 @@ export const PurchaseRequestsTab: React.FC<PurchaseRequestsTabProps> = ({
     products,
     warehouses,
     createPurchaseRequest,
+    updateDraftPurchaseRequest,
     submitPurchaseRequest,
     approvePurchaseRequest,
     rejectPurchaseRequest,
@@ -33,23 +35,60 @@ export const PurchaseRequestsTab: React.FC<PurchaseRequestsTabProps> = ({
   const { currentUser } = useAuth();
   const { branding, t } = useKernel();
 
+  const activeWarehouses = warehouses.filter((w) => w.isActive);
+  const activeProducts = products.filter((p) => p.isActive);
+
   const [statusFilter, setStatusFilter] = useState<PRStatus | "ALL">("ALL");
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
+  const [editingPrId, setEditingPrId] = useState<string | null>(null);
   const [warehouseId, setWarehouseId] = useState<string>(
-    warehouses[0]?.id ?? "wh_jkt",
+    activeWarehouses[0]?.id ?? warehouses[0]?.id ?? "wh_jkt",
   );
   const [notes, setNotes] = useState<string>("");
   const [lineItems, setLineItems] = useState<
     { productId: string; quantity: number }[]
-  >([{ productId: products[0]?.id ?? "prd_01", quantity: 25 }]);
+  >([
+    {
+      productId: activeProducts[0]?.id ?? products[0]?.id ?? "prd_01",
+      quantity: 25,
+    },
+  ]);
   const [formError, setFormError] = useState<string>("");
 
   const filteredPRs = purchaseRequests.filter(
     (pr) => statusFilter === "ALL" || pr.status === statusFilter,
   );
 
+  const handleOpenCreateModal = (): void => {
+    setEditingPrId(null);
+    setWarehouseId(activeWarehouses[0]?.id ?? warehouses[0]?.id ?? "wh_jkt");
+    setNotes("");
+    setLineItems([
+      {
+        productId: activeProducts[0]?.id ?? products[0]?.id ?? "prd_01",
+        quantity: 25,
+      },
+    ]);
+    setFormError("");
+    setShowCreateModal(true);
+  };
+
+  const handleOpenEditDraft = (pr: PurchaseRequest): void => {
+    setEditingPrId(pr.id);
+    setWarehouseId(pr.warehouseId);
+    setNotes(pr.notes ?? "");
+    setLineItems(
+      pr.items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+      })),
+    );
+    setFormError("");
+    setShowCreateModal(true);
+  };
+
   const handleAddLine = (): void => {
-    const unusedProduct = products.find(
+    const unusedProduct = activeProducts.find(
       (p) => !lineItems.some((li) => li.productId === p.id),
     );
     if (!unusedProduct) {
@@ -110,15 +149,28 @@ export const PurchaseRequestsTab: React.FC<PurchaseRequestsTabProps> = ({
       seen.add(item.productId);
     }
 
-    createPurchaseRequest({
-      warehouseId,
-      notes: notes.trim() || "Permintaan pengadaan stok rutin",
-      submitImmediately,
-      items: lineItems,
-      createdBy: currentUser.username,
-      prefixPR: branding.documentPrefixPR,
-    });
+    if (editingPrId) {
+      updateDraftPurchaseRequest(editingPrId, {
+        warehouseId,
+        notes: notes.trim() || "Permintaan pengadaan stok rutin",
+        items: lineItems,
+        actor: currentUser.username,
+      });
+      if (submitImmediately) {
+        submitPurchaseRequest(editingPrId, currentUser.username);
+      }
+    } else {
+      createPurchaseRequest({
+        warehouseId,
+        notes: notes.trim() || "Permintaan pengadaan stok rutin",
+        submitImmediately,
+        items: lineItems,
+        createdBy: currentUser.username,
+        prefixPR: branding.documentPrefixPR,
+      });
+    }
 
+    setEditingPrId(null);
     setNotes("");
     setFormError("");
     setShowCreateModal(false);
@@ -168,7 +220,7 @@ export const PurchaseRequestsTab: React.FC<PurchaseRequestsTabProps> = ({
 
         <button
           type="button"
-          onClick={() => setShowCreateModal(true)}
+          onClick={handleOpenCreateModal}
           style={{
             backgroundColor: "var(--kr-bg-sidebar)",
             color: "var(--kr-text-sidebar)",
@@ -259,16 +311,31 @@ export const PurchaseRequestsTab: React.FC<PurchaseRequestsTabProps> = ({
                 {/* Action Buttons */}
                 <div className="flex flex-wrap items-center gap-2 shrink-0">
                   {pr.status === "DRAFT" && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        submitPurchaseRequest(pr.id, currentUser.username)
-                      }
-                      className="px-3 py-1.5 bg-[#8A4B14] text-white font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <Send className="w-3 h-3" />
-                      <span>Ajukan (Submit)</span>
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditDraft(pr)}
+                        style={{
+                          backgroundColor: "var(--kr-bg-elevated)",
+                          borderColor: "var(--kr-border)",
+                          color: "var(--kr-text-main)",
+                        }}
+                        className="px-3 py-1.5 border font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Pencil className="w-3 h-3" />
+                        <span>Edit Draft</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          submitPurchaseRequest(pr.id, currentUser.username)
+                        }
+                        className="px-3 py-1.5 bg-[#8A4B14] text-white font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Send className="w-3 h-3" />
+                        <span>Ajukan (Submit)</span>
+                      </button>
+                    </>
                   )}
 
                   {pr.status === "SUBMITTED" && (
@@ -385,7 +452,9 @@ export const PurchaseRequestsTab: React.FC<PurchaseRequestsTabProps> = ({
               className="flex items-center justify-between border-b pb-3 mb-4"
             >
               <h3 className="font-mono text-xs font-bold uppercase tracking-wider">
-                SUSUN DOKUMEN {branding.documentPrefixPR} BARU (AGGREGATE FORM)
+                {editingPrId
+                  ? `EDIT DOKUMEN ${branding.documentPrefixPR} (STATUS: DRAFT)`
+                  : `SUSUN DOKUMEN ${branding.documentPrefixPR} BARU (AGGREGATE FORM)`}
               </h3>
               <button
                 type="button"
@@ -405,7 +474,7 @@ export const PurchaseRequestsTab: React.FC<PurchaseRequestsTabProps> = ({
             <div className="space-y-4">
               <div>
                 <label className="block font-mono text-[10px] uppercase mb-1">
-                  Gudang Tujuan Pengiriman
+                  Gudang Tujuan Pengiriman (Aktif)
                 </label>
                 <select
                   value={warehouseId}
@@ -417,7 +486,7 @@ export const PurchaseRequestsTab: React.FC<PurchaseRequestsTabProps> = ({
                   }}
                   className="w-full px-3 py-2 border font-mono text-xs"
                 >
-                  {warehouses.map((w) => (
+                  {activeWarehouses.map((w) => (
                     <option key={w.id} value={w.id}>
                       [{w.code}] {w.name}
                     </option>
@@ -477,7 +546,7 @@ export const PurchaseRequestsTab: React.FC<PurchaseRequestsTabProps> = ({
                           }}
                           className="w-full px-2.5 py-2 border font-mono text-xs"
                         >
-                          {products.map((p) => (
+                          {activeProducts.map((p) => (
                             <option key={p.id} value={p.id}>
                               [{p.sku}] {p.name} ({p.unit})
                             </option>

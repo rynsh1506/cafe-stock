@@ -116,8 +116,18 @@ interface StoreContextValue {
   addSupplier: (input: CreateSupplierInput, actor: string) => Supplier;
   toggleSupplierStatus: (id: string, actor: string) => void;
   addWarehouse: (input: CreateWarehouseInput, actor: string) => Warehouse;
+  toggleWarehouseStatus: (id: string, actor: string) => void;
 
   createPurchaseRequest: (input: CreatePRInput) => PurchaseRequest;
+  updateDraftPurchaseRequest: (
+    id: string,
+    input: {
+      warehouseId: string;
+      notes: string;
+      items: { productId: string; quantity: number }[];
+      actor: string;
+    },
+  ) => boolean;
   submitPurchaseRequest: (id: string, actor: string) => void;
   approvePurchaseRequest: (id: string, actor: string) => void;
   rejectPurchaseRequest: (id: string, reason: string, actor: string) => void;
@@ -303,6 +313,23 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
     return newWh;
   };
 
+  const toggleWarehouseStatus = (id: string, actor: string): void => {
+    setWarehouses((prev) => {
+      const next = prev.map((w) =>
+        w.id === id ? { ...w, isActive: !w.isActive } : w,
+      );
+      saveStored(STORE_KEYS.WAREHOUSES, next);
+      return next;
+    });
+    appendAudit(
+      "Warehouse",
+      id,
+      "TOGGLE_WAREHOUSE_STATUS",
+      actor,
+      "Perubahan status aktif lokasi gudang",
+    );
+  };
+
   const createPurchaseRequest = (input: CreatePRInput): PurchaseRequest => {
     const seq = String(purchaseRequests.length + 1).padStart(6, "0");
     const reqNum = `${input.prefixPR}-2026-${seq}`;
@@ -340,6 +367,51 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
     );
 
     return newPR;
+  };
+
+  const updateDraftPurchaseRequest = (
+    id: string,
+    input: {
+      warehouseId: string;
+      notes: string;
+      items: { productId: string; quantity: number }[];
+      actor: string;
+    },
+  ): boolean => {
+    const target = purchaseRequests.find((pr) => pr.id === id);
+    if (!target || target.status !== "DRAFT") {
+      return false;
+    }
+
+    const updatedItems: PRItem[] = input.items.map((item, idx) => ({
+      id: `pri_${Date.now()}_${idx}`,
+      productId: item.productId,
+      quantity: item.quantity,
+    }));
+
+    setPurchaseRequests((prev) => {
+      const next = prev.map((pr) =>
+        pr.id === id && pr.status === "DRAFT"
+          ? {
+              ...pr,
+              warehouseId: input.warehouseId,
+              notes: input.notes,
+              items: updatedItems,
+            }
+          : pr,
+      );
+      saveStored(STORE_KEYS.PRS, next);
+      return next;
+    });
+
+    appendAudit(
+      "PurchaseRequest",
+      target.requestNumber,
+      "UPDATE_DRAFT_PR",
+      input.actor,
+      `Perubahan isi DRAFT ${target.requestNumber} (${updatedItems.length} baris item)`,
+    );
+    return true;
   };
 
   const submitPurchaseRequest = (id: string, actor: string): void => {
@@ -421,6 +493,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
   const createPurchaseOrder = (input: CreatePOInput): PurchaseOrder | null => {
     const pr = purchaseRequests.find((r) => r.id === input.purchaseRequestId);
     if (!pr || pr.status !== "APPROVED") {
+      return null;
+    }
+
+    const alreadyHasActivePO = purchaseOrders.some(
+      (po) => po.purchaseRequestId === pr.id && po.status !== "CANCELLED",
+    );
+    if (alreadyHasActivePO) {
       return null;
     }
 
@@ -706,7 +785,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
         addSupplier,
         toggleSupplierStatus,
         addWarehouse,
+        toggleWarehouseStatus,
         createPurchaseRequest,
+        updateDraftPurchaseRequest,
         submitPurchaseRequest,
         approvePurchaseRequest,
         rejectPurchaseRequest,

@@ -26,6 +26,7 @@ export const ProductsTab: React.FC = () => {
     addSupplier,
     toggleSupplierStatus,
     addWarehouse,
+    toggleWarehouseStatus,
   } = useStore();
   const { currentUser } = useAuth();
   const { branding, t } = useKernel();
@@ -466,9 +467,19 @@ export const ProductsTab: React.FC = () => {
                   <span className="font-mono text-xs font-bold px-2 py-0.5 border border-[#C69249] text-[#8A4B14] bg-[#F9EFE0]">
                     {wh.code}
                   </span>
-                  <span className="font-mono text-[10px] text-[#1D593B] font-semibold">
-                    ● OPERATIONAL
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      toggleWarehouseStatus(wh.id, currentUser.username)
+                    }
+                    className={`font-mono text-[10px] font-semibold px-2 py-0.5 border cursor-pointer ${
+                      wh.isActive
+                        ? "text-[#1D593B] bg-[#E7F2EC] border-[#B2D3C1]"
+                        : "text-[#9E2A20] bg-[#FCEAE8] border-[#E6B8B3]"
+                    }`}
+                  >
+                    ● {wh.isActive ? "OPERATIONAL" : "INACTIVE"}
+                  </button>
                 </div>
                 <h3 className="font-serif text-xl font-medium mt-1">
                   {wh.name}
