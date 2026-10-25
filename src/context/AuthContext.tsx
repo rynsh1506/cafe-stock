@@ -28,6 +28,8 @@ interface AuthContextType {
     password: string,
     rememberMe?: boolean,
   ) => { ok: boolean; errorKey?: string };
+  deleteAccount: (id: string) => void;
+  updateAccountRole: (id: string, role: UserRole) => void;
   switchRole: (role: UserRole) => void;
   login: (username: string, role?: UserRole) => void;
   logout: () => void;
@@ -171,6 +173,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return { ok: true };
   };
 
+  const deleteAccount = (id: string): void => {
+    if (accounts.length <= 1 || activeSessionUser?.id === id) {
+      return;
+    }
+    const next = accounts.filter((acc) => acc.id !== id);
+    setAccounts(next);
+    writeJson(AUTH_STORAGE_KEYS.ACCOUNTS, next);
+  };
+
+  const updateAccountRole = (id: string, role: UserRole): void => {
+    const next = accounts.map((acc) =>
+      acc.id === id ? { ...acc, role } : acc,
+    );
+    setAccounts(next);
+    writeJson(AUTH_STORAGE_KEYS.ACCOUNTS, next);
+    if (activeSessionUser?.id === id) {
+      const updatedSession = { ...activeSessionUser, role };
+      setActiveSessionUser(updatedSession);
+      writeJson(AUTH_STORAGE_KEYS.ACTIVE_USER, updatedSession);
+    }
+  };
+
   const switchRole = (newRole: UserRole): void => {
     if (!activeSessionUser) {
       return;
@@ -218,6 +242,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         isAuthenticated,
         registerAccount,
         loginWithPassword,
+        deleteAccount,
+        updateAccountRole,
         switchRole,
         login,
         logout,
