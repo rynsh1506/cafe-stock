@@ -1,41 +1,29 @@
 import React from "react";
-import { Coffee, Menu, X, ArrowRightLeft } from "lucide-react";
+import { Coffee, Menu, X, ArrowRightLeft, Sliders } from "lucide-react";
 import { NavigationTab } from "@/types";
 import { useAuth } from "@/context/AuthContext";
+import { useKernel } from "@/kernel/KernelContext";
 
 interface MobileHeaderProps {
   activeTab: NavigationTab;
   isDrawerOpen: boolean;
   onToggleDrawer: () => void;
+  onSelectTab: (tab: NavigationTab) => void;
 }
 
 export const MobileHeader: React.FC<MobileHeaderProps> = ({
   activeTab,
   isDrawerOpen,
   onToggleDrawer,
+  onSelectTab,
 }) => {
   const { currentUser, switchRole } = useAuth();
+  const { plugins, branding } = useKernel();
 
-  const getTabTitle = (tab: NavigationTab): string => {
-    switch (tab) {
-      case "dashboard":
-        return "01 // Buku Ikhtisar";
-      case "products":
-        return "02 // Katalog Bahan";
-      case "purchase-requests":
-        return "03 // Purchase Request";
-      case "purchase-orders":
-        return "04 // Purchase Order";
-      case "goods-receipts":
-        return "05 // Timbang Terima";
-      case "inventory":
-        return "06 // Kartu Stok";
-      case "audit-logs":
-        return "07 // Jurnal Audit";
-      default:
-        return "CafeStock Ledger";
-    }
-  };
+  const currentPlugin = plugins.find((p) => p.id === activeTab);
+  const titleText = currentPlugin
+    ? `${currentPlugin.code} // ${currentPlugin.name}`
+    : branding.appName;
 
   const toggleRole = (): void => {
     const nextRole = currentUser.role === "USER" ? "APPROVER" : "USER";
@@ -43,12 +31,20 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   };
 
   return (
-    <header className="md:hidden sticky top-0 z-40 bg-[#191310] text-[#EBE4DA] border-b border-[#332720] px-3.5 py-2.5 flex items-center justify-between">
+    <header
+      style={{
+        backgroundColor: "var(--kr-bg-sidebar)",
+        color: "var(--kr-text-sidebar)",
+        borderColor: "var(--kr-border-sidebar)",
+      }}
+      className="md:hidden sticky top-0 z-40 border-b px-3.5 py-2.5 flex items-center justify-between"
+    >
       <div className="flex items-center gap-2.5 min-w-0">
         <button
           onClick={onToggleDrawer}
           type="button"
-          className="p-1.5 -ml-1 text-[#D49B6A] hover:bg-[#2A1E18] transition shrink-0"
+          style={{ color: "var(--kr-accent)" }}
+          className="p-1.5 -ml-1 transition shrink-0"
           aria-label="Buka Navigasi"
         >
           {isDrawerOpen ? (
@@ -58,21 +54,41 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
           )}
         </button>
         <div className="flex items-center gap-2 min-w-0">
-          <div className="w-7 h-7 bg-[#2A1E18] border border-[#523A2C] flex items-center justify-center text-[#D49B6A] shrink-0">
+          <div
+            style={{
+              backgroundColor: "var(--kr-bg-sidebar-header)",
+              borderColor: "var(--kr-border-sidebar)",
+              color: "var(--kr-accent)",
+            }}
+            className="w-7 h-7 border flex items-center justify-center shrink-0"
+          >
             <Coffee className="w-3.5 h-3.5" />
           </div>
           <div className="min-w-0">
-            <div className="font-mono font-semibold text-xs text-[#F7F3EC] leading-tight truncate">
-              {getTabTitle(activeTab)}
+            <div className="font-mono font-semibold text-xs leading-tight truncate">
+              {titleText}
             </div>
-            <div className="font-mono text-[9px] uppercase tracking-widest text-[#8C7A6B] leading-none mt-0.5">
-              CAFESTOCK LEDGER
+            <div className="font-mono text-[9px] uppercase tracking-widest opacity-65 leading-none mt-0.5 truncate">
+              {branding.appName}
             </div>
           </div>
         </div>
       </div>
 
       <div className="flex items-center gap-1.5 shrink-0">
+        <button
+          onClick={() => onSelectTab("control-panel")}
+          type="button"
+          style={{
+            borderColor: "var(--kr-border-sidebar)",
+            color:
+              activeTab === "control-panel" ? "var(--kr-accent)" : undefined,
+          }}
+          className="p-1.5 border transition"
+          title="Panel Kontrol Sistem"
+        >
+          <Sliders className="w-3.5 h-3.5" />
+        </button>
         <button
           onClick={toggleRole}
           type="button"
