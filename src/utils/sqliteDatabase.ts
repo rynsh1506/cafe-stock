@@ -35,22 +35,31 @@ const LEGACY_MOCK_KEYS = [
   "kr_store_balances_v1",
   "kr_store_movements_v1",
   "kr_store_audits_v1",
+  "kr_db_products_v2",
+  "kr_db_suppliers_v2",
+  "kr_db_warehouses_v2",
+  "kr_db_purchase_requests_v2",
+  "kr_db_purchase_orders_v2",
+  "kr_db_goods_receipts_v2",
+  "kr_db_inventory_balances_v2",
+  "kr_db_inventory_movements_v2",
+  "kr_db_audit_logs_v2",
 ];
 
 export const DB_TABLE_KEYS = {
-  PRODUCTS: "kr_db_products_v2",
-  SUPPLIERS: "kr_db_suppliers_v2",
-  WAREHOUSES: "kr_db_warehouses_v2",
-  PRS: "kr_db_purchase_requests_v2",
-  POS: "kr_db_purchase_orders_v2",
-  GRS: "kr_db_goods_receipts_v2",
-  BALANCES: "kr_db_inventory_balances_v2",
-  MOVEMENTS: "kr_db_inventory_movements_v2",
-  AUDITS: "kr_db_audit_logs_v2",
+  PRODUCTS: "products",
+  SUPPLIERS: "suppliers",
+  WAREHOUSES: "warehouses",
+  PRS: "purchase_requests",
+  POS: "purchase_orders",
+  GRS: "goods_receipts",
+  BALANCES: "inventory_balances",
+  MOVEMENTS: "inventory_movements",
+  AUDITS: "audit_logs",
 } as const;
 
-const IDB_NAME = "cafe_stock_sqlite_db_v2";
-const IDB_STORE = "relational_tables";
+const IDB_NAME = "cafe_stock_db";
+const IDB_STORE = "tables";
 
 /**
  * Purges legacy v1 mock keys so old pre-populated dummy data is removed.
