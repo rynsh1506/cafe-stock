@@ -132,6 +132,7 @@ export const ControlPanelTab: React.FC = () => {
     rejectAccount,
     deleteAccount,
     updateAccountRole,
+    resetAllAccounts,
   } = useAuth();
   const {
     products,
@@ -1123,25 +1124,37 @@ export const ControlPanelTab: React.FC = () => {
             <div className="space-y-6">
               <div
                 style={{ borderColor: "var(--kr-border)" }}
-                className="border-b pb-4"
+                className="border-b pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-3"
               >
-                <div
-                  style={{ color: "var(--kr-text-muted)" }}
-                  className="font-mono text-[10px] uppercase tracking-widest"
-                >
-                  ADM-USR // OPERATOR &amp; APPROVER ACCOUNT REGISTRY
+                <div>
+                  <div
+                    style={{ color: "var(--kr-text-muted)" }}
+                    className="font-mono text-[10px] uppercase tracking-widest"
+                  >
+                    ADM-USR // OPERATOR &amp; APPROVER ACCOUNT REGISTRY
+                  </div>
+                  <h2 className="font-serif text-xl font-normal mt-0.5">
+                    Manajemen Akun Pengguna &amp; Otorisasi Role
+                  </h2>
+                  <p
+                    style={{ color: "var(--kr-text-muted)" }}
+                    className="text-xs mt-1"
+                  >
+                    Tambahkan akun karyawan gudang (USER) atau manajer pemeriksa
+                    (APPROVER) baru langsung dari Panel Kontrol tanpa perlu
+                    keluar (logout) dari sesi Anda.
+                  </p>
                 </div>
-                <h2 className="font-serif text-xl font-normal mt-0.5">
-                  Manajemen Akun Pengguna &amp; Otorisasi Role
-                </h2>
-                <p
-                  style={{ color: "var(--kr-text-muted)" }}
-                  className="text-xs mt-1"
+                <button
+                  type="button"
+                  onClick={() => {
+                    wipeAllDatabase();
+                    resetAllAccounts();
+                  }}
+                  className="px-3 py-1.5 bg-[#9E2A20] text-white font-mono text-[10px] font-bold uppercase cursor-pointer shrink-0 self-start sm:self-auto"
                 >
-                  Tambahkan akun karyawan gudang (USER) atau manajer pemeriksa
-                  (APPROVER) baru langsung dari Panel Kontrol tanpa perlu keluar
-                  (logout) dari sesi Anda.
-                </p>
+                  Reset Total (Hapus Semua Akun &amp; DB)
+                </button>
               </div>
 
               {usrMessage && (
