@@ -25,7 +25,13 @@ export const PurchaseOrdersTab: React.FC<PurchaseOrdersTabProps> = ({
   const { currentUser } = useAuth();
   const { branding, t } = useKernel();
 
-  const approvedPRs = purchaseRequests.filter((pr) => pr.status === "APPROVED");
+  const approvedPRs = purchaseRequests.filter(
+    (pr) =>
+      pr.status === "APPROVED" &&
+      !purchaseOrders.some(
+        (po) => po.purchaseRequestId === pr.id && po.status !== "CANCELLED",
+      ),
+  );
   const activeSuppliers = suppliers.filter((s) => s.isActive);
 
   const [statusFilter, setStatusFilter] = useState<POStatus | "ALL">("ALL");

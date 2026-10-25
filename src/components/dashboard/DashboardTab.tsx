@@ -24,6 +24,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
     products,
     purchaseRequests,
     purchaseOrders,
+    goodsReceipts,
     warehouses,
     inventoryBalances,
   } = useStore();
@@ -70,52 +71,87 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ onNavigate }) => {
       };
     });
 
+  const getStatusStyle = (status: string): string => {
+    switch (status) {
+      case "SUBMITTED":
+      case "PARTIALLY_RECEIVED":
+        return "bg-[#F9EFE0] text-[#8A4B14] border-[#DEC19B]";
+      case "ORDERED":
+        return "bg-[#E8F0F6] text-[#1E4A6D] border-[#B8CEE0]";
+      case "APPROVED":
+      case "RECEIVED":
+        return "bg-[#E7F2EC] text-[#1D593B] border-[#B2D3C1]";
+      case "REJECTED":
+      case "CANCELLED":
+        return "bg-[#FCEAE8] text-[#9E2A20] border-[#E6B8B3]";
+      default:
+        return "bg-[#F2EFE9] text-[#5C5346] border-[#D8D0C0]";
+    }
+  };
+
   const recentTransactions = [
-    {
-      id: "tx_1",
-      number: `${branding.documentPrefixPR}-2026-000001`,
+    ...purchaseRequests.map((pr) => ({
+      id: pr.id,
+      number: pr.requestNumber,
       stage: `01 // ${branding.documentPrefixPR}`,
       type: t("plugin.purchaseRequests.name"),
-      warehouse: "Gudang Utama Jakarta",
-      date: "23 Okt 2026",
-      status: "SUBMITTED",
-      statusStyle: "bg-[#F9EFE0] text-[#8A4B14] border-[#DEC19B]",
+      warehouse:
+        warehouses.find((w) => w.id === pr.warehouseId)?.name ?? pr.warehouseId,
+      date: new Date(pr.createdAt).toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }),
+      timestamp: new Date(pr.createdAt).getTime(),
+      status: pr.status,
+      statusStyle: getStatusStyle(pr.status),
       targetTab: "purchase-requests" as NavigationTab,
-    },
-    {
-      id: "tx_2",
-      number: `${branding.documentPrefixPO}-2026-000001`,
+    })),
+    ...purchaseOrders.map((po) => ({
+      id: po.id,
+      number: po.poNumber,
       stage: `02 // ${branding.documentPrefixPO}`,
       type: t("plugin.purchaseOrders.name"),
-      warehouse: "Gudang Roastery Bandung",
-      date: "22 Okt 2026",
-      status: "ORDERED",
-      statusStyle: "bg-[#E8F0F6] text-[#1E4A6D] border-[#B8CEE0]",
+      warehouse:
+        warehouses.find((w) => w.id === po.warehouseId)?.name ?? po.warehouseId,
+      date: new Date(po.createdAt).toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }),
+      timestamp: new Date(po.createdAt).getTime(),
+      status: po.status,
+      statusStyle: getStatusStyle(po.status),
       targetTab: "purchase-orders" as NavigationTab,
-    },
-    {
-      id: "tx_3",
-      number: `${branding.documentPrefixGR}-2026-000001`,
-      stage: `03 // ${branding.documentPrefixGR}`,
-      type: t("plugin.goodsReceipts.name"),
-      warehouse: "Gudang Utama Jakarta",
-      date: "21 Okt 2026",
-      status: "RECEIVED",
-      statusStyle: "bg-[#E7F2EC] text-[#1D593B] border-[#B2D3C1]",
-      targetTab: "goods-receipts" as NavigationTab,
-    },
-    {
-      id: "tx_4",
-      number: `${branding.documentPrefixPR}-2026-000003`,
-      stage: `01 // ${branding.documentPrefixPR}`,
-      type: t("plugin.purchaseRequests.name"),
-      warehouse: "Gudang Roastery Bandung",
-      date: "22 Okt 2026",
-      status: "APPROVED",
-      statusStyle: "bg-[#E7F2EC] text-[#1D593B] border-[#B2D3C1]",
-      targetTab: "purchase-requests" as NavigationTab,
-    },
-  ];
+    })),
+    ...goodsReceipts.map((gr) => {
+      const parentPo = purchaseOrders.find(
+        (po) => po.id === gr.purchaseOrderId,
+      );
+      const whName = parentPo
+        ? (warehouses.find((w) => w.id === parentPo.warehouseId)?.name ??
+          parentPo.warehouseId)
+        : "Gudang Utama";
+      return {
+        id: gr.id,
+        number: gr.grNumber,
+        stage: `03 // ${branding.documentPrefixGR}`,
+        type: t("plugin.goodsReceipts.name"),
+        warehouse: whName,
+        date: new Date(gr.receivedAt).toLocaleDateString("id-ID", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }),
+        timestamp: new Date(gr.receivedAt).getTime(),
+        status: "RECEIVED",
+        statusStyle: getStatusStyle("RECEIVED"),
+        targetTab: "goods-receipts" as NavigationTab,
+      };
+    }),
+  ]
+    .sort((a, b) => b.timestamp - a.timestamp)
+    .slice(0, 6);
 
   const weeklyVolume = [
     { day: "MON", date: "20/10", value: 12.4, height: "54%", lot: "Batch-A" },

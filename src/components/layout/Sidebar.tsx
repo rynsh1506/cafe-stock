@@ -14,6 +14,7 @@ import {
 import { NavigationTab } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 import { useKernel } from "@/kernel/KernelContext";
+import { useStore } from "@/context/StoreContext";
 import { PluginCategory } from "@/kernel/types";
 import { TranslationKey } from "@/kernel/i18n";
 
@@ -59,6 +60,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { currentUser, logout } = useAuth();
   const { enabledPlugins, branding, t } = useKernel();
+  const { purchaseRequests } = useStore();
+  const pendingReviewCount = purchaseRequests.filter(
+    (pr) => pr.status === "SUBMITTED",
+  ).length;
 
   const handleTabClick = (tab: NavigationTab): void => {
     onSelectTab(tab);
@@ -136,8 +141,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   );
                   const badge =
                     item.id === "purchase-requests" &&
-                    currentUser.role === "APPROVER"
-                      ? "1 REVIEW"
+                    currentUser.role === "APPROVER" &&
+                    pendingReviewCount > 0
+                      ? `${pendingReviewCount} REVIEW`
                       : undefined;
 
                   return (
