@@ -549,7 +549,7 @@ export const BUILTIN_TRANSLATIONS: Record<
       "Pilih Standalone Local jika dipakai pada 1 komputer mandiri, atau Shared Server Node agar banyak karyawan (.exe & .apk) terhubung ke database yang sama.",
     "cp.db.localTitle": "1. Standalone Local (Embedded)",
     "cp.db.localDesc":
-      "Berjalan 100% lokal di dalam Tauri tanpa server luar. Sangat kencang (<0.1 ms), cocok untuk 1 perangkat mandiri atau mode offline.",
+      "Berjalan 100% lokal dengan database SQLite tertanam. Sangat kencang (<0.1 ms), cocok untuk perangkat mandiri atau mode offline.",
     "cp.db.remoteTitle": "2. Shared Server Node (Multi-Device)",
     "cp.db.remoteDesc":
       "Menyambungkan aplikasi .exe & .apk karyawan ke node server kantor (ElysiaJS/PostgreSQL) agar tiket PR & Approval tersinkronisasi real-time.",
@@ -881,7 +881,7 @@ export const BUILTIN_TRANSLATIONS: Record<
       "Select Standalone Local for single-machine speed, or Shared Server Node so multiple employee devices (.exe & .apk) sync to the same database.",
     "cp.db.localTitle": "1. Standalone Local (Embedded)",
     "cp.db.localDesc":
-      "Runs 100% locally inside Tauri without an external server. Ultra-fast (<0.1 ms), ideal for single-terminal use or offline testing.",
+      "Runs 100% locally with embedded SQLite database. Ultra-fast (<0.1 ms), ideal for standalone use or offline testing.",
     "cp.db.remoteTitle": "2. Shared Server Node (Multi-Device)",
     "cp.db.remoteDesc":
       "Connects employee .exe & .apk apps to a shared office server node (ElysiaJS/PostgreSQL) for real-time PR & Approval synchronization.",
@@ -1209,7 +1209,7 @@ export const BUILTIN_TRANSLATIONS: Record<
       "1台の端末で高速利用する場合はStandalone Local、複数社員のPC(.exe)やスマホ(.apk)でデータ共有する場合はShared Server Nodeを選択してください。",
     "cp.db.localTitle": "1. Standalone Local (端末内蔵DB)",
     "cp.db.localDesc":
-      "外部サーバー不要でTauri内部で100%完結動作します。超高速(<0.1 ms)で単一端末やオフライン環境に最適です。",
+      "外部サーバー不要で内蔵SQLiteデータベースで完結動作します。超高速(<0.1 ms)で単一端末やオフライン環境に最適です。",
     "cp.db.remoteTitle": "2. Shared Server Node (複数端末同期)",
     "cp.db.remoteDesc":
       "社員の.exeや.apkアプリを社内サーバー(ElysiaJS/PostgreSQL)へ接続し、PR申請と承認をリアルタイム同期します。",

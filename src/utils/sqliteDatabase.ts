@@ -1,4 +1,3 @@
-import { invoke } from "@tauri-apps/api/core";
 import {
   AuditLog,
   GoodsReceipt,
@@ -144,7 +143,7 @@ export async function syncUsersToSqliteDatabase(
       body: JSON.stringify({ users }),
     });
   } catch {
-    // Fallback when running as standalone packaged Tauri binary without Vite dev server
+    // Ignore when server is offline
   }
 }
 
@@ -188,17 +187,10 @@ export async function syncSnapshotToNativeDatabase(
       }
     }
   } catch {
-    // Fallback to Tauri native invoke below
+    // Offline or server unavailable
   }
 
-  try {
-    const filePath = await invoke<string>("db_save_snapshot", {
-      payload: JSON.stringify(snapshot, null, 2),
-    });
-    return filePath;
-  } catch {
-    return null;
-  }
+  return null;
 }
 
 export async function loadSnapshotFromNativeDatabase(): Promise<DatabaseSnapshot | null> {
@@ -214,18 +206,10 @@ export async function loadSnapshotFromNativeDatabase(): Promise<DatabaseSnapshot
       }
     }
   } catch {
-    // Fallback to Tauri native invoke below
+    // Offline or server unavailable
   }
 
-  try {
-    const raw = await invoke<string | null>("db_load_snapshot");
-    if (!raw) {
-      return null;
-    }
-    return JSON.parse(raw) as DatabaseSnapshot;
-  } catch {
-    return null;
-  }
+  return null;
 }
 
 export async function clearNativeDatabase(includeUsers = false): Promise<void> {
@@ -237,12 +221,6 @@ export async function clearNativeDatabase(includeUsers = false): Promise<void> {
     });
   } catch {
     // ignore when offline
-  }
-
-  try {
-    await invoke("db_clear_snapshot");
-  } catch {
-    // ignore when running in browser dev mode
   }
 }
 

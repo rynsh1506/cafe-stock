@@ -363,7 +363,7 @@ export const ControlPanelTab: React.FC = () => {
             <Sliders className="w-3.5 h-3.5" />
             <span>{t("cp.headerTag")}</span>
             <span>•</span>
-            <span>TAURI NATIVE ENGINE</span>
+            <span>SQLITE ENGINE</span>
           </div>
           <h1
             style={{ color: "var(--kr-text-main)" }}
