@@ -88,6 +88,10 @@ declare const Bun: {
     stop(): void;
   };
   file(path: string): BunFile;
+  spawnSync(cmd: string[]): {
+    exitCode: number;
+    success: boolean;
+  };
 };
 
 declare function require(moduleName: string): unknown;

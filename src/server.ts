@@ -1,5 +1,6 @@
 import path from "node:path";
 import process from "node:process";
+import fs from "node:fs";
 import os from "node:os";
 import { handleApiRoute } from "@/server/api";
 import { getDatabasePath, initSqliteDatabase } from "@/server/database";
@@ -33,6 +34,19 @@ export function createServer(config?: Partial<ServerConfig>) {
   const db = initSqliteDatabase();
   const dbPath = getDatabasePath();
 
+  // If dist/index.html is missing, attempt auto-build so it runs right away on fresh clones
+  const indexPath = path.resolve(distDir, "index.html");
+  if (!fs.existsSync(indexPath)) {
+    try {
+      console.log(
+        "[CafeStock] dist/index.html not found. Automatically building frontend...",
+      );
+      Bun.spawnSync(["bun", "run", "build"]);
+    } catch {
+      // ignore build attempt failure, will display fallback page
+    }
+  }
+
   const server = Bun.serve({
     port,
     hostname: host,
@@ -56,8 +70,7 @@ export function createServer(config?: Partial<ServerConfig>) {
         }
       }
 
-      // 3. Root endpoint "/" & SPA fallback: Serve dist/index.html
-      const indexPath = path.resolve(distDir, "index.html");
+      // 3. Root endpoint "/", "/login", and SPA route fallbacks: Serve dist/index.html
       const indexFile = Bun.file(indexPath);
       if (await indexFile.exists()) {
         return new Response(indexFile, {
@@ -108,22 +121,28 @@ export function createServer(config?: Partial<ServerConfig>) {
   return { server, port: server.port, host, dbPath };
 }
 
-// Auto-run if executed as main process
-if (import.meta.main) {
-  const port = Number(process.env.PORT || 3000);
-  const host = process.env.HOST ?? "0.0.0.0";
-  const { dbPath } = createServer({ port, host });
+export function startServer(config?: Partial<ServerConfig>) {
+  const port = config?.port ?? Number(process.env.PORT || 3000);
+  const host = config?.host ?? process.env.HOST ?? "0.0.0.0";
+  const instance = createServer({ port, host, ...config });
   const localIp = getLocalIpAddress();
 
   console.log("\n========================================================");
   console.log("  ☕ CAFE STOCK - Self-Hosted Inventory Server");
   console.log("========================================================");
-  console.log(`  Local Access:    http://localhost:${port}/`);
-  console.log(`  Network Access:  http://${localIp}:${port}/`);
-  console.log(`  Database File:   ${dbPath}`);
+  console.log(`  Local Access:    http://localhost:${instance.port}/`);
+  console.log(`  Network Access:  http://${localIp}:${instance.port}/`);
+  console.log(`  Database File:   ${instance.dbPath}`);
   console.log(
     "  Endpoint '/':    Serving built React frontend (dist/index.html)",
   );
   console.log("  Endpoint '/api': Serving SQLite JSON REST API");
   console.log("========================================================\n");
+
+  return instance;
+}
+
+// Auto-run if executed as main process
+if (import.meta.main) {
+  startServer();
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { NavigationTab } from "@/types";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { KernelProvider } from "@/kernel/KernelContext";
@@ -17,6 +17,23 @@ import { ControlPanelTab } from "@/components/control-panel/ControlPanelTab";
 const AppContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<NavigationTab>("dashboard");
   const { isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (!isAuthenticated) {
+        if (
+          window.location.pathname !== "/login" &&
+          window.location.pathname !== "/"
+        ) {
+          window.history.replaceState(null, "", "/login");
+        }
+      } else {
+        if (window.location.pathname === "/login") {
+          window.history.replaceState(null, "", "/");
+        }
+      }
+    }
+  }, [isAuthenticated]);
 
   if (!isAuthenticated) {
     return <LoginPage />;

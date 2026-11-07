@@ -11,6 +11,7 @@ import {
   wipeDatabaseData,
 } from "@/server/database";
 import { handleApiRoute } from "@/server/api";
+import { createServer } from "@/server";
 import { SqliteUserRow } from "@/utils/sqliteDatabase";
 
 /**
@@ -265,6 +266,25 @@ describe("Database & API Server Engine", () => {
       };
       expect(body.ok).toBe(false);
       expect(body.error.code).toBe("NOT_FOUND");
+    });
+  });
+
+  describe("SPA Static Serving & Routing", () => {
+    it("should serve dist/index.html on root / and /login endpoint", async () => {
+      const { server } = createServer({ port: 3399 });
+      try {
+        const rootRes = await fetch("http://localhost:3399/");
+        expect(rootRes.status).toBe(200);
+        const rootContentType = rootRes.headers.get("content-type") ?? "";
+        expect(rootContentType.includes("text/html")).toBe(true);
+
+        const loginRes = await fetch("http://localhost:3399/login");
+        expect(loginRes.status).toBe(200);
+        const loginContentType = loginRes.headers.get("content-type") ?? "";
+        expect(loginContentType.includes("text/html")).toBe(true);
+      } finally {
+        server.stop();
+      }
     });
   });
 });
