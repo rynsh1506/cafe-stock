@@ -213,6 +213,14 @@ export async function initDatabase(): Promise<{
         info: `${config.mysql.host}:${config.mysql.port}/${config.mysql.database}`,
       };
     } catch (mysqlError) {
+      if (mysqlPool) {
+        try {
+          await mysqlPool.end();
+        } catch {
+          // ignore pool termination error
+        }
+        mysqlPool = null;
+      }
       console.warn(
         `[CafeStock] MySQL connection to ${config.mysql.host}:${config.mysql.port} failed. Falling back to SQLite. Error:`,
         mysqlError instanceof Error ? mysqlError.message : String(mysqlError),

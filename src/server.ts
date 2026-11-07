@@ -22,9 +22,6 @@ export function startServer(config?: Partial<ServerConfig>) {
     console.log(`========================================================`);
     console.log(`  Server Running:  http://${server.hostname}:${server.port}/`);
     console.log(
-      `  Swagger Docs:    http://${server.hostname}:${server.port}/swagger`,
-    );
-    console.log(
       "  Endpoint '/':    Serving built React frontend (dist/index.html)",
     );
     console.log("  Endpoint '/api': Serving REST API endpoints");

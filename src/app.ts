@@ -2,7 +2,6 @@ import path from "node:path";
 import fs from "node:fs";
 import process from "node:process";
 import { Elysia } from "elysia";
-import { swagger } from "@elysiajs/swagger";
 import { cors } from "@elysiajs/cors";
 import { staticPlugin } from "@elysiajs/static";
 import {
@@ -35,24 +34,6 @@ await initDatabase();
 
 export const app = new Elysia()
   .use(cors())
-  .use(
-    swagger({
-      path: "/swagger",
-      documentation: {
-        info: {
-          title: "CafeStock Procurement API",
-          version: "0.1.0",
-          description:
-            "Automated Inventory & Procurement Management System for Cafe & Roastery Logistics",
-        },
-        tags: [
-          { name: "System", description: "Health & System Status" },
-          { name: "Snapshot", description: "Relational Database Snapshot" },
-          { name: "Procurement", description: "Inventory, PR, PO & GR Data" },
-        ],
-      },
-    }),
-  )
   .use(
     staticPlugin({
       assets: "dist",
@@ -109,237 +90,100 @@ export const app = new Elysia()
   })
   .group("/api", (group) =>
     group
-      .get(
-        "/health",
-        () => {
-          const config = getDatabaseConfiguration();
-          return {
-            ok: true,
-            status: "healthy",
-            engine: config.engineType,
-            uptimeSeconds: Math.floor(process.uptime()),
-            timestamp: new Date().toISOString(),
-          };
-        },
-        {
-          detail: {
-            tags: ["System"],
-            summary: "Health Check",
-            description:
-              "Returns system health status and active database engine info",
-          },
-        },
-      )
-      .get(
-        "/snapshot",
-        async () => {
-          const config = getDatabaseConfiguration();
-          const snapshot = await fetchDatabaseSnapshot();
-          return {
-            ok: true,
-            engine: config.engineType,
-            snapshot,
-          };
-        },
-        {
-          detail: {
-            tags: ["Snapshot"],
-            summary: "Get Full Snapshot",
-          },
-        },
-      )
+      .get("/health", () => {
+        const config = getDatabaseConfiguration();
+        return {
+          ok: true,
+          status: "healthy",
+          engine: config.engineType,
+          uptimeSeconds: Math.floor(process.uptime()),
+          timestamp: new Date().toISOString(),
+        };
+      })
+      .get("/snapshot", async () => {
+        const config = getDatabaseConfiguration();
+        const snapshot = await fetchDatabaseSnapshot();
+        return {
+          ok: true,
+          engine: config.engineType,
+          snapshot,
+        };
+      })
       // Backwards-compatible route for frontend state sync
-      .get(
-        "/sqlite/snapshot",
-        async () => {
-          const config = getDatabaseConfiguration();
-          const snapshot = await fetchDatabaseSnapshot();
+      .get("/sqlite/snapshot", async () => {
+        const config = getDatabaseConfiguration();
+        const snapshot = await fetchDatabaseSnapshot();
+        return {
+          ok: true,
+          engine: config.engineType,
+          snapshot,
+        };
+      })
+      .post("/sqlite/users", async ({ body, set }) => {
+        const payload = body as { users?: SqliteUserRow[] };
+        if (!payload || !Array.isArray(payload.users)) {
+          set.status = 400;
           return {
-            ok: true,
-            engine: config.engineType,
-            snapshot,
+            ok: false,
+            error: {
+              code: "INVALID_REQUEST_BODY",
+              message: "Expected 'users' array in request body.",
+            },
           };
-        },
-        {
-          detail: {
-            tags: ["Snapshot"],
-            summary: "Frontend Snapshot Sync",
-          },
-        },
-      )
-      .post(
-        "/sqlite/users",
-        async ({ body, set }) => {
-          const payload = body as { users?: SqliteUserRow[] };
-          if (!payload || !Array.isArray(payload.users)) {
-            set.status = 400;
-            return {
-              ok: false,
-              error: {
-                code: "INVALID_REQUEST_BODY",
-                message: "Expected 'users' array in request body.",
-              },
-            };
-          }
-          await saveUsers(payload.users);
-          return {
-            ok: true,
-            count: payload.users.length,
-          };
-        },
-        {
-          detail: {
-            tags: ["Snapshot"],
-            summary: "Sync User Accounts",
-          },
-        },
-      )
-      .post(
-        "/sqlite/save",
-        async ({ body }) => {
-          await saveDatabaseSnapshot(body as Partial<DatabaseSnapshot>);
-          return {
-            ok: true,
-          };
-        },
-        {
-          detail: {
-            tags: ["Snapshot"],
-            summary: "Save Procurement Transaction Snapshot",
-          },
-        },
-      )
-      .post(
-        "/sqlite/wipe",
-        async ({ body }) => {
-          const payload = (body || {}) as { includeUsers?: boolean };
-          await wipeDatabaseData(Boolean(payload.includeUsers));
-          return {
-            ok: true,
-          };
-        },
-        {
-          detail: {
-            tags: ["Snapshot"],
-            summary: "Wipe Relational Data",
-          },
-        },
-      )
-      .get(
-        "/products",
-        async () => {
-          const snap = await fetchDatabaseSnapshot();
-          return { ok: true, data: snap.products };
-        },
-        {
-          detail: {
-            tags: ["Procurement"],
-            summary: "List Products",
-          },
-        },
-      )
-      .get(
-        "/warehouses",
-        async () => {
-          const snap = await fetchDatabaseSnapshot();
-          return { ok: true, data: snap.warehouses };
-        },
-        {
-          detail: {
-            tags: ["Procurement"],
-            summary: "List Warehouses",
-          },
-        },
-      )
-      .get(
-        "/suppliers",
-        async () => {
-          const snap = await fetchDatabaseSnapshot();
-          return { ok: true, data: snap.suppliers };
-        },
-        {
-          detail: {
-            tags: ["Procurement"],
-            summary: "List Suppliers",
-          },
-        },
-      )
-      .get(
-        "/purchase-requests",
-        async () => {
-          const snap = await fetchDatabaseSnapshot();
-          return { ok: true, data: snap.purchaseRequests };
-        },
-        {
-          detail: {
-            tags: ["Procurement"],
-            summary: "List Purchase Requests",
-          },
-        },
-      )
-      .get(
-        "/purchase-orders",
-        async () => {
-          const snap = await fetchDatabaseSnapshot();
-          return { ok: true, data: snap.purchaseOrders };
-        },
-        {
-          detail: {
-            tags: ["Procurement"],
-            summary: "List Purchase Orders",
-          },
-        },
-      )
-      .get(
-        "/goods-receipts",
-        async () => {
-          const snap = await fetchDatabaseSnapshot();
-          return { ok: true, data: snap.goodsReceipts };
-        },
-        {
-          detail: {
-            tags: ["Procurement"],
-            summary: "List Goods Receipts",
-          },
-        },
-      )
-      .get(
-        "/inventory/balances",
-        async () => {
-          const snap = await fetchDatabaseSnapshot();
-          return { ok: true, data: snap.inventoryBalances };
-        },
-        {
-          detail: {
-            tags: ["Procurement"],
-            summary: "List Inventory Balances",
-          },
-        },
-      )
-      .get(
-        "/inventory/movements",
-        async () => {
-          const snap = await fetchDatabaseSnapshot();
-          return { ok: true, data: snap.inventoryMovements };
-        },
-        {
-          detail: {
-            tags: ["Procurement"],
-            summary: "List Inventory Movements",
-          },
-        },
-      )
-      .get(
-        "/audit-logs",
-        async () => {
-          const snap = await fetchDatabaseSnapshot();
-          return { ok: true, data: snap.auditLogs };
-        },
-        {
-          detail: {
-            tags: ["Procurement"],
-            summary: "List Audit Logs",
-          },
-        },
-      ),
+        }
+        await saveUsers(payload.users);
+        return {
+          ok: true,
+          count: payload.users.length,
+        };
+      })
+      .post("/sqlite/save", async ({ body }) => {
+        await saveDatabaseSnapshot(body as Partial<DatabaseSnapshot>);
+        return {
+          ok: true,
+        };
+      })
+      .post("/sqlite/wipe", async ({ body }) => {
+        const payload = (body || {}) as { includeUsers?: boolean };
+        await wipeDatabaseData(Boolean(payload.includeUsers));
+        return {
+          ok: true,
+        };
+      })
+      .get("/products", async () => {
+        const snap = await fetchDatabaseSnapshot();
+        return { ok: true, data: snap.products };
+      })
+      .get("/warehouses", async () => {
+        const snap = await fetchDatabaseSnapshot();
+        return { ok: true, data: snap.warehouses };
+      })
+      .get("/suppliers", async () => {
+        const snap = await fetchDatabaseSnapshot();
+        return { ok: true, data: snap.suppliers };
+      })
+      .get("/purchase-requests", async () => {
+        const snap = await fetchDatabaseSnapshot();
+        return { ok: true, data: snap.purchaseRequests };
+      })
+      .get("/purchase-orders", async () => {
+        const snap = await fetchDatabaseSnapshot();
+        return { ok: true, data: snap.purchaseOrders };
+      })
+      .get("/goods-receipts", async () => {
+        const snap = await fetchDatabaseSnapshot();
+        return { ok: true, data: snap.goodsReceipts };
+      })
+      .get("/inventory/balances", async () => {
+        const snap = await fetchDatabaseSnapshot();
+        return { ok: true, data: snap.inventoryBalances };
+      })
+      .get("/inventory/movements", async () => {
+        const snap = await fetchDatabaseSnapshot();
+        return { ok: true, data: snap.inventoryMovements };
+      })
+      .get("/audit-logs", async () => {
+        const snap = await fetchDatabaseSnapshot();
+        return { ok: true, data: snap.auditLogs };
+      }),
   );

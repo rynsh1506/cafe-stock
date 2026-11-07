@@ -8,7 +8,6 @@ app.listen({ port, hostname }, (server) => {
   console.log("  ☕ CAFE STOCK - Elysia Backend & Inventory Server");
   console.log("========================================================");
   console.log(`  Local Access:    http://localhost:${server.port}/`);
-  console.log(`  Swagger Docs:    http://localhost:${server.port}/swagger`);
   console.log(
     "  Endpoint '/':    Serving built React frontend (dist/index.html)",
   );
