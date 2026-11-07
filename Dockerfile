@@ -38,3 +38,4 @@ EXPOSE 3000
 
 # Run Elysia backend (serves API & dist/ on root /)
 CMD ["bun", "run", "index.ts"]
+

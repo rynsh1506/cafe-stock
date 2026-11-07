@@ -25,6 +25,10 @@ describe("Elysia App & Database Architecture", () => {
   );
 
   beforeAll(async () => {
+    delete process.env.DB_HOST;
+    delete process.env.DB_USER;
+    delete process.env.DB_PASSWORD;
+    delete process.env.DB_NAME;
     process.env.DB_TYPE = "sqlite";
     process.env.SQLITE_DB_PATH = testDbFile;
     if (fs.existsSync(testDbFile)) {
