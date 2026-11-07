@@ -2,35 +2,35 @@ import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { app } from "@/app";
 import {
   fetchDatabaseSnapshot,
-  initSqliteDatabase,
+  getDatabaseConfiguration,
+  initDatabase,
   saveDatabaseSnapshot,
   saveUsers,
-  SqliteDatabaseHandle,
   wipeDatabaseData,
-} from "@/server/database";
-import { handleApiRoute } from "@/server/api";
-import { createServer } from "@/server";
+} from "@/utils/db";
 import { SqliteUserRow } from "@/utils/sqliteDatabase";
 
 /**
- * Unit test suite validating the standalone SQLite database persistence engine
- * and API router handlers for CafeStock.
+ * Unit test suite validating the database persistence engine,
+ * environment configuration, and Elysia API endpoints for CafeStock.
  */
-describe("Database & API Server Engine", () => {
+describe("Elysia App & Database Architecture", () => {
   const testDbFile = path.resolve(
     process.cwd(),
     "database",
     "test_cafe_stock.sqlite",
   );
-  let db: SqliteDatabaseHandle;
 
-  beforeAll(() => {
+  beforeAll(async () => {
+    process.env.DB_TYPE = "sqlite";
+    process.env.SQLITE_DB_PATH = testDbFile;
     if (fs.existsSync(testDbFile)) {
       fs.unlinkSync(testDbFile);
     }
-    db = initSqliteDatabase(testDbFile);
+    await initDatabase();
   });
 
   afterAll(() => {
@@ -47,8 +47,18 @@ describe("Database & API Server Engine", () => {
     }
   });
 
+  describe("Environment & Dynamic Configuration", () => {
+    it("should load configuration dynamically without hardcoded credentials", () => {
+      const config = getDatabaseConfiguration();
+      expect(config.engineType).toBe("sqlite");
+      expect(config.sqlite?.filePath.includes("test_cafe_stock.sqlite")).toBe(
+        true,
+      );
+    });
+  });
+
   describe("User Persistence Operations", () => {
-    it("should save and retrieve user records accurately", () => {
+    it("should save and retrieve user records accurately", async () => {
       const mockUsers: SqliteUserRow[] = [
         {
           id: "usr-admin-1",
@@ -58,7 +68,7 @@ describe("Database & API Server Engine", () => {
           role: "APPROVER",
           passwordHash: "hash123",
           status: "ACTIVE",
-          createdAt: "2026-10-26T00:00:00.000Z",
+          createdAt: "2026-11-07T00:00:00.000Z",
         },
         {
           id: "usr-staff-1",
@@ -68,12 +78,12 @@ describe("Database & API Server Engine", () => {
           role: "USER",
           passwordHash: "hash456",
           status: "ACTIVE",
-          createdAt: "2026-10-26T00:00:00.000Z",
+          createdAt: "2026-11-07T00:00:00.000Z",
         },
       ];
 
-      saveUsers(db, mockUsers);
-      const snapshot = fetchDatabaseSnapshot(db);
+      await saveUsers(mockUsers);
+      const snapshot = await fetchDatabaseSnapshot();
 
       expect(snapshot.users?.length).toBe(2);
       expect(snapshot.users?.[0].username).toBe("admin_test");
@@ -84,8 +94,8 @@ describe("Database & API Server Engine", () => {
   });
 
   describe("Procurement Snapshot Operations", () => {
-    it("should atomically save and load products, warehouses, and balances", () => {
-      saveDatabaseSnapshot(db, {
+    it("should atomically save and load products, warehouses, and balances", async () => {
+      await saveDatabaseSnapshot({
         warehouses: [
           {
             id: "wh-test-1",
@@ -129,7 +139,7 @@ describe("Database & API Server Engine", () => {
             warehouseId: "wh-test-1",
             status: "SUBMITTED",
             createdBy: "staff_test",
-            createdAt: "2026-10-26T01:00:00.000Z",
+            createdAt: "2026-11-07T01:00:00.000Z",
             notes: "Initial test request",
             items: [{ id: "pri-1", productId: "prd-test-1", quantity: 20 }],
           },
@@ -140,7 +150,7 @@ describe("Database & API Server Engine", () => {
         auditLogs: [],
       });
 
-      const snapshot = fetchDatabaseSnapshot(db);
+      const snapshot = await fetchDatabaseSnapshot();
 
       expect(snapshot.warehouses.length).toBe(1);
       expect(snapshot.warehouses[0].code).toBe("WH-T1");
@@ -152,9 +162,9 @@ describe("Database & API Server Engine", () => {
       expect(snapshot.purchaseRequests[0].items.length).toBe(1);
     });
 
-    it("should wipe data while preserving users when requested", () => {
-      wipeDatabaseData(db, false);
-      const snapshot = fetchDatabaseSnapshot(db);
+    it("should wipe data while preserving users when requested", async () => {
+      await wipeDatabaseData(false);
+      const snapshot = await fetchDatabaseSnapshot();
 
       expect(snapshot.warehouses.length).toBe(0);
       expect(snapshot.products.length).toBe(0);
@@ -162,27 +172,34 @@ describe("Database & API Server Engine", () => {
       expect(snapshot.users?.length).toBe(2);
     });
 
-    it("should wipe data and users when includeUsers is true", () => {
-      wipeDatabaseData(db, true);
-      const snapshot = fetchDatabaseSnapshot(db);
+    it("should wipe data and users when includeUsers is true", async () => {
+      await wipeDatabaseData(true);
+      const snapshot = await fetchDatabaseSnapshot();
 
       expect(snapshot.users?.length).toBe(0);
       expect(snapshot.warehouses.length).toBe(0);
     });
   });
 
-  describe("API Route Handlers", () => {
-    it("should respond with health status on GET /api/health", async () => {
-      const req = new Request("http://localhost:3000/api/health", {
-        method: "GET",
-      });
-      const url = new URL(req.url);
-      const res = await handleApiRoute(req, url, db);
-
+  describe("Elysia HTTP API Endpoints", () => {
+    it("should return healthy status on GET /api/health", async () => {
+      const res = await app.handle(
+        new Request("http://localhost:3000/api/health"),
+      );
       expect(res.status).toBe(200);
       const body = (await res.json()) as { ok: boolean; status: string };
       expect(body.ok).toBe(true);
       expect(body.status).toBe("healthy");
+    });
+
+    it("should return empty products initially on GET /api/products", async () => {
+      const res = await app.handle(
+        new Request("http://localhost:3000/api/products"),
+      );
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as { ok: boolean; data: unknown[] };
+      expect(body.ok).toBe(true);
+      expect(Array.isArray(body.data)).toBe(true);
     });
 
     it("should persist users through POST /api/sqlite/users", async () => {
@@ -196,35 +213,32 @@ describe("Database & API Server Engine", () => {
             role: "USER" as const,
             passwordHash: "secret",
             status: "ACTIVE" as const,
-            createdAt: "2026-10-26T02:00:00.000Z",
+            createdAt: "2026-11-07T02:00:00.000Z",
           },
         ],
       };
-      const req = new Request("http://localhost:3000/api/sqlite/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const url = new URL(req.url);
-      const res = await handleApiRoute(req, url, db);
+      const res = await app.handle(
+        new Request("http://localhost:3000/api/sqlite/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }),
+      );
 
       expect(res.status).toBe(200);
       const body = (await res.json()) as { ok: boolean; count: number };
       expect(body.ok).toBe(true);
       expect(body.count).toBe(1);
 
-      const snapshot = fetchDatabaseSnapshot(db);
+      const snapshot = await fetchDatabaseSnapshot();
       expect(snapshot.users?.length).toBe(1);
       expect(snapshot.users?.[0].username).toBe("api_user");
     });
 
     it("should return snapshot through GET /api/sqlite/snapshot", async () => {
-      const req = new Request("http://localhost:3000/api/sqlite/snapshot", {
-        method: "GET",
-      });
-      const url = new URL(req.url);
-      const res = await handleApiRoute(req, url, db);
-
+      const res = await app.handle(
+        new Request("http://localhost:3000/api/sqlite/snapshot"),
+      );
       expect(res.status).toBe(200);
       const body = (await res.json()) as {
         ok: boolean;
@@ -235,13 +249,13 @@ describe("Database & API Server Engine", () => {
     });
 
     it("should return 400 for invalid user payload", async () => {
-      const req = new Request("http://localhost:3000/api/sqlite/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ invalid: true }),
-      });
-      const url = new URL(req.url);
-      const res = await handleApiRoute(req, url, db);
+      const res = await app.handle(
+        new Request("http://localhost:3000/api/sqlite/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ invalid: true }),
+        }),
+      );
 
       expect(res.status).toBe(400);
       const body = (await res.json()) as {
@@ -252,12 +266,10 @@ describe("Database & API Server Engine", () => {
       expect(body.error.code).toBe("INVALID_REQUEST_BODY");
     });
 
-    it("should return 404 for unknown API endpoints", async () => {
-      const req = new Request("http://localhost:3000/api/unknown-endpoint", {
-        method: "GET",
-      });
-      const url = new URL(req.url);
-      const res = await handleApiRoute(req, url, db);
+    it("should return 404 JSON for unknown API endpoints", async () => {
+      const res = await app.handle(
+        new Request("http://localhost:3000/api/unknown-endpoint"),
+      );
 
       expect(res.status).toBe(404);
       const body = (await res.json()) as {
@@ -267,24 +279,19 @@ describe("Database & API Server Engine", () => {
       expect(body.ok).toBe(false);
       expect(body.error.code).toBe("NOT_FOUND");
     });
-  });
 
-  describe("SPA Static Serving & Routing", () => {
-    it("should serve dist/index.html on root / and /login endpoint", async () => {
-      const { server } = createServer({ port: 3399 });
-      try {
-        const rootRes = await fetch("http://localhost:3399/");
-        expect(rootRes.status).toBe(200);
-        const rootContentType = rootRes.headers.get("content-type") ?? "";
-        expect(rootContentType.includes("text/html")).toBe(true);
+    it("should serve HTML on root / and /login endpoint", async () => {
+      const rootRes = await app.handle(new Request("http://localhost:3000/"));
+      expect(rootRes.status).toBe(200);
+      const rootContentType = rootRes.headers.get("content-type") ?? "";
+      expect(rootContentType.includes("text/html")).toBe(true);
 
-        const loginRes = await fetch("http://localhost:3399/login");
-        expect(loginRes.status).toBe(200);
-        const loginContentType = loginRes.headers.get("content-type") ?? "";
-        expect(loginContentType.includes("text/html")).toBe(true);
-      } finally {
-        server.stop();
-      }
+      const loginRes = await app.handle(
+        new Request("http://localhost:3000/login"),
+      );
+      expect(loginRes.status).toBe(200);
+      const loginContentType = loginRes.headers.get("content-type") ?? "";
+      expect(loginContentType.includes("text/html")).toBe(true);
     });
   });
 });

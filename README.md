@@ -1,52 +1,79 @@
 # CafeStock - Self-Hosted Inventory Procurement System
 
 [![Bun](https://img.shields.io/badge/Runtime-Bun%201.4-000000?style=for-the-badge&logo=bun&logoColor=white)](https://bun.sh/)
+[![ElysiaJS](https://img.shields.io/badge/Backend-ElysiaJS-black?style=for-the-badge&logo=elysia&logoColor=white)](https://elysiajs.com/)
 [![React](https://img.shields.io/badge/Frontend-React%2019-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/Language-TypeScript%205-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![SQLite](https://img.shields.io/badge/Database-SQLite%203%20WAL-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org/)
+[![MySQL](https://img.shields.io/badge/Database-MySQL%208.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![Docker](https://img.shields.io/badge/Container-Docker%20Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Swagger](https://img.shields.io/badge/Docs-Swagger%20OpenAPI-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)](https://swagger.io/)
 [![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%204-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Vite](https://img.shields.io/badge/Build%20Tool-Vite%208-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 
 ---
 
 ## 1. Project Overview
 
-**CafeStock** is a self-hosted, single-process inventory procurement management system designed for cafes, roasteries, and warehouse logistics. Built with an atomic procurement workflow:
+**CafeStock** is a self-hosted inventory procurement management system designed for cafes, roasteries, and warehouse logistics. Built with an atomic procurement workflow:
 
 ```text
 Purchase Request (PR) ──> Approval / Rejection ──> Purchase Order (PO) ──> Goods Receipt (GR) ──> Inventory Stock Updated
 ```
 
-Inspired by the standalone self-hosted philosophy of software like Gitea and osTicket, CafeStock runs as a **single unified server process**. When launched, it hosts both the JSON REST API and directly serves the compiled React application (`dist/index.html` and assets) on the root endpoint `/`. Zero complex orchestration or multi-service manual setup required.
+Running as a **unified ElysiaJS backend application**, CafeStock both hosts high-performance REST APIs and directly serves the compiled React Single Page Application (`dist/index.html` and assets) on the root endpoint `/`.
 
 ---
 
 ## 2. Architecture & Design Principles
 
-### Single-Process Unified Serving
-
-- **Endpoint `/`**: Serves `dist/index.html` and static assets (`/assets/*`). Supports client-side SPA routing fallbacks for bookmarking and page refreshes.
-- **Endpoint `/api/*`**: High-performance REST endpoints for health checks, snapshot retrieval, user accounts, and transactional persistence.
-- **Embedded Relational Storage**: Zero configuration required. Backed by `database/cafe_stock.sqlite` utilizing WAL (Write-Ahead Logging) mode and foreign key constraints for fast, atomic operations.
-- **Multi-Device & LAN Ready**: Binds to `0.0.0.0`, enabling immediate access across the local network (Wi-Fi/LAN IP) or behind tunneling tools (Cloudflare Tunnel, ngrok) from laptops, tablets, or phones without requiring native client installations.
+- **Unified Elysia Backend**: The application process is powered by [ElysiaJS](https://elysiajs.com/) (`src/app.ts`), serving:
+  - **Endpoint `/` & `/login`**: Compiled React SPA static files from `dist/` with client-side SPA routing fallback.
+  - **Endpoint `/swagger`**: Interactive OpenAPI / Swagger API documentation.
+  - **Endpoint `/api/*`**: Type-safe REST APIs for procurement, inventory, users, and audit trail logs.
+- **Dockerized Infrastructure**: Complete containerization via [Dockerfile](file:///home/xamnes/Projects/tauri/cafe-stock/Dockerfile) and [docker-compose.yml](file:///home/xamnes/Projects/tauri/cafe-stock/docker-compose.yml) orchestrating the Elysia application and a dedicated MySQL 8.0 database.
+- **Strict Environment Security**: Zero hardcoded credentials. All database hosts, usernames, passwords, and ports are retrieved dynamically from environment variables (`.env`). The `.env` file is strictly ignored by Git, and a documented `.env.example` template is provided.
+- **Dual Engine Compatibility**: Supports MySQL 8.0 via `mysql2/promise` with connection pooling and transactions, while providing zero-config SQLite fallback for offline development.
 
 ---
 
 ## 3. Tech Stack
 
-- **Runtime & Engine**: [Bun](https://bun.sh/) (Native HTTP Server via `Bun.serve` + `bun:sqlite` engine)
+- **Runtime & Framework**: [Bun](https://bun.sh/) & [ElysiaJS](https://elysiajs.com/)
+- **Database**: [MySQL 8.0](https://www.mysql.com/) (Production & Docker) / SQLite 3 (Standalone)
+- **Containerization**: [Docker](https://www.docker.com/) & Docker Compose
 - **Frontend**: [React 19](https://react.dev/), [TypeScript](https://www.typescriptlang.org/), [Tailwind CSS v4](https://tailwindcss.com/)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **Build Tooling**: [Vite 8](https://vitejs.dev/)
+- **API Documentation**: Elysia Swagger plugin ([Swagger UI](http://localhost:3000/swagger))
 - **Testing**: Bun Test runner (`bun:test`)
 
 ---
 
-## 4. Getting Started
+## 4. Running with Docker (Recommended)
 
-### Prerequisites
+Spin up both the MySQL 8.0 database and the CafeStock application container with a single command:
 
-- [Bun](https://bun.sh/) (`v1.2` or later recommended)
+```bash
+# 1. Copy the environment variables template
+cp .env.example .env
+
+# 2. Build and run containers in detached mode
+docker compose up -d --build
+```
+
+Access the system once running:
+
+- **Application Web UI**: [http://localhost:3000/](http://localhost:3000/)
+- **Swagger Documentation**: [http://localhost:3000/swagger](http://localhost:3000/swagger)
+- **MySQL Database**: `localhost:3306`
+
+To view container logs or stop services:
+
+```bash
+docker compose logs -f
+docker compose down
+```
+
+---
+
+## 5. Running Locally (Without Docker)
 
 ### Installation
 
@@ -58,100 +85,74 @@ cd cafe-stock
 bun install
 ```
 
----
-
-## 5. Running the Application
-
-### Production / Standalone Mode (Recommended)
-
-Compile the React frontend to `dist/` and launch the self-hosted server:
+### Production / Standalone Server
 
 ```bash
-# Build frontend
+# 1. Build the React frontend into dist/
 bun run build
 
-# Start server on http://localhost:3000/
+# 2. Start the unified Elysia backend server
 bun run start
 ```
 
-Console output confirms access URLs:
-
-```text
-========================================================
-  ☕ CAFE STOCK - Self-Hosted Inventory Server
-========================================================
-  Local Access:    http://localhost:3000/
-  Network Access:  http://192.168.1.100:3000/
-  Database File:   database/cafe_stock.sqlite
-  Endpoint '/':    Serving built React frontend (dist/index.html)
-  Endpoint '/api': Serving SQLite JSON REST API
-========================================================
-```
-
-### Development Mode (with Instant HMR)
-
-Run the Vite development server:
+### Development Mode (with Live Reload)
 
 ```bash
 bun run dev
 ```
 
-Open `http://localhost:5173/` in your browser. API requests to `/api/*` are automatically handled by the embedded SQLite middleware.
+---
+
+## 6. Environment Variables Reference
+
+Configure environment variables in `.env` (refer to [.env.example](file:///home/xamnes/Projects/tauri/cafe-stock/.env.example)):
+
+| Variable           | Default                      | Description                                                 |
+| ------------------ | ---------------------------- | ----------------------------------------------------------- |
+| `PORT`             | `3000`                       | HTTP listening port for application                         |
+| `HOST`             | `0.0.0.0`                    | Host interface binding (`0.0.0.0` for all LAN interfaces)   |
+| `DB_TYPE`          | `mysql`                      | Active database engine (`mysql` or `sqlite`)                |
+| `DB_HOST`          | `mysql`                      | MySQL hostname (use `mysql` in Docker, `localhost` locally) |
+| `DB_PORT`          | `3306`                       | MySQL port                                                  |
+| `DB_NAME`          | `cafe_stock`                 | Database schema name                                        |
+| `DB_USER`          | `cafe_user`                  | MySQL database username                                     |
+| `DB_PASSWORD`      | -                            | MySQL database user password                                |
+| `DB_ROOT_PASSWORD` | -                            | MySQL root user password (used by docker-compose)           |
+| `DB_EXTERNAL_PORT` | `3306`                       | Port exposed by MySQL container on the host machine         |
+| `SQLITE_DB_PATH`   | `database/cafe_stock.sqlite` | SQLite database filepath (when `DB_TYPE=sqlite`)            |
 
 ---
 
-## 6. Environment Variables
+## 7. API Specification (Swagger)
 
-All variables have sensible defaults for immediate local execution. Create a `.env` file if customization is required:
+Elysia automatically generates interactive OpenAPI documentation accessible at `/swagger`.
 
-| Variable         | Default                      | Description                                               |
-| ---------------- | ---------------------------- | --------------------------------------------------------- |
-| `PORT`           | `3000`                       | HTTP listening port for standalone server                 |
-| `HOST`           | `0.0.0.0`                    | Host binding interface (`0.0.0.0` for all LAN interfaces) |
-| `SQLITE_DB_PATH` | `database/cafe_stock.sqlite` | Filepath of persistent SQLite database                    |
-
----
-
-## 7. Default Seed Data & Accounts
-
-The system automatically initializes relational tables in `database/cafe_stock.sqlite`. Built-in accounts include:
-
-| Role         | Username | Display Name       | Permissions                                                                     |
-| ------------ | -------- | ------------------ | ------------------------------------------------------------------------------- |
-| **APPROVER** | `admin`  | Muhammad Riyansyah | Full access: Create PR, Approve/Reject PR, Generate PO, Receive GR, Master Data |
-| **USER**     | `staff`  | Staff Gudang       | Standard access: Create PR, View Inventory & Catalogs                           |
-
----
-
-## 8. API Specification
-
-| Method | Endpoint               | Description                                                   |
-| ------ | ---------------------- | ------------------------------------------------------------- |
-| `GET`  | `/`                    | Serves React Single Page Application (`dist/index.html`)      |
-| `GET`  | `/api/health`          | Health check & server uptime metrics                          |
-| `GET`  | `/api/sqlite/snapshot` | Retrieves complete relational snapshot from database          |
-| `POST` | `/api/sqlite/users`    | Persists user accounts and role authentication data           |
-| `POST` | `/api/sqlite/save`     | Atomic transaction saving products, PRs, POs, GRs, & balances |
-| `POST` | `/api/sqlite/wipe`     | Clears relational data (optionally preserves users)           |
+| Method | Endpoint                   | Description                                        |
+| ------ | -------------------------- | -------------------------------------------------- |
+| `GET`  | `/`                        | Serves compiled React frontend (`dist/index.html`) |
+| `GET`  | `/login`                   | Serves Login / Setup Page (`dist/index.html`)      |
+| `GET`  | `/swagger`                 | Interactive Swagger API Documentation              |
+| `GET`  | `/api/health`              | Health check & active database engine status       |
+| `GET`  | `/api/products`            | Lists catalog products                             |
+| `GET`  | `/api/warehouses`          | Lists active warehouses                            |
+| `GET`  | `/api/suppliers`           | Lists registered suppliers                         |
+| `GET`  | `/api/purchase-requests`   | Lists purchase requests                            |
+| `GET`  | `/api/purchase-orders`     | Lists purchase orders                              |
+| `GET`  | `/api/goods-receipts`      | Lists received goods receipts                      |
+| `GET`  | `/api/inventory/balances`  | Warehouse inventory stock balances                 |
+| `GET`  | `/api/inventory/movements` | Stock movement audit trail                         |
+| `GET`  | `/api/audit-logs`          | Transactional audit log history                    |
+| `GET`  | `/api/sqlite/snapshot`     | Full relational database snapshot                  |
+| `POST` | `/api/sqlite/users`        | Syncs user authentication accounts                 |
+| `POST` | `/api/sqlite/save`         | Atomic transaction saving all procurement entities |
+| `POST` | `/api/sqlite/wipe`         | Wipes relational data tables                       |
 
 ---
 
-## 9. Automated Testing
+## 8. Automated Testing
 
-Run the test suite verifying database transactions and REST API endpoints:
+Run the automated test suite covering database transactions, dynamic configuration, and Elysia API endpoints:
 
 ```bash
 bun test
 ```
-
----
-
-## 10. Engineering Decisions & Assumptions
-
-1. **Elimination of Tauri Desktop Wrapper**:
-   - _Problem_: Tauri native commands (`invoke`) operate exclusively within a local webview desktop window. External devices accessing via browser over LAN cannot call native desktop bindings, breaking multi-device cafe operations.
-   - _Decision_: Removed `src-tauri/` and Tauri client dependencies. Transitioned to a self-hosted single-server architecture where Bun serves static assets on `/` and API routes on `/api/*`.
-   - _Result_: Users can access CafeStock from any web browser on any device (phone, tablet, POS, laptop) with zero client-side installation.
-
-2. **Embedded Disk SQLite vs External Database**:
-   - To eliminate reviewer friction and manual database provisioning, the application persists directly to `database/cafe_stock.sqlite` using SQLite WAL mode. Portable SQL dumps can be exported directly from the UI for PostgreSQL / MariaDB migration.
