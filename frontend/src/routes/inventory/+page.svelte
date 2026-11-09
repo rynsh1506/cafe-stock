@@ -25,32 +25,31 @@
       action="/inventory"
       class="flex flex-wrap items-center gap-2.5"
     >
-      <select name="warehouseId" class="apple-input px-3.5 py-2 text-[13px]">
-        <option value="">All Warehouses</option>
-        {#each data.warehouses as wh}
-          <option value={wh.id} selected={data.warehouseFilter === wh.id}>
-            {wh.code} — {wh.name}
-          </option>
-        {/each}
-      </select>
+      <div class="w-full sm:w-56">
+        <select name="warehouseId" class="apple-select">
+          <option value="">All Warehouses</option>
+          {#each data.warehouses as wh}
+            <option value={wh.id} selected={data.warehouseFilter === wh.id}>
+              {wh.code} — {wh.name}
+            </option>
+          {/each}
+        </select>
+      </div>
 
       <label
-        class="apple-btn-secondary flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[12px]"
+        class="apple-btn-secondary flex cursor-pointer items-center gap-2 text-[12px]"
       >
         <input
           type="checkbox"
           name="lowStock"
           value="true"
           checked={data.lowStockOnly}
-          class="accent-[#1D1D1F]"
+          class="h-3.5 w-3.5 accent-[#1D1D1F]"
         />
         <span>Low Stock Only</span>
       </label>
 
-      <button
-        type="submit"
-        class="apple-btn-primary cursor-pointer px-4 py-2 text-[13px]"
-      >
+      <button type="submit" class="apple-btn-primary cursor-pointer">
         Apply
       </button>
     </form>

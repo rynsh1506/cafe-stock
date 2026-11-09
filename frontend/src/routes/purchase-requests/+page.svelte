@@ -82,51 +82,80 @@
     <form
       method="POST"
       action="?/create"
-      class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5"
+      class="grid grid-cols-1 items-end gap-3 sm:grid-cols-2 lg:grid-cols-5"
     >
-      <select
-        name="warehouseId"
-        required
-        class="apple-input px-3.5 py-2.5 text-[13px]"
-      >
-        <option value="">Select Warehouse...</option>
-        {#each data.warehouses as wh}
-          <option value={wh.id}>{wh.code} — {wh.name}</option>
-        {/each}
-      </select>
+      <div>
+        <label
+          for="pr-warehouse"
+          class="mb-1.5 block text-[11px] font-medium text-[#6E6E73]"
+        >
+          Warehouse
+        </label>
+        <select
+          id="pr-warehouse"
+          name="warehouseId"
+          required
+          class="apple-select"
+        >
+          <option value="">Select Warehouse...</option>
+          {#each data.warehouses as wh}
+            <option value={wh.id}>{wh.code} — {wh.name}</option>
+          {/each}
+        </select>
+      </div>
 
-      <select
-        name="productId"
-        required
-        class="apple-input px-3.5 py-2.5 text-[13px]"
-      >
-        <option value="">Select Product...</option>
-        {#each data.products as prod}
-          <option value={prod.id}>{prod.sku} — {prod.name} ({prod.unit})</option
-          >
-        {/each}
-      </select>
+      <div>
+        <label
+          for="pr-product"
+          class="mb-1.5 block text-[11px] font-medium text-[#6E6E73]"
+        >
+          Product
+        </label>
+        <select id="pr-product" name="productId" required class="apple-select">
+          <option value="">Select Product...</option>
+          {#each data.products as prod}
+            <option value={prod.id}
+              >{prod.sku} — {prod.name} ({prod.unit})</option
+            >
+          {/each}
+        </select>
+      </div>
 
-      <input
-        name="quantity"
-        type="number"
-        min="1"
-        value="10"
-        required
-        placeholder="Quantity"
-        class="apple-input px-3.5 py-2.5 text-[13px] tabular-nums"
-      />
+      <div>
+        <label
+          for="pr-qty"
+          class="mb-1.5 block text-[11px] font-medium text-[#6E6E73]"
+        >
+          Quantity
+        </label>
+        <input
+          id="pr-qty"
+          name="quantity"
+          type="number"
+          min="1"
+          value="10"
+          required
+          placeholder="Quantity"
+          class="apple-input tabular-nums"
+        />
+      </div>
 
-      <input
-        name="notes"
-        placeholder="Notes / purpose..."
-        class="apple-input px-3.5 py-2.5 text-[13px]"
-      />
+      <div>
+        <label
+          for="pr-notes"
+          class="mb-1.5 block text-[11px] font-medium text-[#6E6E73]"
+        >
+          Notes
+        </label>
+        <input
+          id="pr-notes"
+          name="notes"
+          placeholder="Notes / purpose..."
+          class="apple-input"
+        />
+      </div>
 
-      <button
-        type="submit"
-        class="apple-btn-primary cursor-pointer px-4 py-2.5 text-[13px]"
-      >
+      <button type="submit" class="apple-btn-primary w-full cursor-pointer">
         + Create Draft
       </button>
     </form>

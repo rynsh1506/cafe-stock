@@ -80,42 +80,66 @@
       <form
         method="POST"
         action="?/createFromPr"
-        class="grid grid-cols-1 gap-2.5 sm:grid-cols-2"
+        class="grid grid-cols-1 items-end gap-3 sm:grid-cols-2"
       >
-        <select
-          name="purchaseRequestId"
-          required
-          class="apple-input px-3.5 py-2.5 text-[13px]"
-        >
-          <option value="">Select Approved PR...</option>
-          {#each data.approvedPrs as pr}
-            <option value={pr.id}
-              >{pr.requestNumber} ({pr.warehouseName})</option
-            >
-          {/each}
-        </select>
+        <div>
+          <label
+            for="po-pr-id"
+            class="mb-1.5 block text-[11px] font-medium text-[#6E6E73]"
+          >
+            Approved Purchase Request
+          </label>
+          <select
+            id="po-pr-id"
+            name="purchaseRequestId"
+            required
+            class="apple-select"
+          >
+            <option value="">Select Approved PR...</option>
+            {#each data.approvedPrs as pr}
+              <option value={pr.id}
+                >{pr.requestNumber} ({pr.warehouseName})</option
+              >
+            {/each}
+          </select>
+        </div>
 
-        <select
-          name="supplierId"
-          required
-          class="apple-input px-3.5 py-2.5 text-[13px]"
-        >
-          <option value="">Select Supplier...</option>
-          {#each data.suppliers as sup}
-            <option value={sup.id}>{sup.code} — {sup.name}</option>
-          {/each}
-        </select>
+        <div>
+          <label
+            for="po-pr-supplier"
+            class="mb-1.5 block text-[11px] font-medium text-[#6E6E73]"
+          >
+            Supplier Partner
+          </label>
+          <select
+            id="po-pr-supplier"
+            name="supplierId"
+            required
+            class="apple-select"
+          >
+            <option value="">Select Supplier...</option>
+            {#each data.suppliers as sup}
+              <option value={sup.id}>{sup.code} — {sup.name}</option>
+            {/each}
+          </select>
+        </div>
 
-        <input
-          type="date"
-          name="expectedDate"
-          class="apple-input px-3.5 py-2.5 text-[13px]"
-        />
+        <div>
+          <label
+            for="po-expected-date"
+            class="mb-1.5 block text-[11px] font-medium text-[#6E6E73]"
+          >
+            Expected Delivery Date
+          </label>
+          <input
+            id="po-expected-date"
+            type="date"
+            name="expectedDate"
+            class="apple-input"
+          />
+        </div>
 
-        <button
-          type="submit"
-          class="apple-btn-primary cursor-pointer px-4 py-2.5 text-[13px]"
-        >
+        <button type="submit" class="apple-btn-primary w-full cursor-pointer">
           Create from PR
         </button>
       </form>
@@ -133,56 +157,92 @@
       <form
         method="POST"
         action="?/createStandalone"
-        class="grid grid-cols-1 gap-2.5 sm:grid-cols-2"
+        class="grid grid-cols-1 items-end gap-3 sm:grid-cols-2"
       >
-        <select
-          name="supplierId"
-          required
-          class="apple-input px-3.5 py-2.5 text-[13px]"
-        >
-          <option value="">Supplier...</option>
-          {#each data.suppliers as sup}
-            <option value={sup.id}>{sup.name}</option>
-          {/each}
-        </select>
-
-        <select
-          name="warehouseId"
-          required
-          class="apple-input px-3.5 py-2.5 text-[13px]"
-        >
-          <option value="">Warehouse...</option>
-          {#each data.warehouses as wh}
-            <option value={wh.id}>{wh.name}</option>
-          {/each}
-        </select>
-
-        <select
-          name="productId"
-          required
-          class="apple-input px-3.5 py-2.5 text-[13px]"
-        >
-          <option value="">Product...</option>
-          {#each data.products as prod}
-            <option value={prod.id}>{prod.name}</option>
-          {/each}
-        </select>
-
-        <div class="flex gap-2">
-          <input
-            type="number"
-            name="orderedQuantity"
-            min="1"
-            value="10"
-            required
-            class="apple-input w-24 px-3 py-2.5 text-[13px] tabular-nums"
-          />
-          <button
-            type="submit"
-            class="apple-btn-primary flex-1 cursor-pointer px-4 py-2.5 text-[13px]"
+        <div>
+          <label
+            for="po-direct-supplier"
+            class="mb-1.5 block text-[11px] font-medium text-[#6E6E73]"
           >
-            + Create PO
-          </button>
+            Supplier
+          </label>
+          <select
+            id="po-direct-supplier"
+            name="supplierId"
+            required
+            class="apple-select"
+          >
+            <option value="">Supplier...</option>
+            {#each data.suppliers as sup}
+              <option value={sup.id}>{sup.name}</option>
+            {/each}
+          </select>
+        </div>
+
+        <div>
+          <label
+            for="po-direct-warehouse"
+            class="mb-1.5 block text-[11px] font-medium text-[#6E6E73]"
+          >
+            Destination Warehouse
+          </label>
+          <select
+            id="po-direct-warehouse"
+            name="warehouseId"
+            required
+            class="apple-select"
+          >
+            <option value="">Warehouse...</option>
+            {#each data.warehouses as wh}
+              <option value={wh.id}>{wh.name}</option>
+            {/each}
+          </select>
+        </div>
+
+        <div>
+          <label
+            for="po-direct-product"
+            class="mb-1.5 block text-[11px] font-medium text-[#6E6E73]"
+          >
+            Product
+          </label>
+          <select
+            id="po-direct-product"
+            name="productId"
+            required
+            class="apple-select"
+          >
+            <option value="">Product...</option>
+            {#each data.products as prod}
+              <option value={prod.id}>{prod.name}</option>
+            {/each}
+          </select>
+        </div>
+
+        <div>
+          <label
+            for="po-direct-qty"
+            class="mb-1.5 block text-[11px] font-medium text-[#6E6E73]"
+          >
+            Quantity
+          </label>
+          <div class="flex items-center gap-2">
+            <input
+              id="po-direct-qty"
+              type="number"
+              name="orderedQuantity"
+              min="1"
+              value="10"
+              required
+              class="apple-input w-24 shrink-0 tabular-nums"
+            />
+            <button
+              type="submit"
+              class="apple-btn-primary flex-1 cursor-pointer"
+            >
+              + Create PO
+            </button>
+          </div>
         </div>
       </form>
     </section>
