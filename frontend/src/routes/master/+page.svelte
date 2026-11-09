@@ -10,125 +10,162 @@
   let dict = $derived(getDictionary(data.lang));
 </script>
 
-<div class="space-y-6">
-  <div class="flex flex-wrap items-center justify-between gap-4">
-    <h1 class="text-xl font-bold text-stone-900">{dict.masterTitle}</h1>
+<div class="space-y-8">
+  <!-- Header & Search Bar -->
+  <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+    <div>
+      <div class="text-[12px] font-medium text-[#86868B]">
+        SKU, Supplier & Warehouse Directory
+      </div>
+      <h1
+        class="mt-1 text-2xl font-semibold tracking-tight text-[#1D1D1F] sm:text-[28px]"
+      >
+        {dict.masterTitle}
+      </h1>
+    </div>
 
-    <form method="GET" action="/master" class="flex gap-2">
+    <form method="GET" action="/master" class="flex w-full gap-2 sm:w-auto">
       <input
         type="text"
         name="search"
         value={data.search}
         placeholder="Search SKU, Code, Name..."
-        class="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs"
+        class="apple-input flex-1 px-3.5 py-2 text-[13px] sm:w-64"
       />
       <button
         type="submit"
-        class="rounded-lg bg-stone-800 px-3 py-1.5 text-xs font-semibold text-white"
-        >Filter</button
+        class="apple-btn-primary cursor-pointer px-4 py-2 text-[13px]"
       >
+        Search
+      </button>
     </form>
   </div>
 
   {#if form?.error}
     <div
-      class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs font-semibold text-red-700"
+      class="apple-card flex items-center gap-2.5 px-4 py-3 text-[13px] font-medium text-[#1D1D1F]"
     >
-      {form.error}
+      <span class="h-2 w-2 shrink-0 rounded-full bg-[#D70015]"></span>
+      <span>{form.error}</span>
     </div>
   {/if}
   {#if form?.success}
     <div
-      class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-semibold text-emerald-800"
+      class="apple-card flex items-center gap-2.5 px-4 py-3 text-[13px] font-medium text-[#1D1D1F]"
     >
-      {form.success}
+      <span class="h-2 w-2 shrink-0 rounded-full bg-[#1D1D1F]"></span>
+      <span>{form.success}</span>
     </div>
   {/if}
 
-  <section class="rounded-xl border border-stone-200 bg-white p-5 shadow-xs">
-    <h2 class="mb-4 text-sm font-bold text-stone-900">
-      {dict.productsSection}
-    </h2>
+  <!-- Products Section -->
+  <section class="apple-card overflow-hidden">
+    <div class="border-b border-black/[0.06] px-5 py-4 sm:px-6">
+      <div class="flex items-center justify-between">
+        <h2 class="text-[15px] font-semibold tracking-tight text-[#1D1D1F]">
+          {dict.productsSection}
+        </h2>
+        <span class="font-mono text-[11px] text-[#86868B]">
+          {data.products.length} items
+        </span>
+      </div>
 
-    <form
-      method="POST"
-      action="?/createProduct"
-      class="mb-5 grid grid-cols-1 gap-3 rounded-lg bg-stone-50 p-3.5 sm:grid-cols-6"
-    >
-      <input
-        name="sku"
-        required
-        placeholder="SKU (e.g. SKU-CF-09)"
-        class="rounded border border-stone-300 bg-white px-2.5 py-1.5 text-xs"
-      />
-      <input
-        name="name"
-        required
-        placeholder="Product Name"
-        class="rounded border border-stone-300 bg-white px-2.5 py-1.5 text-xs"
-      />
-      <input
-        name="category"
-        placeholder="Category"
-        value="Coffee Beans"
-        class="rounded border border-stone-300 bg-white px-2.5 py-1.5 text-xs"
-      />
-      <input
-        name="unit"
-        required
-        placeholder="Unit (bag, carton)"
-        class="rounded border border-stone-300 bg-white px-2.5 py-1.5 text-xs"
-      />
-      <input
-        name="unitPrice"
-        type="number"
-        min="0"
-        placeholder="Unit Price (IDR)"
-        class="rounded border border-stone-300 bg-white px-2.5 py-1.5 text-xs"
-      />
-      <button
-        type="submit"
-        class="rounded bg-amber-800 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-900"
+      <form
+        method="POST"
+        action="?/createProduct"
+        class="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-6"
       >
-        + Add Product
-      </button>
-    </form>
+        <input
+          name="sku"
+          required
+          placeholder="SKU (e.g. SKU-CF-09)"
+          class="apple-input px-3 py-2 font-mono text-[12px]"
+        />
+        <input
+          name="name"
+          required
+          placeholder="Product Name"
+          class="apple-input px-3 py-2 text-[13px]"
+        />
+        <input
+          name="category"
+          placeholder="Category"
+          value="Coffee Beans"
+          class="apple-input px-3 py-2 text-[13px]"
+        />
+        <input
+          name="unit"
+          required
+          placeholder="Unit (bag, carton)"
+          class="apple-input px-3 py-2 text-[13px]"
+        />
+        <input
+          name="unitPrice"
+          type="number"
+          min="0"
+          placeholder="Price (IDR)"
+          class="apple-input px-3 py-2 text-[13px] tabular-nums"
+        />
+        <button
+          type="submit"
+          class="apple-btn-primary cursor-pointer px-4 py-2 text-[13px]"
+        >
+          + Add Product
+        </button>
+      </form>
+    </div>
 
-    <div class="overflow-x-auto">
-      <table class="w-full text-left text-xs">
+    <!-- Desktop Table -->
+    <div class="hidden overflow-x-auto md:block">
+      <table class="w-full text-left text-[13px]">
         <thead>
-          <tr class="border-b border-stone-200 text-stone-500">
-            <th class="pb-2 font-semibold">SKU</th>
-            <th class="pb-2 font-semibold">Name</th>
-            <th class="pb-2 font-semibold">Category</th>
-            <th class="pb-2 font-semibold">Unit</th>
-            <th class="pb-2 text-right font-semibold">Price</th>
-            <th class="pb-2 text-center font-semibold">Status</th>
-            <th class="pb-2 text-right font-semibold">Action</th>
+          <tr
+            class="border-b border-black/[0.06] bg-[#FBFBFD] text-[11px] font-medium tracking-wider text-[#86868B] uppercase"
+          >
+            <th class="px-6 py-3">SKU</th>
+            <th class="px-6 py-3">Product Name</th>
+            <th class="px-6 py-3">Category</th>
+            <th class="px-6 py-3">Unit</th>
+            <th class="px-6 py-3 text-right">Unit Price</th>
+            <th class="px-6 py-3 text-center">State</th>
+            <th class="px-6 py-3 text-right">Action</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-stone-100">
+        <tbody class="divide-y divide-black/[0.05]">
           {#each data.products as prod}
-            <tr>
-              <td class="py-2.5 font-mono font-semibold text-stone-800"
-                >{prod.sku}</td
+            <tr class="transition hover:bg-[#F5F5F7]/60">
+              <td
+                class="px-6 py-3.5 font-mono text-[12px] font-medium text-[#1D1D1F]"
               >
-              <td class="py-2.5 font-medium text-stone-900">{prod.name}</td>
-              <td class="py-2.5 text-stone-600">{prod.category}</td>
-              <td class="py-2.5 text-stone-600">{prod.unit}</td>
-              <td class="py-2.5 text-right text-stone-800"
-                >Rp {prod.unitPrice.toLocaleString()}</td
+                {prod.sku}
+              </td>
+              <td class="px-6 py-3.5 font-medium text-[#1D1D1F]">
+                {prod.name}
+              </td>
+              <td class="px-6 py-3.5 text-[#6E6E73]">{prod.category}</td>
+              <td class="px-6 py-3.5 text-[#6E6E73]">{prod.unit}</td>
+              <td
+                class="px-6 py-3.5 text-right font-mono text-[12px] text-[#1D1D1F] tabular-nums"
               >
-              <td class="py-2.5 text-center">
+                Rp {prod.unitPrice.toLocaleString()}
+              </td>
+              <td class="px-6 py-3.5 text-center">
                 <span
-                  class="rounded-full px-2 py-0.5 text-[10px] font-bold {prod.isActive
-                    ? 'bg-emerald-100 text-emerald-800'
-                    : 'bg-stone-200 text-stone-600'}"
+                  class="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#1D1D1F]"
                 >
-                  {prod.isActive ? "ACTIVE" : "INACTIVE"}
+                  <span
+                    class="h-1.5 w-1.5 rounded-full {prod.isActive
+                      ? 'bg-[#1D1D1F]'
+                      : 'bg-[#D2D2D7]'}"
+                  ></span>
+                  <span
+                    class={prod.isActive ? "text-[#1D1D1F]" : "text-[#86868B]"}
+                  >
+                    {prod.isActive ? "Active" : "Inactive"}
+                  </span>
                 </span>
               </td>
-              <td class="py-2.5 text-right">
+              <td class="px-6 py-3.5 text-right">
                 <form method="POST" action="?/toggleProduct" class="inline">
                   <input type="hidden" name="id" value={prod.id} />
                   <input
@@ -138,7 +175,7 @@
                   />
                   <button
                     type="submit"
-                    class="rounded border border-stone-300 px-2 py-1 text-[11px] font-medium hover:bg-stone-100"
+                    class="apple-btn-secondary cursor-pointer px-3 py-1 text-[12px]"
                   >
                     {prod.isActive ? "Deactivate" : "Activate"}
                   </button>
@@ -149,47 +186,103 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Mobile Responsive Stack -->
+    <div class="divide-y divide-black/[0.05] md:hidden">
+      {#each data.products as prod}
+        <div class="flex items-center justify-between gap-3 px-5 py-4">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <span
+                class="h-1.5 w-1.5 rounded-full {prod.isActive
+                  ? 'bg-[#1D1D1F]'
+                  : 'bg-[#D2D2D7]'}"
+              ></span>
+              <span class="font-mono text-[11px] text-[#86868B]"
+                >{prod.sku}</span
+              >
+              <span class="text-[11px] text-[#86868B]">• {prod.category}</span>
+            </div>
+            <div class="mt-0.5 truncate text-[14px] font-medium text-[#1D1D1F]">
+              {prod.name}
+            </div>
+            <div class="mt-0.5 font-mono text-[12px] text-[#6E6E73]">
+              Rp {prod.unitPrice.toLocaleString()} / {prod.unit}
+            </div>
+          </div>
+
+          <form method="POST" action="?/toggleProduct" class="shrink-0">
+            <input type="hidden" name="id" value={prod.id} />
+            <input
+              type="hidden"
+              name="isActive"
+              value={String(prod.isActive)}
+            />
+            <button
+              type="submit"
+              class="apple-btn-secondary px-3 py-1.5 text-[12px]"
+            >
+              {prod.isActive ? "Disable" : "Enable"}
+            </button>
+          </form>
+        </div>
+      {/each}
+    </div>
   </section>
 
+  <!-- Suppliers & Warehouses Grid -->
   <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-    <section class="rounded-xl border border-stone-200 bg-white p-5 shadow-xs">
-      <h2 class="mb-4 text-sm font-bold text-stone-900">
-        {dict.suppliersSection}
-      </h2>
+    <!-- Suppliers Card -->
+    <section class="apple-card overflow-hidden">
+      <div class="border-b border-black/[0.06] px-5 py-4 sm:px-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-[15px] font-semibold tracking-tight text-[#1D1D1F]">
+            {dict.suppliersSection}
+          </h2>
+          <span class="font-mono text-[11px] text-[#86868B]">
+            {data.suppliers.length} partners
+          </span>
+        </div>
 
-      <form
-        method="POST"
-        action="?/createSupplier"
-        class="mb-4 grid grid-cols-1 gap-2.5 rounded-lg bg-stone-50 p-3 sm:grid-cols-3"
-      >
-        <input
-          name="code"
-          required
-          placeholder="Code (SUP-NEW-01)"
-          class="rounded border border-stone-300 bg-white px-2.5 py-1.5 text-xs"
-        />
-        <input
-          name="name"
-          required
-          placeholder="Supplier Name"
-          class="rounded border border-stone-300 bg-white px-2.5 py-1.5 text-xs"
-        />
-        <button
-          type="submit"
-          class="rounded bg-amber-800 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-900"
+        <form
+          method="POST"
+          action="?/createSupplier"
+          class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3"
         >
-          + Add Supplier
-        </button>
-      </form>
+          <input
+            name="code"
+            required
+            placeholder="Code (SUP-NEW-01)"
+            class="apple-input px-3 py-2 font-mono text-[12px]"
+          />
+          <input
+            name="name"
+            required
+            placeholder="Supplier Name"
+            class="apple-input px-3 py-2 text-[13px]"
+          />
+          <button
+            type="submit"
+            class="apple-btn-primary cursor-pointer px-3 py-2 text-[13px]"
+          >
+            + Add Supplier
+          </button>
+        </form>
+      </div>
 
-      <div class="divide-y divide-stone-100 text-xs">
+      <div class="divide-y divide-black/[0.05]">
         {#each data.suppliers as sup}
-          <div class="flex items-center justify-between py-2.5">
-            <div>
-              <span class="font-mono font-bold text-stone-800">{sup.code}</span>
-              — <span class="font-medium text-stone-900">{sup.name}</span>
+          <div
+            class="flex items-center justify-between gap-3 px-5 py-3.5 sm:px-6"
+          >
+            <div class="min-w-0">
+              <div class="truncate text-[13px] font-medium text-[#1D1D1F]">
+                {sup.name}
+              </div>
+              <div class="font-mono text-[11px] text-[#86868B]">{sup.code}</div>
             </div>
-            <form method="POST" action="?/toggleSupplier">
+
+            <form method="POST" action="?/toggleSupplier" class="shrink-0">
               <input type="hidden" name="id" value={sup.id} />
               <input
                 type="hidden"
@@ -198,11 +291,14 @@
               />
               <button
                 type="submit"
-                class="rounded px-2 py-0.5 text-[11px] font-semibold {sup.isActive
-                  ? 'bg-emerald-100 text-emerald-800'
-                  : 'bg-stone-200 text-stone-600'}"
+                class="apple-btn-secondary inline-flex cursor-pointer items-center gap-1.5 px-3 py-1 text-[12px]"
               >
-                {sup.isActive ? "ACTIVE" : "INACTIVE"}
+                <span
+                  class="h-1.5 w-1.5 rounded-full {sup.isActive
+                    ? 'bg-[#1D1D1F]'
+                    : 'bg-[#D2D2D7]'}"
+                ></span>
+                <span>{sup.isActive ? "Active" : "Inactive"}</span>
               </button>
             </form>
           </div>
@@ -210,44 +306,57 @@
       </div>
     </section>
 
-    <section class="rounded-xl border border-stone-200 bg-white p-5 shadow-xs">
-      <h2 class="mb-4 text-sm font-bold text-stone-900">
-        {dict.warehousesSection}
-      </h2>
+    <!-- Warehouses Card -->
+    <section class="apple-card overflow-hidden">
+      <div class="border-b border-black/[0.06] px-5 py-4 sm:px-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-[15px] font-semibold tracking-tight text-[#1D1D1F]">
+            {dict.warehousesSection}
+          </h2>
+          <span class="font-mono text-[11px] text-[#86868B]">
+            {data.warehouses.length} locations
+          </span>
+        </div>
 
-      <form
-        method="POST"
-        action="?/createWarehouse"
-        class="mb-4 grid grid-cols-1 gap-2.5 rounded-lg bg-stone-50 p-3 sm:grid-cols-3"
-      >
-        <input
-          name="code"
-          required
-          placeholder="Code (WH-BALI-03)"
-          class="rounded border border-stone-300 bg-white px-2.5 py-1.5 text-xs"
-        />
-        <input
-          name="name"
-          required
-          placeholder="Warehouse Name"
-          class="rounded border border-stone-300 bg-white px-2.5 py-1.5 text-xs"
-        />
-        <button
-          type="submit"
-          class="rounded bg-amber-800 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-900"
+        <form
+          method="POST"
+          action="?/createWarehouse"
+          class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3"
         >
-          + Add Warehouse
-        </button>
-      </form>
+          <input
+            name="code"
+            required
+            placeholder="Code (WH-BALI-03)"
+            class="apple-input px-3 py-2 font-mono text-[12px]"
+          />
+          <input
+            name="name"
+            required
+            placeholder="Warehouse Name"
+            class="apple-input px-3 py-2 text-[13px]"
+          />
+          <button
+            type="submit"
+            class="apple-btn-primary cursor-pointer px-3 py-2 text-[13px]"
+          >
+            + Add Location
+          </button>
+        </form>
+      </div>
 
-      <div class="divide-y divide-stone-100 text-xs">
+      <div class="divide-y divide-black/[0.05]">
         {#each data.warehouses as wh}
-          <div class="flex items-center justify-between py-2.5">
-            <div>
-              <span class="font-mono font-bold text-stone-800">{wh.code}</span>
-              — <span class="font-medium text-stone-900">{wh.name}</span>
+          <div
+            class="flex items-center justify-between gap-3 px-5 py-3.5 sm:px-6"
+          >
+            <div class="min-w-0">
+              <div class="truncate text-[13px] font-medium text-[#1D1D1F]">
+                {wh.name}
+              </div>
+              <div class="font-mono text-[11px] text-[#86868B]">{wh.code}</div>
             </div>
-            <form method="POST" action="?/toggleWarehouse">
+
+            <form method="POST" action="?/toggleWarehouse" class="shrink-0">
               <input type="hidden" name="id" value={wh.id} />
               <input
                 type="hidden"
@@ -256,11 +365,14 @@
               />
               <button
                 type="submit"
-                class="rounded px-2 py-0.5 text-[11px] font-semibold {wh.isActive
-                  ? 'bg-emerald-100 text-emerald-800'
-                  : 'bg-stone-200 text-stone-600'}"
+                class="apple-btn-secondary inline-flex cursor-pointer items-center gap-1.5 px-3 py-1 text-[12px]"
               >
-                {wh.isActive ? "ACTIVE" : "INACTIVE"}
+                <span
+                  class="h-1.5 w-1.5 rounded-full {wh.isActive
+                    ? 'bg-[#1D1D1F]'
+                    : 'bg-[#D2D2D7]'}"
+                ></span>
+                <span>{wh.isActive ? "Active" : "Inactive"}</span>
               </button>
             </form>
           </div>
