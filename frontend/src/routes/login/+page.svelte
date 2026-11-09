@@ -210,8 +210,8 @@
               type="email"
               name="email"
               required
-              value={form?.email ?? "user@cafestock.com"}
-              placeholder="user@cafestock.com"
+              value={form?.email ?? ""}
+              placeholder="staff@cafestock.com"
               class="w-full rounded-xl border border-[#DDD2C4] bg-white py-2.5 pr-4 pl-10 text-sm text-[#231712] placeholder-[#B5A597] shadow-xs transition focus:border-[#7A4D33] focus:ring-2 focus:ring-[#7A4D33]/15 focus:outline-none"
             />
           </div>
@@ -246,7 +246,6 @@
               type={showPassword ? "text" : "password"}
               name="password"
               required
-              value="password123"
               placeholder="••••••••"
               class="w-full rounded-xl border border-[#DDD2C4] bg-white py-2.5 pr-11 pl-10 text-sm text-[#231712] placeholder-[#B5A597] shadow-xs transition focus:border-[#7A4D33] focus:ring-2 focus:ring-[#7A4D33]/15 focus:outline-none"
             />
@@ -305,84 +304,20 @@
             <path d="m12 5 7 7-7 7" />
           </svg>
         </button>
+
+        <div class="pt-2 text-center">
+          <p class="font-mono text-[11px] text-[#8C7665]">
+            Default credentials: <span class="font-semibold text-[#5A3825]"
+              >staff@cafestock.com</span
+            >
+            / <span class="font-semibold text-[#5A3825]">User123!</span> &bull;
+            <span class="font-semibold text-[#5A3825]"
+              >approver@cafestock.com</span
+            >
+            / <span class="font-semibold text-[#5A3825]">Approver123!</span>
+          </p>
+        </div>
       </form>
-
-      <!-- Quick Demo Accounts Seeder Section -->
-      <div class="space-y-3 border-t border-[#EDE4D8] pt-4">
-        <div class="flex items-center justify-between">
-          <span
-            class="flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-[#8A7566] uppercase"
-          >
-            <svg
-              class="h-3.5 w-3.5 text-[#5A3825]"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
-              <path d="m9 12 2 2 4-4" />
-            </svg>
-            <span>{dict.quickDemoAccess}</span>
-          </span>
-        </div>
-
-        <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-          <form method="POST" action="?/quickLogin">
-            <input type="hidden" name="role" value="USER" />
-            <button
-              type="submit"
-              class="group w-full cursor-pointer rounded-xl border border-[#E0D5C7] bg-white p-3 text-left shadow-xs transition hover:border-[#7A4D33] hover:bg-[#FAF4ED]"
-            >
-              <div class="flex items-center justify-between">
-                <span
-                  class="text-xs font-bold text-[#2E1F16] group-hover:text-[#5A3825]"
-                >
-                  Warehouse Staff
-                </span>
-                <span
-                  class="rounded bg-[#2D3748] px-1.5 py-0.5 text-[10px] font-bold text-[#90CDF4] uppercase"
-                >
-                  USER
-                </span>
-              </div>
-              <div class="mt-1 font-mono text-[11px] text-[#8C7665]">
-                user@cafestock.com
-              </div>
-              <div class="mt-0.5 text-[10px] leading-tight text-[#A8988B]">
-                Create PR, Issue PO, Receive Goods
-              </div>
-            </button>
-          </form>
-
-          <form method="POST" action="?/quickLogin">
-            <input type="hidden" name="role" value="APPROVER" />
-            <button
-              type="submit"
-              class="group w-full cursor-pointer rounded-xl border border-[#E0D5C7] bg-white p-3 text-left shadow-xs transition hover:border-[#7A4D33] hover:bg-[#FAF4ED]"
-            >
-              <div class="flex items-center justify-between">
-                <span
-                  class="text-xs font-bold text-[#2E1F16] group-hover:text-[#5A3825]"
-                >
-                  Manager Reviewer
-                </span>
-                <span
-                  class="rounded bg-[#4A321E] px-1.5 py-0.5 text-[10px] font-bold text-[#F3C592] uppercase"
-                >
-                  APPROVER
-                </span>
-              </div>
-              <div class="mt-1 font-mono text-[11px] text-[#8C7665]">
-                approver@cafestock.com
-              </div>
-              <div class="mt-0.5 text-[10px] leading-tight text-[#A8988B]">
-                Review &amp; Approve / Reject PR
-              </div>
-            </button>
-          </form>
-        </div>
-      </div>
     </div>
   </div>
 </div>
