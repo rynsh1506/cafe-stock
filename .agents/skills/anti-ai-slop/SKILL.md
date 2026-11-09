@@ -1,67 +1,35 @@
 ---
 name: anti-ai-slop
-description: >-
-  Strict Anti-AI-Slop frontend design & audit skill combining anthropics/skills@frontend-design,
-  funboy322/avoid-ai-design, and Nutlope/hallmark. Activate whenever creating, modifying, or auditing
-  any frontend UI component, layout, or stylesheet to eliminate 1st-order and 2nd-order AI design clichés.
+description: Strict Anti-AI-Slop & Domain-Character frontend design skill combining anthropics/skills@frontend-design, funboy322/avoid-ai-design, and Figma CafeStock Roastery guidelines.
 ---
 
-# Anti-AI-Slop Design System & Audit Protocol
+# Anti-AI-Slop & Domain-Character Frontend Design Skill
 
-You are a Senior Product Designer who despises template-stamped "AI slop." Every screen must feel like a real, shipping macOS / Linear / Stripe native utility application—never a generated dashboard template.
+Activate this skill whenever creating, modifying, or auditing any frontend UI component, layout, or stylesheet in `frontend/`.
 
----
+## 1. Domain Character Over Sterile Blank Monochrome (`anthropics/skills@frontend-design`)
 
-## 1. Banned First-Order AI Clichés (Immediate Rejection)
+- **FORBIDDEN**: Sterile, blank, colorless monochrome (`#FFFFFF` + `#111111` + `#FAFAFA`) with no domain personality.
+- **FORBIDDEN**: Generic centered login boxes sitting alone in the middle of an empty white/gray screen.
+- **REQUIRED (CafeStock Figma Roastery Theme)**:
+  - **Deep Espresso Sidebar & Hero**: `#231712` / `#1C120D` surface, `#38261E` border, `#EFE8E1` text.
+  - **Roasted Coffee Primary & Copper Accents**: `#5A3825` primary buttons/accents, `#C68B59` / `#D8A57A` warm copper highlights.
+  - **Warm Cream Parchment Workspace**: `#FAF7F2` canvas background, `#FFFFFF` cards with `#EDE4D8` warm sand borders, `#2D241E` primary ink, `#8C7665` muted cocoa labels.
+  - **Editorial Typography**: `Newsreader` (serif) for headings and brand titles, `Plus Jakarta Sans` for UI controls and tables, and `JetBrains Mono` (`tabular-nums`) for document codes (`PR-`, `PO-`, `GR-`, `SKU`).
 
-1. **Rainbow Pill Badges (`bg-emerald-100`, `bg-amber-100`, `bg-sky-100`, `bg-red-100`)**:
-   - NEVER use traffic-light pastel pills for statuses or roles.
-   - Use subtle 6px geometric status dots or plain typographic labels with muted contrast.
-2. **The 4-Stat-Card Grid (`grid-cols-4` of floating white rounded boxes)**:
-   - NEVER open a dashboard with 4 floating rounded cards containing a small uppercase label, a huge number, and a subtitle/arrow.
-   - Instead, use a single unified structural strip separated by `1px` hairlines (`divide-x`) or a compact inline metric bar integrated into the view header.
-3. **Always-Visible Multi-Column Creation Forms Above Tables**:
-   - NEVER dump a giant 5-column form box above a data table on every page. Real apps show the data table first and place creation inside a clean collapsible action panel (`<details>`) or modal triggered by a single primary `+ New ...` button in the top-right header.
-4. **Heavy Rounded Boxes & Card-in-Card Nesting (`rounded-2xl` everywhere)**:
-   - NEVER put cards inside cards, or wrap every section in a floating `rounded-2xl` bubble with drop shadows.
-   - Use flat structural surfaces, `1px` hairline dividers (`#E5E5EA`), and tight 6px–8px border radii on interactive controls.
+## 2. Layout & Component Architecture (Figma Reference Aligned)
 
----
+- **Split-Screen Login (`frontend/src/routes/login/+page.svelte`)**:
+  - Left column (`md:w-1/2 lg:w-5/12 bg-[#231712]`): CafeStock v1.0 branding, serif hero headline (_"Stok tertata, Racikan tetap terjaga."_), procurement highlights, and team footer.
+  - Right column (`flex-1 bg-[#FAF7F2]`): Login form with icon inputs, password visibility toggle, and 1-Click Demo Seeder Account cards (`Staff Gudang — USER` & `Manager Reviewer — APPROVER`).
+- **Dashboard (`frontend/src/routes/+page.svelte`)**:
+  - Top Espresso gradient welcome banner (`from-[#2C1E18] to-[#4A2D1D]`) with user greeting, role badge, and primary CTA.
+  - 4 warm KPI metric cards (`Total Master Produk`, `PR Perlu Review`, `PO Aktif / Penerimaan`, `Stok Kritis Gudang`) with warm icon containers.
+  - 3-column middle section: 7-day incoming material volume bar chart (`Sen`–`Min`) + Critical Stock Alert widget.
+  - Bottom section: Recent Procurement & Inventory Movement table.
+- **Clean Modal / Collapsible Creation Flows**:
+  - Keep operational pages (`master`, `purchase-requests`, `purchase-orders`, `goods-receipts`) clean by placing creation forms inside collapsible drawers or modal dialogs triggered from the header button.
 
-## 2. Banned Second-Order "Tasteful AI" Clichés (`avoid-ai-design` Rules)
+## 3. Control Geometry & `<select>` Alignment
 
-1. **Decorative Numbering (`01`, `02`, `03`, `Stage 01`)**:
-   - NEVER put `01 / 02 / 03` badges in sidebar links, section headers, or workflow descriptions.
-2. **Eyebrow / Kicker Filler Copy Above Page Titles**:
-   - NEVER put pseudo-technical filler subtitles above or below `<h1>` titles (e.g., _"Stage 01 · DRAFT → SUBMITTED"_, _"Immutable Compliance & Security Event Log"_, _"Separated Balance Snapshot"_, _"ATOMIC TX"_).
-   - A page header should simply be the page title (`Purchase Requests`) on the left, and functional filter/action controls on the right.
-3. **Marketing / AI Copywriting in Operational UI**:
-   - NEVER write explanatory paragraphs telling the user what the page does (e.g., _"Verify incoming quantities against ORDERED..."_ or _"Manage cafe procurement, PR approvals..."_). Staff already know what the tool is. Keep labels 1–3 words maximum.
-4. **Fake Footer Slogans**:
-   - NEVER put fake copyright or workflow slogans at the bottom of login or app screens (e.g., _"PR → Approval → PO → GR"_).
-
----
-
-## 3. Mandatory Native App Craft (macOS / Linear Standard)
-
-1. **Structural Hairline Layout**:
-   - The app is a full-viewport workspace (`min-h-screen bg-white` or `#FAFAFA` with `#EDEDED` `1px` structural borders)—not floating islands on a gray sea.
-   - Sidebar (`220px` on desktop) uses crisp `13px` typography, subtle SVG icons (`15px`, `1.75px` stroke), and a quiet active state (`bg-black/[0.06] text-[#111113] font-medium`—never a giant black pill block).
-2. **Control Geometry Lock**:
-   - Every `<input>`, `<select>`, and `<button>` in a toolbar or form MUST share an exact `34px` height (`h-[34px]`), `6px` border radius (`rounded-[6px]`), `13px` font size, and `1px solid #D4D4D8` border.
-   - `<select>` elements must use `appearance: none` with a clean right-aligned SVG chevron and `padding-right: 30px`.
-3. **Data Table First**:
-   - Tables span edge-to-edge within their structural container, using `12px` muted headers, `13px` row text, `tabular-nums` on all numbers, and compact inline row actions.
-   - On mobile (`< md`), rows stack cleanly with zero horizontal overflow.
-
----
-
-## 4. Automated Verification Gate
-
-Before committing any frontend change, run:
-
-```bash
-bun .agents/skills/anti-ai-slop/scripts/detect-slop.mjs
-```
-
-It must exit with code `0` (`0 slop violations found`).
+- Every `.ui-input`, `.ui-select`, `.ui-btn`, and `.ui-btn-outline` MUST share a locked `38px` height (`border-radius: 10px`) with `appearance: none` and a custom right-aligned SVG chevron on `<select>` so dropdowns never look crooked on Linux/macOS/Windows.

@@ -1,249 +1,417 @@
 <script lang="ts">
-  import type { Snippet } from "svelte";
   import "@/app.css";
+  import { page } from "$app/state";
   import { getDictionary } from "@/lib/i18n";
   import type { LayoutServerData } from "@/routes/+layout.server";
+  import type { Snippet } from "svelte";
 
   let { data, children }: { data: LayoutServerData; children: Snippet } =
     $props();
 
   let dict = $derived(getDictionary(data.lang));
-  let isMobileMenuOpen = $state(false);
+  let currentPath = $derived(page.url.pathname);
+  let mobileMenuOpen = $state(false);
+
+  $effect(() => {
+    void currentPath;
+    mobileMenuOpen = false;
+  });
 
   const navItems = $derived([
-    { href: "/", label: dict.navDashboard, icon: "grid" },
-    { href: "/master", label: dict.navMaster, icon: "box" },
+    { href: "/", label: dict.navDashboard, group: "Beranda", icon: "grid" },
+    {
+      href: "/master",
+      label: dict.navMaster,
+      group: "Master Data",
+      icon: "box",
+    },
     {
       href: "/purchase-requests",
       label: dict.navPurchaseRequests,
+      group: "Procurement",
       icon: "file",
     },
-    { href: "/purchase-orders", label: dict.navPurchaseOrders, icon: "cart" },
-    { href: "/goods-receipts", label: dict.navGoodsReceipts, icon: "check" },
-    { href: "/inventory", label: dict.navInventory, icon: "layers" },
-    { href: "/audit-logs", label: dict.navAuditLogs, icon: "activity" },
+    {
+      href: "/purchase-orders",
+      label: dict.navPurchaseOrders,
+      group: "Procurement",
+      icon: "cart",
+    },
+    {
+      href: "/goods-receipts",
+      label: dict.navGoodsReceipts,
+      group: "Inventory",
+      icon: "truck",
+    },
+    {
+      href: "/inventory",
+      label: dict.navInventory,
+      group: "Inventory",
+      icon: "layers",
+    },
+    {
+      href: "/audit-logs",
+      label: dict.navAuditLogs,
+      group: "Sistem",
+      icon: "shield",
+    },
   ]);
 
-  const currentPageLabel = $derived(
-    navItems.find((item) => item.href === data.pathname)?.label ??
-      dict.navDashboard,
+  let activeItem = $derived(
+    navItems.find((item) => item.href === currentPath) ?? navItems[0],
   );
 </script>
 
 <svelte:head>
-  <title>CafeStock — {currentPageLabel}</title>
+  <title>CafeStock — {dict.brandSubtitle}</title>
 </svelte:head>
 
-{#if !data.user}
-  <div class="min-h-screen bg-[#FAFAFA] text-[#111113]">
-    {@render children()}
-  </div>
-{:else}
-  <div class="flex min-h-screen bg-white text-[#111113] select-none">
-    <!-- Desktop Native Sidebar (220px) -->
-    <aside
-      class="hidden w-[220px] shrink-0 flex-col justify-between border-r border-[#EDEDED] bg-[#FAFAFA] lg:flex"
+{#snippet navIcon(name: string, active: boolean)}
+  {#if name === "grid"}
+    <svg
+      class="h-4 w-4 shrink-0 {active ? 'text-[#F1C89F]' : 'text-[#9E8777]'}"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
     >
-      <div class="p-3">
-        <!-- Workspace Switcher / Brand -->
-        <a
-          href="/"
-          class="mb-4 flex items-center justify-between rounded-[6px] px-2 py-1.5 transition hover:bg-black/[0.04]"
-        >
-          <div class="flex items-center gap-2">
-            <div
-              class="flex h-5 w-5 items-center justify-center rounded-[5px] bg-[#111113] text-[10px] font-bold text-white"
-            >
-              C
-            </div>
-            <span
-              class="text-[13px] font-semibold tracking-tight text-[#111113]"
-            >
-              CafeStock
-            </span>
-          </div>
-          <span class="font-mono text-[10px] text-[#71717A]">
-            {data.user.role}
-          </span>
-        </a>
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+    </svg>
+  {:else if name === "box"}
+    <svg
+      class="h-4 w-4 shrink-0 {active ? 'text-[#F1C89F]' : 'text-[#9E8777]'}"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <path
+        d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"
+      />
+      <path d="m3.3 7 8.7 5 8.7-5" />
+      <path d="M12 22V12" />
+    </svg>
+  {:else if name === "file"}
+    <svg
+      class="h-4 w-4 shrink-0 {active ? 'text-[#F1C89F]' : 'text-[#9E8777]'}"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="8" y1="13" x2="16" y2="13" />
+      <line x1="8" y1="17" x2="13" y2="17" />
+    </svg>
+  {:else if name === "cart"}
+    <svg
+      class="h-4 w-4 shrink-0 {active ? 'text-[#F1C89F]' : 'text-[#9E8777]'}"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <circle cx="8" cy="21" r="1" />
+      <circle cx="19" cy="21" r="1" />
+      <path
+        d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"
+      />
+    </svg>
+  {:else if name === "truck"}
+    <svg
+      class="h-4 w-4 shrink-0 {active ? 'text-[#F1C89F]' : 'text-[#9E8777]'}"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <path d="M10 17h4V5H2v12h3" />
+      <path d="M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5v8h1" />
+      <circle cx="7.5" cy="17.5" r="2.5" />
+      <circle cx="17.5" cy="17.5" r="2.5" />
+    </svg>
+  {:else if name === "layers"}
+    <svg
+      class="h-4 w-4 shrink-0 {active ? 'text-[#F1C89F]' : 'text-[#9E8777]'}"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <polygon points="12 2 2 7 12 12 22 7 12 2" />
+      <polyline points="2 17 12 22 22 17" />
+      <polyline points="2 12 12 17 22 12" />
+    </svg>
+  {:else}
+    <svg
+      class="h-4 w-4 shrink-0 {active ? 'text-[#F1C89F]' : 'text-[#9E8777]'}"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+  {/if}
+{/snippet}
 
-        <!-- Flat Navigation List -->
-        <nav class="space-y-0.5">
-          {#each navItems as item}
-            {@const isActive = data.pathname === item.href}
-            <a
-              href={item.href}
-              class="flex items-center gap-2.5 rounded-[6px] px-2.5 py-1.5 text-[13px] transition-colors {isActive
-                ? 'bg-black/[0.06] font-medium text-[#111113]'
-                : 'text-[#52525B] hover:bg-black/[0.03] hover:text-[#111113]'}"
+{#if currentPath === "/login" || !data.user}
+  {@render children()}
+{:else}
+  <div class="flex h-screen w-full overflow-hidden bg-[#FAF7F2] text-[#2D241E]">
+    <!-- Desktop Sidebar (Figma Warm Espresso) -->
+    <aside
+      class="hidden h-full w-64 shrink-0 flex-col border-r border-[#38261E] bg-[#231712] text-[#EFE8E1] shadow-xl select-none md:flex"
+    >
+      <!-- Brand Header -->
+      <div
+        class="flex items-center justify-between border-b border-[#38261E] p-5"
+      >
+        <div class="flex items-center gap-3">
+          <div
+            class="flex h-10 w-10 items-center justify-center rounded-xl border border-[#7A4D33] bg-[#5A3825] text-[#E5B589] shadow-inner"
+          >
+            <svg
+              class="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
+              <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
+              <line x1="6" y1="2" x2="6" y2="4" />
+              <line x1="10" y1="2" x2="10" y2="4" />
+              <line x1="14" y1="2" x2="14" y2="4" />
+            </svg>
+          </div>
+          <div>
+            <div
+              class="flex items-center gap-1.5 font-serif text-lg font-bold tracking-wide text-white"
+            >
+              <span>CafeStock</span>
+              <span
+                class="rounded border border-[#683C25] bg-[#45281A] px-1.5 py-0.5 font-sans text-[10px] font-semibold tracking-wider text-[#D8A57A] uppercase"
+              >
+                v1.0
+              </span>
+            </div>
+            <div class="text-[11px] tracking-tight text-[#A69080]">
+              Inventory &amp; Procurement
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Role Banner / Quick Switcher -->
+      <div class="border-b border-[#332119] bg-[#1C120D] px-4 py-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            {#if data.user.role === "APPROVER"}
+              <span
+                class="flex items-center gap-1 rounded border border-[#7B532F] bg-[#4A321E] px-2 py-0.5 text-[11px] font-semibold tracking-wider text-[#F3C592] uppercase"
+              >
+                <span>Approver</span>
+              </span>
+            {:else}
+              <span
+                class="flex items-center gap-1 rounded border border-[#4A5568] bg-[#2D3748] px-2 py-0.5 text-[11px] font-semibold tracking-wider text-[#90CDF4] uppercase"
+              >
+                <span>Staff (User)</span>
+              </span>
+            {/if}
+          </div>
+
+          <form method="POST" action="/login?/quickLogin">
+            <input
+              type="hidden"
+              name="role"
+              value={data.user.role === "USER" ? "APPROVER" : "USER"}
+            />
+            <input type="hidden" name="redirectTo" value={currentPath} />
+            <button
+              type="submit"
+              class="flex cursor-pointer items-center gap-1 rounded border border-[#482F24] bg-[#301F18] px-2 py-1 text-[11px] text-[#CDB8A6] transition hover:bg-[#422B22] hover:text-white"
+              title="Beralih Role (USER / APPROVER)"
             >
               <svg
-                class="h-3.5 w-3.5 shrink-0 {isActive
-                  ? 'text-[#111113]'
-                  : 'text-[#71717A]'}"
+                class="h-3 w-3"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+                stroke-width="2"
               >
-                {#if item.icon === "grid"}
-                  <rect width="7" height="7" x="3" y="3" rx="1" />
-                  <rect width="7" height="7" x="14" y="3" rx="1" />
-                  <rect width="7" height="7" x="14" y="14" rx="1" />
-                  <rect width="7" height="7" x="3" y="14" rx="1" />
-                {:else if item.icon === "box"}
-                  <path
-                    d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"
-                  />
-                  <path d="m3.3 7 8.7 5 8.7-5" />
-                  <path d="M12 22V12" />
-                {:else if item.icon === "file"}
-                  <path
-                    d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"
-                  />
-                  <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-                {:else if item.icon === "cart"}
-                  <circle cx="8" cy="21" r="1" />
-                  <circle cx="19" cy="21" r="1" />
-                  <path
-                    d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"
-                  />
-                {:else if item.icon === "check"}
-                  <path d="M20 6 9 17l-5-5" />
-                {:else if item.icon === "layers"}
-                  <path
-                    d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"
-                  />
-                  <path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65" />
-                  <path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65" />
-                {:else}
-                  <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                {/if}
+                <path d="m16 3 4 4-4 4" />
+                <path d="M20 7H4" />
+                <path d="m8 21-4-4 4-4" />
+                <path d="M4 17h16" />
               </svg>
-              <span class="truncate">{item.label}</span>
-            </a>
-          {/each}
-        </nav>
+              <span>Switch</span>
+            </button>
+          </form>
+        </div>
       </div>
 
-      <!-- Bottom Account & Locale Footer -->
-      <div class="border-t border-[#EDEDED] p-3 space-y-2.5">
-        <form
-          method="POST"
-          action="/login?/setLang"
-          class="ui-tabs flex w-full"
+      <!-- Navigation Links -->
+      <nav class="flex-1 space-y-1.5 overflow-y-auto px-3 py-4">
+        <div
+          class="px-3 pb-2 text-[10px] font-semibold tracking-wider text-[#8A7566] uppercase"
         >
-          <input type="hidden" name="redirectTo" value={data.pathname} />
-          {#each ["ID", "EN", "JP"] as code}
-            <button
-              type="submit"
-              name="lang"
-              value={code}
-              class="ui-tab flex-1 cursor-pointer text-center {data.lang ===
-              code
-                ? 'ui-tab-active'
-                : ''}"
-            >
-              {code}
-            </button>
-          {/each}
-        </form>
-
-        <div class="flex items-center justify-between gap-2 px-1">
-          <div class="min-w-0">
-            <div class="truncate text-[12px] font-medium text-[#111113]">
-              {data.user.name}
+          Menu Utama
+        </div>
+        {#each navItems as item}
+          {@const isActive = currentPath === item.href}
+          <a
+            href={item.href}
+            class="flex w-full items-center justify-between rounded-lg px-3.5 py-2.5 text-sm font-medium transition-all duration-150 {isActive
+              ? 'border border-[#7B4E34] bg-[#5A3825] text-white shadow-md'
+              : 'text-[#C4B2A3] hover:bg-[#2F1F18] hover:text-white'}"
+          >
+            <div class="flex items-center gap-3">
+              {@render navIcon(item.icon, isActive)}
+              <span>{item.label}</span>
             </div>
-            <div class="truncate text-[11px] text-[#71717A]">
-              {data.user.email}
+          </a>
+        {/each}
+      </nav>
+
+      <!-- User Footer Profile -->
+      <div class="border-t border-[#38261E] bg-[#1E130E]/80 p-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5 overflow-hidden">
+            <div
+              class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#6B4430] bg-[#4A3022] text-xs font-bold text-[#E3B892]"
+            >
+              {data.user.name
+                .split(" ")
+                .map((n: string) => n[0])
+                .slice(0, 2)
+                .join("")}
+            </div>
+            <div class="truncate">
+              <div class="truncate text-xs font-semibold text-white">
+                {data.user.name}
+              </div>
+              <div class="truncate font-mono text-[10px] text-[#9A8474]">
+                {data.user.email}
+              </div>
             </div>
           </div>
 
           <form method="POST" action="/login?/logout">
             <button
               type="submit"
+              class="cursor-pointer rounded-md p-1.5 text-[#9A8474] transition hover:bg-[#341F18] hover:text-[#E57373]"
               title={dict.logout}
-              class="cursor-pointer rounded-[5px] px-2 py-1 text-[11px] font-medium text-[#71717A] transition hover:bg-black/[0.05] hover:text-[#111113]"
             >
-              {dict.logout}
+              <svg
+                class="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
             </button>
           </form>
         </div>
       </div>
     </aside>
 
-    <!-- Mobile Drawer -->
-    {#if isMobileMenuOpen}
-      <div class="fixed inset-0 z-50 flex lg:hidden">
+    <!-- Mobile Drawer Overlay -->
+    {#if mobileMenuOpen}
+      <div class="fixed inset-0 z-50 flex md:hidden">
         <button
           type="button"
-          aria-label="Close menu"
-          onclick={() => (isMobileMenuOpen = false)}
-          class="fixed inset-0 bg-black/20"
+          class="fixed inset-0 bg-black/60 backdrop-blur-xs"
+          onclick={() => (mobileMenuOpen = false)}
+          aria-label="Close navigation drawer"
         ></button>
-
         <div
-          class="relative z-10 flex h-full w-[240px] flex-col justify-between border-r border-[#EDEDED] bg-[#FAFAFA] p-3"
+          class="relative z-10 flex h-full w-72 max-w-[85vw] flex-col bg-[#231712] text-[#EFE8E1] shadow-2xl"
         >
-          <div>
-            <div class="mb-4 flex items-center justify-between px-2 py-1">
-              <span class="text-[13px] font-semibold text-[#111113]">
-                CafeStock
-              </span>
-              <button
-                type="button"
-                onclick={() => (isMobileMenuOpen = false)}
-                class="rounded p-1 text-[#71717A] hover:text-[#111113]"
+          <div
+            class="flex items-center justify-between border-b border-[#38261E] p-5"
+          >
+            <div class="flex items-center gap-3">
+              <div
+                class="flex h-9 w-9 items-center justify-center rounded-xl border border-[#7A4D33] bg-[#5A3825] text-[#E5B589]"
               >
-                ✕
-              </button>
-            </div>
-
-            <nav class="space-y-0.5">
-              {#each navItems as item}
-                {@const isActive = data.pathname === item.href}
-                <a
-                  href={item.href}
-                  onclick={() => (isMobileMenuOpen = false)}
-                  class="flex items-center gap-2.5 rounded-[6px] px-2.5 py-2 text-[13px] {isActive
-                    ? 'bg-black/[0.06] font-medium text-[#111113]'
-                    : 'text-[#52525B]'}"
+                <svg
+                  class="h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
                 >
-                  <span>{item.label}</span>
-                </a>
-              {/each}
-            </nav>
+                  <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
+                  <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
+                </svg>
+              </div>
+              <div>
+                <div class="font-serif text-base font-bold text-white">
+                  CafeStock
+                </div>
+                <div class="text-[10px] text-[#A69080]">
+                  Inventory &amp; Procurement
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              onclick={() => (mobileMenuOpen = false)}
+              class="rounded-lg p-1.5 text-[#CDB8A6] hover:bg-[#341F18]"
+              aria-label="Close drawer"
+            >
+              <svg
+                class="h-5 w-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            </button>
           </div>
 
-          <div class="border-t border-[#EDEDED] pt-3 space-y-2">
-            <form
-              method="POST"
-              action="/login?/setLang"
-              class="ui-tabs flex w-full"
-            >
-              <input type="hidden" name="redirectTo" value={data.pathname} />
-              {#each ["ID", "EN", "JP"] as code}
+          <nav class="flex-1 space-y-1.5 overflow-y-auto px-3 py-4">
+            {#each navItems as item}
+              {@const isActive = currentPath === item.href}
+              <a
+                href={item.href}
+                class="flex w-full items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-medium {isActive
+                  ? 'border border-[#7B4E34] bg-[#5A3825] text-white shadow-md'
+                  : 'text-[#C4B2A3] hover:bg-[#2F1F18] hover:text-white'}"
+              >
+                {@render navIcon(item.icon, isActive)}
+                <span>{item.label}</span>
+              </a>
+            {/each}
+          </nav>
+
+          <div class="border-t border-[#38261E] bg-[#1E130E] p-4">
+            <div class="flex items-center justify-between">
+              <div class="truncate">
+                <div class="truncate text-xs font-semibold text-white">
+                  {data.user.name}
+                </div>
+                <div class="font-mono text-[10px] text-[#9A8474]">
+                  {data.user.email} ({data.user.role})
+                </div>
+              </div>
+              <form method="POST" action="/login?/logout">
                 <button
                   type="submit"
-                  name="lang"
-                  value={code}
-                  class="ui-tab flex-1 text-center {data.lang === code
-                    ? 'ui-tab-active'
-                    : ''}"
+                  class="rounded-md bg-[#341F18] px-2.5 py-1.5 text-xs font-semibold text-[#E57373]"
                 >
-                  {code}
-                </button>
-              {/each}
-            </form>
-
-            <div class="flex items-center justify-between px-1">
-              <span class="truncate text-[12px] font-medium text-[#111113]">
-                {data.user.name}
-              </span>
-              <form method="POST" action="/login?/logout">
-                <button type="submit" class="ui-btn-outline ui-btn-sm">
                   {dict.logout}
                 </button>
               </form>
@@ -253,32 +421,131 @@
       </div>
     {/if}
 
-    <!-- Main Content Column -->
-    <div class="flex min-w-0 flex-1 flex-col select-text">
-      <!-- Mobile Compact Bar -->
+    <!-- Main Layout Area -->
+    <div class="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
+      <!-- Mobile Header (Figma Espresso Topbar) -->
       <header
-        class="flex h-11 items-center justify-between border-b border-[#EDEDED] bg-white px-4 lg:hidden"
+        class="sticky top-0 z-40 flex items-center justify-between border-b border-[#38261E] bg-[#231712] px-4 py-3 text-[#EFE8E1] shadow-md md:hidden"
       >
         <div class="flex items-center gap-2.5">
           <button
             type="button"
-            onclick={() => (isMobileMenuOpen = true)}
-            aria-label="Open menu"
-            class="ui-btn-outline ui-btn-sm"
+            onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
+            class="-ml-1 rounded-lg p-2 text-[#E5B589] transition hover:bg-[#341F18]"
+            aria-label="Open navigation"
           >
-            Menu
+            <svg
+              class="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
           </button>
-          <span class="text-[13px] font-semibold text-[#111113]">
-            {currentPageLabel}
-          </span>
+          <div class="flex items-center gap-2">
+            <div
+              class="flex h-7 w-7 items-center justify-center rounded-lg border border-[#7A4D33] bg-[#5A3825] text-[#E5B589]"
+            >
+              <svg
+                class="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
+                <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
+              </svg>
+            </div>
+            <div>
+              <div
+                class="font-serif text-sm leading-tight font-bold text-white"
+              >
+                {activeItem.label}
+              </div>
+              <div class="text-[10px] leading-none text-[#A69080]">
+                CafeStock Mobile
+              </div>
+            </div>
+          </div>
         </div>
-        <span class="font-mono text-[11px] text-[#71717A]">
-          {data.user.role}
-        </span>
+
+        <form method="POST" action="/login?/quickLogin">
+          <input
+            type="hidden"
+            name="role"
+            value={data.user.role === "USER" ? "APPROVER" : "USER"}
+          />
+          <input type="hidden" name="redirectTo" value={currentPath} />
+          <button
+            type="submit"
+            class="flex items-center gap-1 rounded border px-2 py-1 text-[10px] font-bold tracking-wider uppercase transition {data
+              .user.role === 'APPROVER'
+              ? 'border-[#7B532F] bg-[#4A321E] text-[#F3C592]'
+              : 'border-[#4A5568] bg-[#2D3748] text-[#90CDF4]'}"
+          >
+            <span>⇄ {data.user.role}</span>
+          </button>
+        </form>
       </header>
 
-      <main class="flex-1">
-        {@render children()}
+      <!-- Desktop Top Header Bar -->
+      <header
+        class="hidden shrink-0 items-center justify-between border-b border-[#EDE4D8] bg-white px-8 py-3.5 shadow-xs md:flex"
+      >
+        <div class="flex items-center gap-2 text-xs font-medium text-[#7D6B5D]">
+          <span>{activeItem.group}</span>
+          <span>/</span>
+          <span class="font-semibold text-[#3D2C20]">{activeItem.label}</span>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <form method="POST" action="/login?/setLang">
+            <input
+              type="hidden"
+              name="lang"
+              value={data.lang === "ID" ? "EN" : "ID"}
+            />
+            <input type="hidden" name="redirectTo" value={currentPath} />
+            <button
+              type="submit"
+              class="cursor-pointer rounded-lg border border-[#EDE4D8] bg-[#FAF7F2] px-2.5 py-1 font-mono text-[11px] font-bold text-[#5A3825] transition hover:border-[#C68B59]"
+            >
+              {data.lang === "ID" ? "ID 🇮🇩" : "EN 🇬🇧"}
+            </button>
+          </form>
+
+          <div class="flex items-center gap-2.5 border-l border-[#EDE4D8] pl-4">
+            <div class="text-right">
+              <div class="text-xs font-bold text-[#2E1F16]">
+                {data.user.name}
+              </div>
+              <div class="text-[10px] font-semibold text-[#8C7665]">
+                {data.user.role === "APPROVER"
+                  ? "Manager (Approver)"
+                  : "Warehouse Staff (User)"}
+              </div>
+            </div>
+            <div
+              class="flex h-8 w-8 items-center justify-center rounded-full border border-[#D5C5B5] bg-[#EFE7DE] text-xs font-bold text-[#5A3825]"
+            >
+              {data.user.name
+                .split(" ")
+                .map((n: string) => n[0])
+                .slice(0, 2)
+                .join("")}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Outlet -->
+      <main class="flex-1 overflow-y-auto bg-[#FAF7F2] p-4 md:p-8">
+        <div class="mx-auto max-w-7xl">
+          {@render children()}
+        </div>
       </main>
     </div>
   </div>

@@ -58,6 +58,37 @@ export const actions: Actions = {
     throw redirect(303, "/");
   },
 
+  quickLogin: async ({ request, cookies }) => {
+    const formData = await request.formData();
+    const role = String(formData.get("role") ?? "USER").toUpperCase();
+    const redirectTo = String(formData.get("redirectTo") ?? "/");
+    const email =
+      role === "APPROVER" ? "approver@cafestock.com" : "user@cafestock.com";
+
+    const res = await callBackendApi<{
+      data: { token: string; user: AuthUser };
+    }>("/api/auth/login", {
+      method: "POST",
+      body: { email, password: "password123" },
+    });
+
+    if (!res.ok || !res.data?.data) {
+      return fail(res.status || 401, {
+        error: res.errorMessage ?? "Failed to sign in with demo account",
+        email,
+      });
+    }
+
+    cookies.set(SESSION_COOKIE_NAME, res.data.data.token, {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    throw redirect(303, redirectTo.startsWith("/") ? redirectTo : "/");
+  },
+
   logout: async ({ cookies, locals }) => {
     if (locals.token) {
       await callBackendApi("/api/auth/logout", {
@@ -71,7 +102,7 @@ export const actions: Actions = {
 
   setLang: async ({ request, cookies }) => {
     const formData = await request.formData();
-    const lang = String(formData.get("lang") ?? "ID");
+    const lang = String(formData.get("lang") ?? "ID").toUpperCase();
     const redirectTo = String(formData.get("redirectTo") ?? "/");
     if (lang === "ID" || lang === "EN" || lang === "JP") {
       cookies.set(LANG_COOKIE_NAME, lang, {
