@@ -2,26 +2,21 @@
 
 @layer base {
   :root {
-    --apple-bg: #f5f5f7;
-    --apple-surface: #ffffff;
-    --apple-subtle: #efeff4;
-    --apple-text: #1d1d1f;
-    --apple-secondary: #6e6e73;
-    --apple-tertiary: #86868b;
-    --apple-border: rgba(0, 0, 0, 0.08);
     --font-sans:
-      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
-      "Inter", system-ui, sans-serif;
+      -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui,
+      sans-serif;
     --font-mono:
       "SF Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
   }
 
   html,
   body {
-    background-color: var(--apple-bg);
-    color: var(--apple-text);
+    background-color: #ffffff;
+    color: #111113;
     font-family: var(--font-sans);
-    letter-spacing: -0.011em;
+    font-size: 13px;
+    line-height: 1.45;
+    letter-spacing: -0.01em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -37,150 +32,144 @@
   }
 }
 
-.apple-card {
-  background-color: #ffffff;
-  border-radius: 16px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.02),
-    0 4px 16px rgba(0, 0, 0, 0.025);
-}
-
-.apple-glass {
-  background-color: rgba(255, 255, 255, 0.78);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-}
-
-.apple-input {
+.ui-input {
   display: block;
   width: 100%;
-  height: 38px;
-  line-height: 1.25;
-  padding: 0 12px;
-  background-color: #f5f5f7;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
-  color: #1d1d1f;
+  height: 32px;
+  padding: 0 10px;
+  background-color: #ffffff;
+  border: 1px solid #d4d4d8;
+  border-radius: 6px;
+  color: #111113;
   font-size: 13px;
+  line-height: 30px;
   box-sizing: border-box;
-  transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
+  transition: border-color 0.12s ease;
 }
 
-.apple-input:focus {
-  background-color: #ffffff;
-  border-color: #1d1d1f;
-  box-shadow: 0 0 0 3px rgba(29, 29, 31, 0.08);
+.ui-input::placeholder {
+  color: #a1a1aa;
+}
+
+.ui-input:focus {
+  border-color: #111113;
   outline: none;
 }
 
-select.apple-input,
-.apple-select {
+select.ui-input,
+.ui-select {
   display: block;
   width: 100%;
-  height: 38px;
-  line-height: 36px;
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-left: 12px;
-  padding-right: 34px;
-  background-color: #f5f5f7;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
-  color: #1d1d1f;
+  height: 32px;
+  padding: 0 28px 0 10px;
+  background-color: #ffffff;
+  border: 1px solid #d4d4d8;
+  border-radius: 6px;
+  color: #111113;
   font-size: 13px;
+  line-height: 30px;
   box-sizing: border-box;
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236E6E73' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2371717A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 11px center;
-  background-size: 14px 14px;
+  background-position: right 9px center;
+  background-size: 12px 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
-  transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
+  transition: border-color 0.12s ease;
 }
 
-select.apple-input:focus,
-.apple-select:focus {
-  background-color: #ffffff;
-  border-color: #1d1d1f;
-  box-shadow: 0 0 0 3px rgba(29, 29, 31, 0.08);
+select.ui-input:focus,
+.ui-select:focus {
+  border-color: #111113;
   outline: none;
 }
 
-.apple-btn-primary {
+.ui-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 38px;
-  padding: 0 16px;
-  background-color: #1d1d1f;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  background-color: #111113;
   color: #ffffff;
-  border: 1px solid #1d1d1f;
-  border-radius: 10px;
-  font-size: 13px;
+  border: 1px solid #111113;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 1;
   white-space: nowrap;
   box-sizing: border-box;
-  transition:
-    background-color 0.15s ease,
-    transform 0.1s ease;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
 }
 
-.apple-btn-primary:hover {
-  background-color: #333336;
+.ui-btn:hover {
+  background-color: #27272a;
 }
 
-.apple-btn-primary:active {
-  transform: scale(0.985);
-}
-
-.apple-btn-secondary {
+.ui-btn-outline {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 38px;
-  padding: 0 14px;
-  background-color: #f5f5f7;
-  color: #1d1d1f;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
-  font-size: 13px;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  background-color: #ffffff;
+  color: #111113;
+  border: 1px solid #e4e4e7;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 1;
   white-space: nowrap;
   box-sizing: border-box;
+  cursor: pointer;
   transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease;
+    background-color 0.12s ease,
+    border-color 0.12s ease;
 }
 
-.apple-btn-secondary:hover {
-  background-color: #e8e8ed;
+.ui-btn-outline:hover {
+  background-color: #f4f4f5;
+  border-color: #d4d4d8;
 }
 
-.apple-segmented {
-  background-color: rgba(118, 118, 128, 0.12);
-  border-radius: 9px;
+.ui-btn-sm {
+  height: 26px;
+  padding: 0 8px;
+  font-size: 11px;
+  border-radius: 5px;
+}
+
+.ui-tabs {
+  display: inline-flex;
+  align-items: center;
+  background-color: #f4f4f5;
   padding: 2px;
+  border-radius: 6px;
 }
 
-.apple-segmented-item-active {
+.ui-tab {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #71717a;
+  border-radius: 4px;
+  transition: color 0.12s ease;
+}
+
+.ui-tab:hover {
+  color: #111113;
+}
+
+.ui-tab-active {
   background-color: #ffffff;
-  color: #1d1d1f;
-  border-radius: 7px;
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.08),
-    0 1px 1px rgba(0, 0, 0, 0.04);
+  color: #111113;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }

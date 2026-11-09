@@ -8,164 +8,296 @@
   let { data, form }: { data: MasterPageData; form: MasterActionData | null } =
     $props();
   let dict = $derived(getDictionary(data.lang));
+  let activeSection = $state<"products" | "suppliers" | "warehouses">(
+    "products",
+  );
+  let showCreateDrawer = $state(false);
 </script>
 
-<div class="space-y-8">
-  <!-- Header & Search Bar -->
-  <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-    <div>
-      <div class="text-[12px] font-medium text-[#86868B]">
-        SKU, Supplier & Warehouse Directory
-      </div>
-      <h1
-        class="mt-1 text-2xl font-semibold tracking-tight text-[#1D1D1F] sm:text-[28px]"
-      >
-        {dict.masterTitle}
+<div>
+  <!-- Top View Toolbar -->
+  <div
+    class="flex flex-wrap items-center justify-between gap-3 border-b border-[#EDEDED] px-5 py-3 sm:px-6"
+  >
+    <div class="flex flex-wrap items-center gap-3">
+      <h1 class="text-[15px] font-semibold tracking-tight text-[#111113]">
+        {dict.navMaster}
       </h1>
+
+      <div class="ui-tabs">
+        <button
+          type="button"
+          onclick={() => (activeSection = "products")}
+          class="ui-tab cursor-pointer {activeSection === 'products'
+            ? 'ui-tab-active'
+            : ''}"
+        >
+          Products ({data.products.length})
+        </button>
+        <button
+          type="button"
+          onclick={() => (activeSection = "suppliers")}
+          class="ui-tab cursor-pointer {activeSection === 'suppliers'
+            ? 'ui-tab-active'
+            : ''}"
+        >
+          Suppliers ({data.suppliers.length})
+        </button>
+        <button
+          type="button"
+          onclick={() => (activeSection = "warehouses")}
+          class="ui-tab cursor-pointer {activeSection === 'warehouses'
+            ? 'ui-tab-active'
+            : ''}"
+        >
+          Warehouses ({data.warehouses.length})
+        </button>
+      </div>
     </div>
 
-    <form method="GET" action="/master" class="flex w-full gap-2 sm:w-auto">
-      <input
-        type="text"
-        name="search"
-        value={data.search}
-        placeholder="Search SKU, Code, Name..."
-        class="apple-input flex-1 px-3.5 py-2 text-[13px] sm:w-64"
-      />
+    <div class="flex flex-wrap items-center gap-2">
+      <form method="GET" action="/master" class="flex items-center gap-1.5">
+        <input
+          type="text"
+          name="search"
+          value={data.search}
+          placeholder="Filter..."
+          class="ui-input w-40 sm:w-48"
+        />
+        <button type="submit" class="ui-btn-outline"> Search </button>
+      </form>
+
       <button
-        type="submit"
-        class="apple-btn-primary cursor-pointer px-4 py-2 text-[13px]"
+        type="button"
+        onclick={() => (showCreateDrawer = !showCreateDrawer)}
+        class="ui-btn"
       >
-        Search
+        {showCreateDrawer ? "Close" : "+ New Entry"}
       </button>
-    </form>
+    </div>
   </div>
 
   {#if form?.error}
     <div
-      class="apple-card flex items-center gap-2.5 px-4 py-3 text-[13px] font-medium text-[#1D1D1F]"
+      class="border-b border-[#EDEDED] bg-[#FEF2F2] px-6 py-2 text-[12px] text-[#DC2626]"
     >
-      <span class="h-2 w-2 shrink-0 rounded-full bg-[#D70015]"></span>
-      <span>{form.error}</span>
+      {form.error}
     </div>
   {/if}
   {#if form?.success}
     <div
-      class="apple-card flex items-center gap-2.5 px-4 py-3 text-[13px] font-medium text-[#1D1D1F]"
+      class="border-b border-[#EDEDED] bg-[#FAFAFA] px-6 py-2 text-[12px] text-[#111113]"
     >
-      <span class="h-2 w-2 shrink-0 rounded-full bg-[#1D1D1F]"></span>
-      <span>{form.success}</span>
+      {form.success}
     </div>
   {/if}
 
-  <!-- Products Section -->
-  <section class="apple-card overflow-hidden">
-    <div class="border-b border-black/[0.06] px-5 py-4 sm:px-6">
-      <div class="flex items-center justify-between">
-        <h2 class="text-[15px] font-semibold tracking-tight text-[#1D1D1F]">
-          {dict.productsSection}
-        </h2>
-        <span class="font-mono text-[11px] text-[#86868B]">
-          {data.products.length} items
-        </span>
-      </div>
-
-      <form
-        method="POST"
-        action="?/createProduct"
-        class="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-6"
-      >
-        <input
-          name="sku"
-          required
-          placeholder="SKU (e.g. SKU-CF-09)"
-          class="apple-input px-3 py-2 font-mono text-[12px]"
-        />
-        <input
-          name="name"
-          required
-          placeholder="Product Name"
-          class="apple-input px-3 py-2 text-[13px]"
-        />
-        <input
-          name="category"
-          placeholder="Category"
-          value="Coffee Beans"
-          class="apple-input px-3 py-2 text-[13px]"
-        />
-        <input
-          name="unit"
-          required
-          placeholder="Unit (bag, carton)"
-          class="apple-input px-3 py-2 text-[13px]"
-        />
-        <input
-          name="unitPrice"
-          type="number"
-          min="0"
-          placeholder="Price (IDR)"
-          class="apple-input px-3 py-2 text-[13px] tabular-nums"
-        />
-        <button
-          type="submit"
-          class="apple-btn-primary cursor-pointer px-4 py-2 text-[13px]"
+  <!-- Collapsible Action Bar (Only Visible When Triggered) -->
+  {#if showCreateDrawer}
+    <div class="border-b border-[#EDEDED] bg-[#FAFAFA] px-5 py-4 sm:px-6">
+      {#if activeSection === "products"}
+        <form
+          method="POST"
+          action="?/createProduct"
+          class="grid grid-cols-1 items-end gap-2.5 sm:grid-cols-3 lg:grid-cols-6"
         >
-          + Add Product
-        </button>
-      </form>
+          <div>
+            <label
+              for="m-sku"
+              class="mb-1 block text-[11px] font-medium text-[#52525B]"
+              >SKU</label
+            >
+            <input
+              id="m-sku"
+              name="sku"
+              required
+              placeholder="SKU-CF-09"
+              class="ui-input font-mono"
+            />
+          </div>
+          <div>
+            <label
+              for="m-name"
+              class="mb-1 block text-[11px] font-medium text-[#52525B]"
+              >Name</label
+            >
+            <input
+              id="m-name"
+              name="name"
+              required
+              placeholder="Product name"
+              class="ui-input"
+            />
+          </div>
+          <div>
+            <label
+              for="m-cat"
+              class="mb-1 block text-[11px] font-medium text-[#52525B]"
+              >Category</label
+            >
+            <input
+              id="m-cat"
+              name="category"
+              value="Coffee Beans"
+              class="ui-input"
+            />
+          </div>
+          <div>
+            <label
+              for="m-unit"
+              class="mb-1 block text-[11px] font-medium text-[#52525B]"
+              >Unit</label
+            >
+            <input
+              id="m-unit"
+              name="unit"
+              required
+              placeholder="bag, carton"
+              class="ui-input"
+            />
+          </div>
+          <div>
+            <label
+              for="m-price"
+              class="mb-1 block text-[11px] font-medium text-[#52525B]"
+              >Unit Price (IDR)</label
+            >
+            <input
+              id="m-price"
+              name="unitPrice"
+              type="number"
+              min="0"
+              placeholder="150000"
+              class="ui-input tabular-nums"
+            />
+          </div>
+          <button type="submit" class="ui-btn w-full"> Save Product </button>
+        </form>
+      {:else if activeSection === "suppliers"}
+        <form
+          method="POST"
+          action="?/createSupplier"
+          class="grid max-w-2xl grid-cols-1 items-end gap-2.5 sm:grid-cols-3"
+        >
+          <div>
+            <label
+              for="s-code"
+              class="mb-1 block text-[11px] font-medium text-[#52525B]"
+              >Code</label
+            >
+            <input
+              id="s-code"
+              name="code"
+              required
+              placeholder="SUP-NEW-01"
+              class="ui-input font-mono"
+            />
+          </div>
+          <div>
+            <label
+              for="s-name"
+              class="mb-1 block text-[11px] font-medium text-[#52525B]"
+              >Supplier Name</label
+            >
+            <input
+              id="s-name"
+              name="name"
+              required
+              placeholder="Partner name"
+              class="ui-input"
+            />
+          </div>
+          <button type="submit" class="ui-btn w-full"> Save Supplier </button>
+        </form>
+      {:else}
+        <form
+          method="POST"
+          action="?/createWarehouse"
+          class="grid max-w-2xl grid-cols-1 items-end gap-2.5 sm:grid-cols-3"
+        >
+          <div>
+            <label
+              for="w-code"
+              class="mb-1 block text-[11px] font-medium text-[#52525B]"
+              >Code</label
+            >
+            <input
+              id="w-code"
+              name="code"
+              required
+              placeholder="WH-BALI-03"
+              class="ui-input font-mono"
+            />
+          </div>
+          <div>
+            <label
+              for="w-name"
+              class="mb-1 block text-[11px] font-medium text-[#52525B]"
+              >Warehouse Name</label
+            >
+            <input
+              id="w-name"
+              name="name"
+              required
+              placeholder="Location name"
+              class="ui-input"
+            />
+          </div>
+          <button type="submit" class="ui-btn w-full"> Save Warehouse </button>
+        </form>
+      {/if}
     </div>
+  {/if}
 
-    <!-- Desktop Table -->
-    <div class="hidden overflow-x-auto md:block">
+  <!-- Active Data Sheet -->
+  {#if activeSection === "products"}
+    <div class="overflow-x-auto">
       <table class="w-full text-left text-[13px]">
         <thead>
           <tr
-            class="border-b border-black/[0.06] bg-[#FBFBFD] text-[11px] font-medium tracking-wider text-[#86868B] uppercase"
+            class="border-b border-[#EDEDED] bg-[#FAFAFA] text-[11px] font-medium text-[#71717A]"
           >
-            <th class="px-6 py-3">SKU</th>
-            <th class="px-6 py-3">Product Name</th>
-            <th class="px-6 py-3">Category</th>
-            <th class="px-6 py-3">Unit</th>
-            <th class="px-6 py-3 text-right">Unit Price</th>
-            <th class="px-6 py-3 text-center">State</th>
-            <th class="px-6 py-3 text-right">Action</th>
+            <th class="px-5 py-2.5 sm:px-6">SKU</th>
+            <th class="px-5 py-2.5 sm:px-6">Product</th>
+            <th class="hidden px-5 py-2.5 sm:table-cell sm:px-6">Category</th>
+            <th class="hidden px-5 py-2.5 sm:table-cell sm:px-6">Unit</th>
+            <th class="px-5 py-2.5 text-right sm:px-6">Price</th>
+            <th class="px-5 py-2.5 text-center sm:px-6">Status</th>
+            <th class="px-5 py-2.5 text-right sm:px-6"></th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-black/[0.05]">
+        <tbody class="divide-y divide-[#F4F4F5]">
           {#each data.products as prod}
-            <tr class="transition hover:bg-[#F5F5F7]/60">
+            <tr class="hover:bg-[#FAFAFA]">
               <td
-                class="px-6 py-3.5 font-mono text-[12px] font-medium text-[#1D1D1F]"
+                class="px-5 py-2.5 font-mono text-[12px] text-[#52525B] sm:px-6"
               >
                 {prod.sku}
               </td>
-              <td class="px-6 py-3.5 font-medium text-[#1D1D1F]">
+              <td class="px-5 py-2.5 font-medium text-[#111113] sm:px-6">
                 {prod.name}
               </td>
-              <td class="px-6 py-3.5 text-[#6E6E73]">{prod.category}</td>
-              <td class="px-6 py-3.5 text-[#6E6E73]">{prod.unit}</td>
               <td
-                class="px-6 py-3.5 text-right font-mono text-[12px] text-[#1D1D1F] tabular-nums"
+                class="hidden px-5 py-2.5 text-[#71717A] sm:table-cell sm:px-6"
+              >
+                {prod.category}
+              </td>
+              <td
+                class="hidden px-5 py-2.5 text-[#71717A] sm:table-cell sm:px-6"
+              >
+                {prod.unit}
+              </td>
+              <td
+                class="px-5 py-2.5 text-right font-mono text-[12px] text-[#111113] tabular-nums sm:px-6"
               >
                 Rp {prod.unitPrice.toLocaleString()}
               </td>
-              <td class="px-6 py-3.5 text-center">
-                <span
-                  class="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#1D1D1F]"
-                >
-                  <span
-                    class="h-1.5 w-1.5 rounded-full {prod.isActive
-                      ? 'bg-[#1D1D1F]'
-                      : 'bg-[#D2D2D7]'}"
-                  ></span>
-                  <span
-                    class={prod.isActive ? "text-[#1D1D1F]" : "text-[#86868B]"}
-                  >
-                    {prod.isActive ? "Active" : "Inactive"}
-                  </span>
+              <td class="px-5 py-2.5 text-center sm:px-6">
+                <span class="font-mono text-[11px] text-[#71717A]">
+                  {prod.isActive ? "Active" : "Inactive"}
                 </span>
               </td>
-              <td class="px-6 py-3.5 text-right">
+              <td class="px-5 py-2.5 text-right sm:px-6">
                 <form method="POST" action="?/toggleProduct" class="inline">
                   <input type="hidden" name="id" value={prod.id} />
                   <input
@@ -173,11 +305,8 @@
                     name="isActive"
                     value={String(prod.isActive)}
                   />
-                  <button
-                    type="submit"
-                    class="apple-btn-secondary cursor-pointer px-3 py-1 text-[12px]"
-                  >
-                    {prod.isActive ? "Deactivate" : "Activate"}
+                  <button type="submit" class="ui-btn-outline ui-btn-sm">
+                    {prod.isActive ? "Disable" : "Enable"}
                   </button>
                 </form>
               </td>
@@ -186,198 +315,99 @@
         </tbody>
       </table>
     </div>
-
-    <!-- Mobile Responsive Stack -->
-    <div class="divide-y divide-black/[0.05] md:hidden">
-      {#each data.products as prod}
-        <div class="flex items-center justify-between gap-3 px-5 py-4">
-          <div class="min-w-0">
-            <div class="flex items-center gap-2">
-              <span
-                class="h-1.5 w-1.5 rounded-full {prod.isActive
-                  ? 'bg-[#1D1D1F]'
-                  : 'bg-[#D2D2D7]'}"
-              ></span>
-              <span class="font-mono text-[11px] text-[#86868B]"
-                >{prod.sku}</span
+  {:else if activeSection === "suppliers"}
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-[13px]">
+        <thead>
+          <tr
+            class="border-b border-[#EDEDED] bg-[#FAFAFA] text-[11px] font-medium text-[#71717A]"
+          >
+            <th class="px-5 py-2.5 sm:px-6">Code</th>
+            <th class="px-5 py-2.5 sm:px-6">Supplier Name</th>
+            <th class="px-5 py-2.5 text-center sm:px-6">Status</th>
+            <th class="px-5 py-2.5 text-right sm:px-6"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#F4F4F5]">
+          {#each data.suppliers as sup}
+            <tr class="hover:bg-[#FAFAFA]">
+              <td
+                class="px-5 py-2.5 font-mono text-[12px] text-[#52525B] sm:px-6"
               >
-              <span class="text-[11px] text-[#86868B]">• {prod.category}</span>
-            </div>
-            <div class="mt-0.5 truncate text-[14px] font-medium text-[#1D1D1F]">
-              {prod.name}
-            </div>
-            <div class="mt-0.5 font-mono text-[12px] text-[#6E6E73]">
-              Rp {prod.unitPrice.toLocaleString()} / {prod.unit}
-            </div>
-          </div>
-
-          <form method="POST" action="?/toggleProduct" class="shrink-0">
-            <input type="hidden" name="id" value={prod.id} />
-            <input
-              type="hidden"
-              name="isActive"
-              value={String(prod.isActive)}
-            />
-            <button
-              type="submit"
-              class="apple-btn-secondary px-3 py-1.5 text-[12px]"
-            >
-              {prod.isActive ? "Disable" : "Enable"}
-            </button>
-          </form>
-        </div>
-      {/each}
-    </div>
-  </section>
-
-  <!-- Suppliers & Warehouses Grid -->
-  <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-    <!-- Suppliers Card -->
-    <section class="apple-card overflow-hidden">
-      <div class="border-b border-black/[0.06] px-5 py-4 sm:px-6">
-        <div class="flex items-center justify-between">
-          <h2 class="text-[15px] font-semibold tracking-tight text-[#1D1D1F]">
-            {dict.suppliersSection}
-          </h2>
-          <span class="font-mono text-[11px] text-[#86868B]">
-            {data.suppliers.length} partners
-          </span>
-        </div>
-
-        <form
-          method="POST"
-          action="?/createSupplier"
-          class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3"
-        >
-          <input
-            name="code"
-            required
-            placeholder="Code (SUP-NEW-01)"
-            class="apple-input px-3 py-2 font-mono text-[12px]"
-          />
-          <input
-            name="name"
-            required
-            placeholder="Supplier Name"
-            class="apple-input px-3 py-2 text-[13px]"
-          />
-          <button
-            type="submit"
-            class="apple-btn-primary cursor-pointer px-3 py-2 text-[13px]"
-          >
-            + Add Supplier
-          </button>
-        </form>
-      </div>
-
-      <div class="divide-y divide-black/[0.05]">
-        {#each data.suppliers as sup}
-          <div
-            class="flex items-center justify-between gap-3 px-5 py-3.5 sm:px-6"
-          >
-            <div class="min-w-0">
-              <div class="truncate text-[13px] font-medium text-[#1D1D1F]">
+                {sup.code}
+              </td>
+              <td class="px-5 py-2.5 font-medium text-[#111113] sm:px-6">
                 {sup.name}
-              </div>
-              <div class="font-mono text-[11px] text-[#86868B]">{sup.code}</div>
-            </div>
-
-            <form method="POST" action="?/toggleSupplier" class="shrink-0">
-              <input type="hidden" name="id" value={sup.id} />
-              <input
-                type="hidden"
-                name="isActive"
-                value={String(sup.isActive)}
-              />
-              <button
-                type="submit"
-                class="apple-btn-secondary inline-flex cursor-pointer items-center gap-1.5 px-3 py-1 text-[12px]"
+              </td>
+              <td class="px-5 py-2.5 text-center sm:px-6">
+                <span class="font-mono text-[11px] text-[#71717A]">
+                  {sup.isActive ? "Active" : "Inactive"}
+                </span>
+              </td>
+              <td class="px-5 py-2.5 text-right sm:px-6">
+                <form method="POST" action="?/toggleSupplier" class="inline">
+                  <input type="hidden" name="id" value={sup.id} />
+                  <input
+                    type="hidden"
+                    name="isActive"
+                    value={String(sup.isActive)}
+                  />
+                  <button type="submit" class="ui-btn-outline ui-btn-sm">
+                    {sup.isActive ? "Disable" : "Enable"}
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    </div>
+  {:else}
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-[13px]">
+        <thead>
+          <tr
+            class="border-b border-[#EDEDED] bg-[#FAFAFA] text-[11px] font-medium text-[#71717A]"
+          >
+            <th class="px-5 py-2.5 sm:px-6">Code</th>
+            <th class="px-5 py-2.5 sm:px-6">Warehouse Name</th>
+            <th class="px-5 py-2.5 text-center sm:px-6">Status</th>
+            <th class="px-5 py-2.5 text-right sm:px-6"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#F4F4F5]">
+          {#each data.warehouses as wh}
+            <tr class="hover:bg-[#FAFAFA]">
+              <td
+                class="px-5 py-2.5 font-mono text-[12px] text-[#52525B] sm:px-6"
               >
-                <span
-                  class="h-1.5 w-1.5 rounded-full {sup.isActive
-                    ? 'bg-[#1D1D1F]'
-                    : 'bg-[#D2D2D7]'}"
-                ></span>
-                <span>{sup.isActive ? "Active" : "Inactive"}</span>
-              </button>
-            </form>
-          </div>
-        {/each}
-      </div>
-    </section>
-
-    <!-- Warehouses Card -->
-    <section class="apple-card overflow-hidden">
-      <div class="border-b border-black/[0.06] px-5 py-4 sm:px-6">
-        <div class="flex items-center justify-between">
-          <h2 class="text-[15px] font-semibold tracking-tight text-[#1D1D1F]">
-            {dict.warehousesSection}
-          </h2>
-          <span class="font-mono text-[11px] text-[#86868B]">
-            {data.warehouses.length} locations
-          </span>
-        </div>
-
-        <form
-          method="POST"
-          action="?/createWarehouse"
-          class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3"
-        >
-          <input
-            name="code"
-            required
-            placeholder="Code (WH-BALI-03)"
-            class="apple-input px-3 py-2 font-mono text-[12px]"
-          />
-          <input
-            name="name"
-            required
-            placeholder="Warehouse Name"
-            class="apple-input px-3 py-2 text-[13px]"
-          />
-          <button
-            type="submit"
-            class="apple-btn-primary cursor-pointer px-3 py-2 text-[13px]"
-          >
-            + Add Location
-          </button>
-        </form>
-      </div>
-
-      <div class="divide-y divide-black/[0.05]">
-        {#each data.warehouses as wh}
-          <div
-            class="flex items-center justify-between gap-3 px-5 py-3.5 sm:px-6"
-          >
-            <div class="min-w-0">
-              <div class="truncate text-[13px] font-medium text-[#1D1D1F]">
+                {wh.code}
+              </td>
+              <td class="px-5 py-2.5 font-medium text-[#111113] sm:px-6">
                 {wh.name}
-              </div>
-              <div class="font-mono text-[11px] text-[#86868B]">{wh.code}</div>
-            </div>
-
-            <form method="POST" action="?/toggleWarehouse" class="shrink-0">
-              <input type="hidden" name="id" value={wh.id} />
-              <input
-                type="hidden"
-                name="isActive"
-                value={String(wh.isActive)}
-              />
-              <button
-                type="submit"
-                class="apple-btn-secondary inline-flex cursor-pointer items-center gap-1.5 px-3 py-1 text-[12px]"
-              >
-                <span
-                  class="h-1.5 w-1.5 rounded-full {wh.isActive
-                    ? 'bg-[#1D1D1F]'
-                    : 'bg-[#D2D2D7]'}"
-                ></span>
-                <span>{wh.isActive ? "Active" : "Inactive"}</span>
-              </button>
-            </form>
-          </div>
-        {/each}
-      </div>
-    </section>
-  </div>
+              </td>
+              <td class="px-5 py-2.5 text-center sm:px-6">
+                <span class="font-mono text-[11px] text-[#71717A]">
+                  {wh.isActive ? "Active" : "Inactive"}
+                </span>
+              </td>
+              <td class="px-5 py-2.5 text-right sm:px-6">
+                <form method="POST" action="?/toggleWarehouse" class="inline">
+                  <input type="hidden" name="id" value={wh.id} />
+                  <input
+                    type="hidden"
+                    name="isActive"
+                    value={String(wh.isActive)}
+                  />
+                  <button type="submit" class="ui-btn-outline ui-btn-sm">
+                    {wh.isActive ? "Disable" : "Enable"}
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    </div>
+  {/if}
 </div>
