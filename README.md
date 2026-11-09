@@ -1,151 +1,207 @@
-# CafeStock - Self-Hosted Inventory Procurement System
+# CafeStock — SSR Procurement & Inventory Management System
 
-[![Bun](https://img.shields.io/badge/Runtime-Bun%201.4-000000?style=for-the-badge&logo=bun&logoColor=white)](https://bun.sh/)
-[![ElysiaJS](https://img.shields.io/badge/Backend-ElysiaJS-black?style=for-the-badge&logo=elysia&logoColor=white)](https://elysiajs.com/)
-[![React](https://img.shields.io/badge/Frontend-React%2019-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/Language-TypeScript%205-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![MySQL](https://img.shields.io/badge/Database-MySQL%208.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![Docker](https://img.shields.io/badge/Container-Docker%20Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%204-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+![Bun](https://img.shields.io/badge/Bun-1.x-000000?style=for-the-badge&logo=bun&logoColor=white)
+![ElysiaJS](https://img.shields.io/badge/ElysiaJS-1.4-6366F1?style=for-the-badge&logo=typescript&logoColor=white)
+![SvelteKit](https://img.shields.io/badge/SvelteKit_5_SSR-3.1-FF3E00?style=for-the-badge&logo=svelte&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![Drizzle ORM](https://img.shields.io/badge/Drizzle_ORM-0.44-C5F74F?style=for-the-badge&logo=drizzle&logoColor=black)
+![Docker](https://img.shields.io/badge/Docker_Compose-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+
+**CafeStock** is a full-stack **Procurement & Inventory Management System** designed for specialty coffee roasteries and multi-branch cafes. It enforces strict role-based approvals, purchase order lifecycles, and **atomic Goods Receipt transactions** that guarantee inventory balances and movement ledgers never drift out of sync.
 
 ---
 
-## 1. Project Overview
+## 1. Project Overview & Monorepo Architecture
 
-**CafeStock** is a self-hosted inventory procurement management system designed for cafes, roasteries, and warehouse logistics. Built with an atomic procurement workflow:
+The repository is structured as a clean two-folder Bun workspace monorepo (`backend/` and `frontend/`) deployed as a **single unified server process**:
 
 ```text
-Purchase Request (PR) ──> Approval / Rejection ──> Purchase Order (PO) ──> Goods Receipt (GR) ──> Inventory Stock Updated
+cafe-stock/
+├── backend/                        # ElysiaJS Backend + Drizzle ORM (PostgreSQL)
+│   ├── drizzle/                    # Generated SQL migrations
+│   ├── src/
+│   │   ├── app.ts                  # Core Elysia instance (/api/* + SSR delegation)
+│   │   ├── db/
+│   │   │   ├── schema.ts           # PostgreSQL snake_case tables -> camelCase models
+│   │   │   ├── migrate.ts          # Programmatic & CLI SQL migration runner
+│   │   │   └── seed.ts             # Idempotent master data & RBAC seeder
+│   │   ├── modules/                # Vertical-Slice Domain Modules
+│   │   │   ├── auth/               # Session authentication & RBAC (USER / APPROVER)
+│   │   │   ├── products/           # Product master data
+│   │   │   ├── suppliers/          # Supplier master data
+│   │   │   ├── warehouses/         # Warehouse master data
+│   │   │   ├── purchase-requests/  # PR lifecycle (DRAFT -> SUBMITTED -> APPROVED/REJECTED)
+│   │   │   ├── purchase-orders/    # PO lifecycle (DRAFT -> ORDERED -> PARTIALLY_RECEIVED -> RECEIVED)
+│   │   │   ├── goods-receipts/     # Atomic Goods Receipt transaction + stock upsert
+│   │   │   ├── inventory/          # Balances & append-only movement ledger
+│   │   │   └── audit-logs/         # Traceable system audit trail
+│   │   └── utils/                  # Logger, AppError, Pagination, Idempotency, SSR Bridge
+│   └── index.ts                    # Thin entrypoint calling app.listen()
+├── frontend/                       # SvelteKit 5 Server-Side Rendered (SSR) Web App
+│   ├── src/
+│   │   ├── hooks.server.ts         # Server session & i18n (ID / EN / JP) resolution
+│   │   ├── lib/
+│   │   │   ├── i18n.ts             # Multi-language dictionary (Indonesian, English, Japanese)
+│   │   │   ├── types.ts            # Shared domain interfaces
+│   │   │   └── server/api.ts       # SSR backend client (in-memory bridge + HTTP fallback)
+│   │   └── routes/                 # SSR Pages (+page.server.ts & +page.svelte)
+│   └── vite.config.ts              # SvelteKit + @sveltejs/adapter-node configuration
+├── Dockerfile                      # Production container (builds SSR & runs Elysia server)
+├── docker-compose.yml              # Orchestrates PostgreSQL 16 + CafeStock App via .env
+└── .env.example                    # Environment variable template (zero hardcoded secrets)
 ```
 
-Running as a **unified ElysiaJS backend application**, CafeStock both hosts high-performance REST APIs and directly serves the compiled React Single Page Application (`dist/index.html` and assets) on the root endpoint `/`.
+### How Backend & Frontend SSR Combine on a Single Port
+
+1. **`frontend/`** is compiled using `@sveltejs/adapter-node` into `frontend/build/` (`frontend/build/client` for static assets and `frontend/build/server/server.js` for the Web-standard `Request -> Response` SSR engine).
+2. **`backend/`** starts ElysiaJS on port `3000`:
+   - Requests matching `/api/*` are handled directly by Elysia's vertical-slice domain controllers.
+   - Requests matching static client assets (`/_app/immutable/*`) are served from `frontend/build/client` with immutable cache headers.
+   - All page routes (`/`, `/login`, `/master`, `/purchase-requests`, `/purchase-orders`, `/goods-receipts`, `/inventory`, `/audit-logs`) are delegated to the SvelteKit SSR server handler, which calls Elysia's API routes in-memory with zero network latency.
 
 ---
 
-## 2. Architecture & Design Principles
+## 2. Tech Stack
 
-- **Unified Elysia Backend**: The application process is powered by [ElysiaJS](https://elysiajs.com/) (`src/app.ts`), serving:
-  - **Endpoint `/` & `/login`**: Compiled React SPA static files from `dist/` with client-side SPA routing fallback.
-  - **Endpoint `/api/*`**: Type-safe REST APIs for procurement, inventory, users, and audit trail logs.
-- **Dockerized Infrastructure**: Complete containerization via [Dockerfile](file:///home/xamnes/Projects/tauri/cafe-stock/Dockerfile) and [docker-compose.yml](file:///home/xamnes/Projects/tauri/cafe-stock/docker-compose.yml) orchestrating the Elysia application and a dedicated MySQL 8.0 database.
-- **Strict Environment Security**: Zero hardcoded credentials. All database hosts, usernames, passwords, and ports are retrieved dynamically from environment variables (`.env`). The `.env` file is strictly ignored by Git, and a documented `.env.example` template is provided.
-- **Dual Engine Compatibility**: Supports MySQL 8.0 via `mysql2/promise` with connection pooling and transactions, while providing zero-config SQLite fallback for offline development.
-
----
-
-## 3. Tech Stack
-
-- **Runtime & Framework**: [Bun](https://bun.sh/) & [ElysiaJS](https://elysiajs.com/)
-- **Database**: [MySQL 8.0](https://www.mysql.com/) (Production & Docker) / SQLite 3 (Standalone)
-- **Containerization**: [Docker](https://www.docker.com/) & Docker Compose
-- **Frontend**: [React 19](https://react.dev/), [TypeScript](https://www.typescriptlang.org/), [Tailwind CSS v4](https://tailwindcss.com/)
-- **Testing**: Bun Test runner (`bun:test`)
+| Layer                  | Technology                                                                                               |
+| :--------------------- | :------------------------------------------------------------------------------------------------------- |
+| **Runtime**            | Bun `1.x`                                                                                                |
+| **Backend Framework**  | ElysiaJS `1.4` (Vertical-Slice Architecture)                                                             |
+| **Frontend Framework** | SvelteKit `3.x` + Svelte `5` Runes (Server-Side Rendering via `@sveltejs/adapter-node`)                  |
+| **Styling**            | Tailwind CSS `4.x`                                                                                       |
+| **Database & ORM**     | PostgreSQL `16` + Drizzle ORM `0.44` (`postgres` driver + `@electric-sql/pglite` isolated test fallback) |
+| **Containerization**   | Docker & Docker Compose                                                                                  |
 
 ---
 
-## 4. Running with Docker (Recommended)
+## 3. Environment Variables (`.env`)
 
-Spin up both the MySQL 8.0 database and the CafeStock application container with a single command:
+No credentials are hardcoded in `docker-compose.yml` or application code. Copy `.env.example` to `.env` before running:
 
 ```bash
-# 1. Copy the environment variables template
 cp .env.example .env
-
-# 2. Build and run containers in detached mode
-docker compose up -d --build
 ```
 
-Access the system once running:
-
-- **Application Web UI**: [http://localhost:3000/](http://localhost:3000/)
-- **MySQL Database**: `localhost:3306`
-
-To view container logs or stop services:
-
-```bash
-docker compose logs -f
-docker compose down
-```
+| Variable                 | Description                                             | Example                                                                          |
+| :----------------------- | :------------------------------------------------------ | :------------------------------------------------------------------------------- |
+| `HOST`                   | Bind address for the Elysia HTTP server                 | `0.0.0.0`                                                                        |
+| `PORT`                   | HTTP port for both `/api/*` and SvelteKit SSR           | `3000`                                                                           |
+| `POSTGRES_USER`          | PostgreSQL username for Docker Compose                  | `cafestock_user`                                                                 |
+| `POSTGRES_PASSWORD`      | PostgreSQL password for Docker Compose                  | `change_me_in_local_env`                                                         |
+| `POSTGRES_DB`            | PostgreSQL database name                                | `cafestock_db`                                                                   |
+| `POSTGRES_PORT`          | Host port mapped to PostgreSQL `5432`                   | `5432`                                                                           |
+| `DATABASE_URL`           | PostgreSQL connection string used by Drizzle ORM        | `postgresql://cafestock_user:change_me_in_local_env@localhost:5432/cafestock_db` |
+| `AUTO_MIGRATE`           | Automatically run migrations & seeder on server startup | `true`                                                                           |
+| `SEED_USER_EMAIL`        | Default `USER` account email created by seeder          | `staff@cafestock.com`                                                            |
+| `SEED_USER_PASSWORD`     | Default `USER` account password                         | `User123!`                                                                       |
+| `SEED_APPROVER_EMAIL`    | Default `APPROVER` account email created by seeder      | `approver@cafestock.com`                                                         |
+| `SEED_APPROVER_PASSWORD` | Default `APPROVER` account password                     | `Approver123!`                                                                   |
 
 ---
 
-## 5. Running Locally (Without Docker)
+## 4. Running with Docker Compose (Recommended for Reviewers)
 
-### Installation
-
-Clone the repository and install dependencies:
+Spin up both **PostgreSQL 16** and the **CafeStock SSR + API Server** with a single command:
 
 ```bash
-git clone https://github.com/rynsh1506/cafe-stock.git
-cd cafe-stock
+cp .env.example .env
+docker compose up --build -d
+```
+
+- **Web UI (SvelteKit SSR) & API**: `http://localhost:3000`
+- **Health Check**: `http://localhost:3000/api/health`
+- On startup, the container automatically runs Drizzle SQL migrations and seeds the initial `USER`, `APPROVER`, warehouses, suppliers, and products.
+
+---
+
+## 5. Local Development Setup, Migrations & Seeder
+
+### Install Dependencies
+
+```bash
 bun install
 ```
 
-### Production / Standalone Server
+### Run Database Migrations & Seeder
 
 ```bash
-# 1. Build the React frontend into dist/
+# Generate SQL migrations from backend/src/db/schema.ts
+bun --cwd=backend run db:generate
+
+# Apply SQL migrations
+bun --cwd=backend run db:migrate
+
+# Seed initial master data and RBAC users
+bun --cwd=backend run db:seed
+```
+
+### Seeded Default Accounts (Crucial for Reviewers)
+
+| Role           | Email                    | Password       | Capabilities                                                                                                  |
+| :------------- | :----------------------- | :------------- | :------------------------------------------------------------------------------------------------------------ |
+| **`USER`**     | `staff@cafestock.com`    | `User123!`     | Manage Master Data, create & submit PRs, create & order POs, post Goods Receipts                              |
+| **`APPROVER`** | `approver@cafestock.com` | `Approver123!` | All `USER` capabilities **plus** approving (`APPROVED`) or rejecting (`REJECTED`) submitted Purchase Requests |
+
+_(The `/login` page also includes 1-click quick-fill buttons for both seeded accounts.)_
+
+### Build & Start Single-Port Server Locally
+
+```bash
+# Build SvelteKit SSR bundle into frontend/build
 bun run build
 
-# 2. Start the unified Elysia backend server
+# Start ElysiaJS server (serves API + SvelteKit SSR on http://localhost:3000)
 bun run start
 ```
 
-### Development Mode (with Live Reload)
+---
+
+## 6. Testing & Quality Assurance
+
+Run the full automated test suite and static type checkers across both workspaces:
 
 ```bash
-bun run dev
+# Typecheck backend (tsc) and frontend (svelte-check)
+bun run check
+
+# Run unit & integration tests (14 procurement scenarios, atomic rollback, RBAC, idempotency)
+bun run test
 ```
 
 ---
 
-## 6. Environment Variables Reference
+## 7. API Endpoints Overview (No Versioning, No Swagger)
 
-Configure environment variables in `.env` (refer to [.env.example](file:///home/xamnes/Projects/tauri/cafe-stock/.env.example)):
+All API endpoints return consistent JSON envelopes (`{ data: ... }` or `{ data: [...], meta: { page, limit, total, totalPages } }`) and structured error responses (`{ error: { code, message } }`):
 
-| Variable           | Default                      | Description                                                 |
-| ------------------ | ---------------------------- | ----------------------------------------------------------- |
-| `PORT`             | `3000`                       | HTTP listening port for application                         |
-| `HOST`             | `0.0.0.0`                    | Host interface binding (`0.0.0.0` for all LAN interfaces)   |
-| `DB_TYPE`          | `mysql`                      | Active database engine (`mysql` or `sqlite`)                |
-| `DB_HOST`          | `mysql`                      | MySQL hostname (use `mysql` in Docker, `localhost` locally) |
-| `DB_PORT`          | `3306`                       | MySQL port                                                  |
-| `DB_NAME`          | `cafe_stock`                 | Database schema name                                        |
-| `DB_USER`          | `cafe_user`                  | MySQL database username                                     |
-| `DB_PASSWORD`      | -                            | MySQL database user password                                |
-| `DB_ROOT_PASSWORD` | -                            | MySQL root user password (used by docker-compose)           |
-| `DB_EXTERNAL_PORT` | `3306`                       | Port exposed by MySQL container on the host machine         |
-| `SQLITE_DB_PATH`   | `database/cafe_stock.sqlite` | SQLite database filepath (when `DB_TYPE=sqlite`)            |
-
----
-
-## 7. API Specification
-
-| Method | Endpoint                   | Description                                        |
-| ------ | -------------------------- | -------------------------------------------------- |
-| `GET`  | `/`                        | Serves compiled React frontend (`dist/index.html`) |
-| `GET`  | `/login`                   | Serves Login / Setup Page (`dist/index.html`)      |
-| `GET`  | `/api/health`              | Health check & active database engine status       |
-| `GET`  | `/api/products`            | Lists catalog products                             |
-| `GET`  | `/api/warehouses`          | Lists active warehouses                            |
-| `GET`  | `/api/suppliers`           | Lists registered suppliers                         |
-| `GET`  | `/api/purchase-requests`   | Lists purchase requests                            |
-| `GET`  | `/api/purchase-orders`     | Lists purchase orders                              |
-| `GET`  | `/api/goods-receipts`      | Lists received goods receipts                      |
-| `GET`  | `/api/inventory/balances`  | Warehouse inventory stock balances                 |
-| `GET`  | `/api/inventory/movements` | Stock movement audit trail                         |
-| `GET`  | `/api/audit-logs`          | Transactional audit log history                    |
-| `GET`  | `/api/sqlite/snapshot`     | Full relational database snapshot                  |
-| `POST` | `/api/sqlite/users`        | Syncs user authentication accounts                 |
-| `POST` | `/api/sqlite/save`         | Atomic transaction saving all procurement entities |
-| `POST` | `/api/sqlite/wipe`         | Wipes relational data tables                       |
+- **Health**: `GET /api/health`
+- **Auth**: `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`
+- **Master Data**:
+  - `GET /api/products`, `GET /api/products/:id`, `POST /api/products`, `PATCH /api/products/:id`
+  - `GET /api/suppliers`, `GET /api/suppliers/:id`, `POST /api/suppliers`, `PATCH /api/suppliers/:id`
+  - `GET /api/warehouses`, `GET /api/warehouses/:id`, `POST /api/warehouses`, `PATCH /api/warehouses/:id`
+- **Purchase Requests**:
+  - `GET /api/purchase-requests`, `GET /api/purchase-requests/:id`, `POST /api/purchase-requests`, `PATCH /api/purchase-requests/:id`
+  - `POST /api/purchase-requests/:id/submit`
+  - `POST /api/purchase-requests/:id/approve` _(Requires `APPROVER` role)_
+  - `POST /api/purchase-requests/:id/reject` _(Requires `APPROVER` role)_
+- **Purchase Orders**:
+  - `GET /api/purchase-orders`, `GET /api/purchase-orders/:id`, `POST /api/purchase-orders`, `PATCH /api/purchase-orders/:id`
+  - `POST /api/purchase-orders/:id/order`, `POST /api/purchase-orders/:id/cancel`
+- **Goods Receipts (Atomic Transaction)**:
+  - `GET /api/goods-receipts`, `GET /api/goods-receipts/:id`, `POST /api/goods-receipts` _(Supports `Idempotency-Key` header)_
+- **Inventory & Audit Trail**:
+  - `GET /api/inventory`, `GET /api/inventory/movements`, `GET /api/audit-logs`
 
 ---
 
-## 8. Automated Testing
+## 8. Engineering Decisions & Assumptions
 
-Run the automated test suite covering database transactions, dynamic configuration, and Elysia API endpoints:
-
-```bash
-bun test
-```
+1. **Unified Single-Port Deployment (`backend/` + `frontend/build`)**:
+   - Instead of requiring two separate servers or reverse proxies in production, ElysiaJS mounts `/api/*` first and delegates non-API routes directly to the compiled SvelteKit `Server` instance (`frontend/build/server/server.js`).
+2. **Standard SvelteKit SSR Over Custom Micro-Kernel**:
+   - All client-side micro-kernel abstractions were removed in favor of standard SvelteKit `+page.server.ts` load functions and progressive HTML form actions.
+3. **Strict Atomic Goods Receipt Transaction**:
+   - Posting a Goods Receipt executes inside a single `db.transaction(...)` block: validating PO status (`ORDERED` or `PARTIALLY_RECEIVED`), preventing over-receiving (`received_quantity + quantity_received <= ordered_quantity`), inserting receipt lines, upserting `inventory_balances`, appending `inventory_movements` (`PURCHASE_RECEIPT`), recomputing PO status (`PARTIALLY_RECEIVED` vs `RECEIVED`), and writing an `audit_logs` entry. Any validation failure rolls back the entire transaction.
+4. **Idempotency Keys**:
+   - Transactional POST endpoints (`submit`, `approve`, `reject`, `purchase-orders`, `goods-receipts`) accept an `Idempotency-Key` header persisted in `idempotency_keys` to prevent duplicate stock increments on network retries.

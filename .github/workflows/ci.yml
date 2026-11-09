@@ -1,0 +1,32 @@
+name: CafeStock Monorepo CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  verify:
+    name: Typecheck, Build SSR & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun runtime
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install workspace dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run TypeScript & SvelteKit type checks
+        run: bun run check
+
+      - name: Build SvelteKit SSR bundle
+        run: bun run build
+
+      - name: Run Backend & SSR integration tests
+        run: bun run test
