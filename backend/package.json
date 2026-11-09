@@ -7,14 +7,21 @@
     "dev": "bun --watch index.ts",
     "start": "bun index.ts",
     "test": "bun test",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "bun src/db/migrate.ts",
+    "db:seed": "bun src/db/seed.ts"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.3.15",
     "@elysiajs/static": "^1.4.12",
-    "elysia": "^1.4"
+    "drizzle-orm": "^0.44.0",
+    "elysia": "^1.4",
+    "postgres": "^3.4.5"
   },
   "devDependencies": {
     "@types/bun": "^1.4.4",
+    "drizzle-kit": "^0.31.0",
     "typescript": "~5.9"
   }
 }
