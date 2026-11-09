@@ -6,18 +6,18 @@
   let dict = $derived(getDictionary(data.lang));
 </script>
 
-<div class="space-y-8">
-  <!-- Header & Filter Bar -->
-  <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-    <div>
-      <div class="text-[12px] font-medium text-[#86868B]">
-        Immutable Compliance & Security Event Log
-      </div>
-      <h1
-        class="mt-1 text-2xl font-semibold tracking-tight text-[#1D1D1F] sm:text-[28px]"
-      >
-        {dict.auditTitle}
+<div>
+  <!-- Toolbar -->
+  <div
+    class="flex flex-wrap items-center justify-between gap-3 border-b border-[#EDEDED] px-5 py-3 sm:px-6"
+  >
+    <div class="flex items-center gap-2.5">
+      <h1 class="text-[15px] font-semibold tracking-tight text-[#111]">
+        {dict.navAuditLogs}
       </h1>
+      <span class="font-mono text-[11px] text-[#777]">
+        {data.logs.length} events
+      </span>
     </div>
 
     <form
@@ -25,8 +25,8 @@
       action="/audit-logs"
       class="flex flex-wrap items-center gap-2"
     >
-      <div class="w-full sm:w-44">
-        <select name="entityType" class="apple-select">
+      <div class="w-44">
+        <select name="entityType" class="ui-select">
           <option value="">All Entities</option>
           {#each ["USER", "PRODUCT", "SUPPLIER", "WAREHOUSE", "PURCHASE_REQUEST", "PURCHASE_ORDER", "GOODS_RECEIPT"] as entity}
             <option value={entity} selected={data.entityType === entity}>
@@ -36,53 +36,84 @@
         </select>
       </div>
 
-      <div class="w-full sm:w-56">
+      <div class="w-52">
         <input
           type="text"
           name="search"
           value={data.search}
           placeholder="Search actor or summary..."
-          class="apple-input"
+          class="ui-input"
         />
       </div>
 
-      <button type="submit" class="apple-btn-primary cursor-pointer">
+      <button type="submit" class="ui-btn-outline cursor-pointer">
         Filter
       </button>
     </form>
   </div>
 
-  <!-- Audit List Card -->
-  <section class="apple-card overflow-hidden">
-    <div class="divide-y divide-black/[0.05]">
-      {#each data.logs as log}
-        <div
-          class="flex flex-col justify-between gap-2 px-5 py-4 transition hover:bg-[#F5F5F7]/60 sm:flex-row sm:items-center sm:px-6"
+  <!-- Desktop Table -->
+  <div class="hidden overflow-x-auto md:block">
+    <table class="w-full text-left text-[13px]">
+      <thead>
+        <tr
+          class="border-b border-[#EDEDED] bg-[#FAFAFA] text-[11px] font-medium text-[#777]"
         >
-          <div class="min-w-0 space-y-1">
-            <div class="flex flex-wrap items-center gap-2">
-              <span class="h-1.5 w-1.5 rounded-full bg-[#1D1D1F]"></span>
-              <span class="font-mono text-[11px] font-semibold text-[#1D1D1F]">
-                {log.action}
-              </span>
-              <span class="text-[#D2D2D7]">·</span>
-              <span class="font-mono text-[11px] text-[#86868B]">
-                {log.entityType}
-              </span>
-            </div>
-            <div class="text-[13px] font-medium text-[#1D1D1F]">
+          <th class="px-5 py-2.5 sm:px-6">Action</th>
+          <th class="px-5 py-2.5 sm:px-6">Entity</th>
+          <th class="px-5 py-2.5 sm:px-6">Summary</th>
+          <th class="px-5 py-2.5 sm:px-6">Actor</th>
+          <th class="px-5 py-2.5 text-right sm:px-6">Timestamp</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-[#F2F2F2]">
+        {#each data.logs as log}
+          <tr class="hover:bg-[#FAFAFA]">
+            <td
+              class="px-5 py-2.5 font-mono text-[11px] font-semibold text-[#111] sm:px-6"
+            >
+              {log.action}
+            </td>
+            <td class="px-5 py-2.5 font-mono text-[11px] text-[#666] sm:px-6">
+              {log.entityType}
+            </td>
+            <td class="px-5 py-2.5 text-[#111] sm:px-6">
               {log.summary}
-            </div>
-            <div class="text-[12px] text-[#86868B]">
-              {log.actorName} ({log.actorRole})
-            </div>
-          </div>
+            </td>
+            <td class="px-5 py-2.5 text-[12px] text-[#555] sm:px-6">
+              {log.actorName}
+              <span class="font-mono text-[11px] text-[#888]"
+                >({log.actorRole})</span
+              >
+            </td>
+            <td
+              class="px-5 py-2.5 text-right font-mono text-[11px] text-[#777] sm:px-6"
+            >
+              {new Date(log.createdAt).toLocaleString()}
+            </td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  </div>
 
-          <div class="shrink-0 font-mono text-[11px] text-[#86868B]">
-            {new Date(log.createdAt).toLocaleString()}
-          </div>
+  <!-- Mobile List -->
+  <div class="divide-y divide-[#EDEDED] md:hidden">
+    {#each data.logs as log}
+      <div class="space-y-1 px-5 py-3">
+        <div class="flex items-center justify-between gap-2">
+          <span class="font-mono text-[11px] font-semibold text-[#111]">
+            {log.action} · {log.entityType}
+          </span>
+          <span class="font-mono text-[11px] text-[#777]">
+            {new Date(log.createdAt).toLocaleDateString()}
+          </span>
         </div>
-      {/each}
-    </div>
-  </section>
+        <div class="text-[13px] text-[#111]">{log.summary}</div>
+        <div class="text-[11px] text-[#777]">
+          {log.actorName} ({log.actorRole})
+        </div>
+      </div>
+    {/each}
+  </div>
 </div>
