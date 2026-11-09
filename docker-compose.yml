@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: cafestock-postgres
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER must be set in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB must be set in .env}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - cafestock_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cafestock-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      HOST: 0.0.0.0
+      PORT: ${PORT:-3000}
+      AUTO_MIGRATE: ${AUTO_MIGRATE:-true}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      SEED_USER_EMAIL: ${SEED_USER_EMAIL:-staff@cafestock.com}
+      SEED_USER_PASSWORD: ${SEED_USER_PASSWORD:-User123!}
+      SEED_APPROVER_EMAIL: ${SEED_APPROVER_EMAIL:-approver@cafestock.com}
+      SEED_APPROVER_PASSWORD: ${SEED_APPROVER_PASSWORD:-Approver123!}
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"
+
+volumes:
+  cafestock_pgdata:
