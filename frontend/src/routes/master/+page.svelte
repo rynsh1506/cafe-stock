@@ -26,8 +26,7 @@
         {dict.navMaster}
       </h1>
       <p class="mt-0.5 text-xs text-[#7D6B5D]">
-        Manage product SKU catalog, supplier partners, and active warehouse
-        facilities.
+        {dict.masterSubtitle}
       </p>
     </div>
 
@@ -40,7 +39,7 @@
             ? 'ui-tab-active'
             : ''}"
         >
-          Products ({data.products.length})
+          {dict.productsSection} ({data.products.length})
         </button>
         <button
           type="button"
@@ -49,7 +48,7 @@
             ? 'ui-tab-active'
             : ''}"
         >
-          Suppliers ({data.suppliers.length})
+          {dict.suppliersSection} ({data.suppliers.length})
         </button>
         <button
           type="button"
@@ -58,7 +57,7 @@
             ? 'ui-tab-active'
             : ''}"
         >
-          Warehouses ({data.warehouses.length})
+          {dict.warehousesSection} ({data.warehouses.length})
         </button>
       </div>
 
@@ -67,7 +66,7 @@
         onclick={() => (showNewDrawer = !showNewDrawer)}
         class="ui-btn cursor-pointer"
       >
-        {showNewDrawer ? "Close Form" : "+ Add Record"}
+        {showNewDrawer ? dict.closeForm : dict.newProduct}
       </button>
     </div>
   </div>

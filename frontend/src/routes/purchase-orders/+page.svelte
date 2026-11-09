@@ -38,7 +38,7 @@
         {dict.navPurchaseOrders}
       </h1>
       <p class="mt-0.5 text-xs text-[#7D6B5D]">
-        Issue official supplier purchase orders and track fulfillment progress.
+        {dict.poSubtitle}
       </p>
     </div>
 
@@ -51,7 +51,7 @@
               : "/purchase-orders"}
             class="ui-tab {data.statusFilter === status ? 'ui-tab-active' : ''}"
           >
-            {status || "ALL"}
+            {status || dict.all.toUpperCase()}
           </a>
         {/each}
       </div>
@@ -61,7 +61,7 @@
         onclick={() => (showNewDrawer = !showNewDrawer)}
         class="ui-btn cursor-pointer"
       >
-        {showNewDrawer ? "Close Form" : "+ New Purchase Order"}
+        {showNewDrawer ? dict.closeForm : dict.newPo}
       </button>
     </div>
   </div>
@@ -90,7 +90,7 @@
         class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-[#F0E7DD] pb-3"
       >
         <h2 class="font-serif text-base font-bold text-[#231712]">
-          Issue New Purchase Order
+          {dict.issuePo}
         </h2>
         <div class="ui-tabs">
           <button
@@ -100,7 +100,7 @@
               ? 'ui-tab-active'
               : ''}"
           >
-            From Approved PR
+            {dict.fromApprovedPr}
           </button>
           <button
             type="button"
@@ -109,7 +109,7 @@
               ? 'ui-tab-active'
               : ''}"
           >
-            Direct PO
+            {dict.directPo}
           </button>
         </div>
       </div>
@@ -124,7 +124,7 @@
             <label
               for="po-pr-id"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Approved PR</label
+              >{dict.approvedPr}</label
             >
             <select
               id="po-pr-id"
@@ -132,7 +132,7 @@
               required
               class="ui-select"
             >
-              <option value="">Select PR...</option>
+              <option value="">{dict.search}...</option>
               {#each data.approvedPrs as pr}
                 <option value={pr.id}>
                   {pr.requestNumber} ({pr.warehouseName})
@@ -144,7 +144,7 @@
             <label
               for="po-pr-supplier"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Supplier Partner</label
+              >{dict.supplierPartner}</label
             >
             <select
               id="po-pr-supplier"
@@ -152,7 +152,7 @@
               required
               class="ui-select"
             >
-              <option value="">Select Supplier...</option>
+              <option value="">{dict.selectSupplier}</option>
               {#each data.suppliers as sup}
                 <option value={sup.id}>{sup.code} — {sup.name}</option>
               {/each}
@@ -162,7 +162,7 @@
             <label
               for="po-expected-date"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Expected Delivery</label
+              >{dict.expectedDelivery}</label
             >
             <input
               id="po-expected-date"
@@ -172,7 +172,7 @@
             />
           </div>
           <button type="submit" class="ui-btn w-full cursor-pointer">
-            Convert PR to PO
+            {dict.convertPrToPo}
           </button>
         </form>
       {:else}
@@ -185,7 +185,7 @@
             <label
               for="po-direct-supplier"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Supplier</label
+              >{dict.supplier}</label
             >
             <select
               id="po-direct-supplier"
@@ -193,7 +193,7 @@
               required
               class="ui-select"
             >
-              <option value="">Select Supplier...</option>
+              <option value="">{dict.selectSupplier}</option>
               {#each data.suppliers as sup}
                 <option value={sup.id}>{sup.name}</option>
               {/each}
@@ -203,7 +203,7 @@
             <label
               for="po-direct-warehouse"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Warehouse</label
+              >{dict.warehouse}</label
             >
             <select
               id="po-direct-warehouse"
@@ -211,7 +211,7 @@
               required
               class="ui-select"
             >
-              <option value="">Select Warehouse...</option>
+              <option value="">{dict.selectWarehouse}</option>
               {#each data.warehouses as wh}
                 <option value={wh.id}>{wh.name}</option>
               {/each}
@@ -221,7 +221,7 @@
             <label
               for="po-direct-product"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Product</label
+              >{dict.product}</label
             >
             <select
               id="po-direct-product"
@@ -229,7 +229,7 @@
               required
               class="ui-select"
             >
-              <option value="">Select Product...</option>
+              <option value="">{dict.selectProduct}</option>
               {#each data.products as prod}
                 <option value={prod.id}>{prod.name}</option>
               {/each}
@@ -239,7 +239,7 @@
             <label
               for="po-direct-qty"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Quantity</label
+              >{dict.quantity}</label
             >
             <input
               id="po-direct-qty"
@@ -252,7 +252,7 @@
             />
           </div>
           <button type="submit" class="ui-btn w-full cursor-pointer">
-            Save PO
+            {dict.savePo}
           </button>
         </form>
       {/if}
@@ -267,11 +267,11 @@
           <tr
             class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
           >
-            <th class="px-5 py-3.5">PO Number</th>
-            <th class="px-5 py-3.5">Supplier &amp; Warehouse</th>
-            <th class="px-5 py-3.5">Fulfillment (Received / Ordered)</th>
-            <th class="px-5 py-3.5 text-center">Status</th>
-            <th class="px-5 py-3.5 text-right">Actions</th>
+            <th class="px-5 py-3.5">{dict.poNumber}</th>
+            <th class="px-5 py-3.5">{dict.supplierAndWarehouse}</th>
+            <th class="px-5 py-3.5">{dict.fulfillment}</th>
+            <th class="px-5 py-3.5 text-center">{dict.status}</th>
+            <th class="px-5 py-3.5 text-right">{dict.actions}</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-[#F5EDE4]">
@@ -326,7 +326,7 @@
                         type="submit"
                         class="ui-btn ui-btn-sm cursor-pointer"
                       >
-                        Mark Ordered
+                        {dict.markOrdered}
                       </button>
                     </form>
                   {/if}
@@ -335,7 +335,7 @@
                       href="/goods-receipts?poId={po.id}"
                       class="ui-btn ui-btn-sm"
                     >
-                      Receive Goods
+                      {dict.receiveGoods}
                     </a>
                   {/if}
                   {#if po.status === "DRAFT" || po.status === "ORDERED"}
@@ -345,7 +345,7 @@
                         type="submit"
                         class="ui-btn-outline ui-btn-sm cursor-pointer text-[#C62828]"
                       >
-                        Cancel
+                        {dict.cancel}
                       </button>
                     </form>
                   {/if}

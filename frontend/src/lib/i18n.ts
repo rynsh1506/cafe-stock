@@ -1,6 +1,7 @@
 import type { AppLanguage } from "@/lib/types";
 
 export interface TranslationDictionary {
+  // Brand & Nav
   brandSubtitle: string;
   navDashboard: string;
   navMaster: string;
@@ -9,7 +10,15 @@ export interface TranslationDictionary {
   navGoodsReceipts: string;
   navInventory: string;
   navAuditLogs: string;
+  mainNav: string;
+  groupOverview: string;
+  groupMaster: string;
+  groupProcurement: string;
+  groupWarehouse: string;
+  groupCompliance: string;
   logout: string;
+
+  // Auth / Login
   loginTitle: string;
   loginSubtitle: string;
   emailLabel: string;
@@ -18,21 +27,137 @@ export interface TranslationDictionary {
   quickDemoAccess: string;
   fillStaffRole: string;
   fillApproverRole: string;
+
+  // Common UI
+  status: string;
+  actions: string;
+  filter: string;
+  search: string;
+  closeForm: string;
+  all: string;
+  delete: string;
+  cancel: string;
+  warehouse: string;
+  product: string;
+  supplier: string;
+  quantity: string;
+  notes: string;
+  timestamp: string;
+
+  // Dashboard
   kpiActiveProducts: string;
   kpiLowStockAlerts: string;
   kpiPendingPr: string;
   kpiActivePo: string;
   recentMovements: string;
   recentAuditTrail: string;
+  dashboardSubtitle: string;
+  attentionTitle: string;
+  attentionSubtitle: string;
+  weeklyVolume: string;
+  weeklyVolumeSubtitle: string;
+
+  // Master Data
   masterTitle: string;
+  masterSubtitle: string;
   productsSection: string;
   suppliersSection: string;
   warehousesSection: string;
+  newProduct: string;
+  newSupplier: string;
+  newWarehouse: string;
+  addProductTitle: string;
+  addSupplierTitle: string;
+  addWarehouseTitle: string;
+  skuLabel: string;
+  nameLabel: string;
+  unitLabel: string;
+  minStockLabel: string;
+  codeLabel: string;
+  contactEmailLabel: string;
+  phoneLabel: string;
+  addressLabel: string;
+  saveProduct: string;
+  saveSupplier: string;
+  saveWarehouse: string;
+
+  // Purchase Requests
   prTitle: string;
+  prSubtitle: string;
+  newPr: string;
+  createDraftPr: string;
+  destinationWarehouse: string;
+  selectWarehouse: string;
+  selectProduct: string;
+  saveDraftPr: string;
+  requestId: string;
+  warehouseAndRequester: string;
+  requestedItems: string;
+  submitPr: string;
+  approve: string;
+  reject: string;
+  createPo: string;
+
+  // Purchase Orders
   poTitle: string;
+  poSubtitle: string;
+  newPo: string;
+  issuePo: string;
+  fromApprovedPr: string;
+  directPo: string;
+  approvedPr: string;
+  supplierPartner: string;
+  selectSupplier: string;
+  expectedDelivery: string;
+  convertPrToPo: string;
+  savePo: string;
+  poNumber: string;
+  supplierAndWarehouse: string;
+  fulfillment: string;
+  markOrdered: string;
+  receiveGoods: string;
+
+  // Goods Receipts
   grTitle: string;
+  grSubtitle: string;
+  recordReceipt: string;
+  recordReceiptTitle: string;
+  noReceivableOrders: string;
+  purchaseOrder: string;
+  orderLineItem: string;
+  quantityReceived: string;
+  deliveryNote: string;
+  postReceipt: string;
+  receiptId: string;
+  poReference: string;
+  receivedBy: string;
+  itemsPosted: string;
+
+  // Inventory & Movements
   inventoryTitle: string;
+  inventorySubtitle: string;
+  balancesTab: string;
+  movementsTab: string;
+  allWarehouses: string;
+  lowStockOnly: string;
+  minThreshold: string;
+  currentStock: string;
+  health: string;
+  critical: string;
+  healthy: string;
+  movementType: string;
+  delta: string;
+  balanceAfter: string;
+
+  // Audit Logs
   auditTitle: string;
+  auditSubtitle: string;
+  allEntities: string;
+  searchActor: string;
+  action: string;
+  moduleEntity: string;
+  summary: string;
+  operator: string;
 }
 
 export const translations: Record<AppLanguage, TranslationDictionary> = {
@@ -45,31 +170,155 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     navGoodsReceipts: "Goods Receipt",
     navInventory: "Inventori & Mutasi",
     navAuditLogs: "Log Audit",
+    mainNav: "Navigasi Utama",
+    groupOverview: "Ikhtisar",
+    groupMaster: "Master Registry",
+    groupProcurement: "Alur Pengadaan",
+    groupWarehouse: "Gudang & Stok",
+    groupCompliance: "Kepatuhan",
     logout: "Keluar",
+
     loginTitle: "Masuk ke CafeStock",
     loginSubtitle:
       "Kelola pengadaan bahan baku kafe, persetujuan PR, pesanan PO, dan penerimaan barang secara atomik.",
     emailLabel: "Alamat Email",
     passwordLabel: "Kata Sandi",
     signInButton: "Masuk Sekarang",
-    quickDemoAccess: "Akses Cepat Akun Seeder (1-Klik):",
+    quickDemoAccess: "Akses Demo Akun Seeder",
     fillStaffRole: "Isi Akun USER (Staff)",
     fillApproverRole: "Isi Akun APPROVER (Manajer)",
+
+    status: "Status",
+    actions: "Aksi",
+    filter: "Filter",
+    search: "Cari",
+    closeForm: "Tutup Form",
+    all: "Semua",
+    delete: "Hapus",
+    cancel: "Batalkan",
+    warehouse: "Gudang",
+    product: "Produk",
+    supplier: "Pemasok",
+    quantity: "Kuantitas",
+    notes: "Catatan",
+    timestamp: "Waktu",
+
     kpiActiveProducts: "Produk Aktif",
     kpiLowStockAlerts: "Peringatan Stok Rendah",
     kpiPendingPr: "PR Menunggu Persetujuan",
     kpiActivePo: "PO Aktif / Dipesan",
     recentMovements: "Mutasi Stok Terbaru",
     recentAuditTrail: "Jejak Audit Terbaru",
+    dashboardSubtitle:
+      "Ringkasan operasional harian pengadaan dan inventori kafe.",
+    attentionTitle: "Perhatian Stok",
+    attentionSubtitle:
+      "Item dengan saldo mendekati atau di bawah batas minimum.",
+    weeklyVolume: "Volume Penerimaan Mingguan",
+    weeklyVolumeSubtitle: "Estimasi total pergerakan stok masuk harian.",
+
     masterTitle: "Manajemen Master Data (Produk, Supplier, Gudang)",
+    masterSubtitle:
+      "Registri terpusat untuk produk, mitra pemasok terverifikasi, dan fasilitas gudang.",
     productsSection: "Daftar Produk & Bahan Baku",
     suppliersSection: "Daftar Mitra Supplier",
     warehousesSection: "Daftar Gudang & Cabang",
+    newProduct: "+ Tambah Produk",
+    newSupplier: "+ Tambah Supplier",
+    newWarehouse: "+ Tambah Gudang",
+    addProductTitle: "Tambah Produk Baru (SKU)",
+    addSupplierTitle: "Tambah Mitra Pemasok",
+    addWarehouseTitle: "Tambah Fasilitas Gudang",
+    skuLabel: "Kode SKU",
+    nameLabel: "Nama Produk",
+    unitLabel: "Satuan (Unit)",
+    minStockLabel: "Batas Min. Stok",
+    codeLabel: "Kode Entitas",
+    contactEmailLabel: "Email Kontak",
+    phoneLabel: "No. Telepon",
+    addressLabel: "Alamat Operasional",
+    saveProduct: "Simpan Produk",
+    saveSupplier: "Simpan Supplier",
+    saveWarehouse: "Simpan Gudang",
+
     prTitle: "Purchase Request (Permintaan Pembelian)",
+    prSubtitle:
+      "Pengajuan kebutuhan bahan baku gudang dan persetujuan manajerial.",
+    newPr: "+ Buat PR Baru",
+    createDraftPr: "Buat Purchase Request (DRAFT)",
+    destinationWarehouse: "Gudang Tujuan",
+    selectWarehouse: "Pilih Gudang...",
+    selectProduct: "Pilih Produk...",
+    saveDraftPr: "Simpan Draft PR",
+    requestId: "No. Dokumen",
+    warehouseAndRequester: "Gudang & Pemohon",
+    requestedItems: "Item Diminta",
+    submitPr: "Submit PR",
+    approve: "Setujui",
+    reject: "Tolak",
+    createPo: "Buat PO →",
+
     poTitle: "Purchase Order (Pesanan Pembelian)",
+    poSubtitle:
+      "Penerbitan surat pesanan resmi ke pemasok dan pelacakan penerimaan.",
+    newPo: "+ Buat PO Baru",
+    issuePo: "Terbitkan Purchase Order Baru",
+    fromApprovedPr: "Dari PR Approved",
+    directPo: "PO Langsung",
+    approvedPr: "PR Disetujui (APPROVED)",
+    supplierPartner: "Mitra Pemasok",
+    selectSupplier: "Pilih Pemasok...",
+    expectedDelivery: "Estimasi Kirim",
+    convertPrToPo: "Konversi PR ke PO",
+    savePo: "Simpan PO",
+    poNumber: "No. PO",
+    supplierAndWarehouse: "Pemasok & Gudang",
+    fulfillment: "Realisasi (Diterima / Dipesan)",
+    markOrdered: "Tandai Dipesan",
+    receiveGoods: "Terima Barang",
+
     grTitle: "Goods Receipt (Penerimaan Barang Atomik)",
+    grSubtitle:
+      "Verifikasi penerimaan barang fisik dari pemasok dan penambahan stok gudang otomatis.",
+    recordReceipt: "+ Catat Penerimaan (GR)",
+    recordReceiptTitle: "Catat Bukti Barang Masuk (Goods Receipt)",
+    noReceivableOrders:
+      "Belum ada Purchase Order berstatus ORDERED atau PARTIALLY_RECEIVED.",
+    purchaseOrder: "Purchase Order",
+    orderLineItem: "Item Pesanan",
+    quantityReceived: "Kuantitas Diterima",
+    deliveryNote: "No. Surat Jalan / Catatan",
+    postReceipt: "Simpan Penerimaan",
+    receiptId: "No. GR",
+    poReference: "Ref. PO",
+    receivedBy: "Petugas Penerima",
+    itemsPosted: "Item Masuk",
+
     inventoryTitle: "Saldo Inventori & Riwayat Mutasi Stok",
+    inventorySubtitle:
+      "Pemantauan saldo stok aktual per gudang dan riwayat mutasi barang masuk.",
+    balancesTab: "Saldo Gudang",
+    movementsTab: "Riwayat Mutasi",
+    allWarehouses: "Semua Gudang",
+    lowStockOnly: "Stok Kritis Saja",
+    minThreshold: "Batas Min",
+    currentStock: "Stok Tersedia",
+    health: "Kondisi",
+    critical: "KRITIS",
+    healthy: "AMAN",
+    movementType: "Tipe Mutasi",
+    delta: "Perubahan",
+    balanceAfter: "Saldo Akhir",
+
     auditTitle: "Jejak Audit Transaksi Sistem",
+    auditSubtitle:
+      "Rekam jejak seluruh perubahan dokumen transaksi dan identitas petugas.",
+    allEntities: "Semua Entitas",
+    searchActor: "Cari petugas atau ringkasan...",
+    action: "Aksi",
+    moduleEntity: "Modul / Entitas",
+    summary: "Ringkasan",
+    operator: "Petugas",
   },
   EN: {
     brandSubtitle: "SSR Roastery Procurement & Inventory System",
@@ -80,31 +329,154 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     navGoodsReceipts: "Goods Receipts",
     navInventory: "Inventory & Ledger",
     navAuditLogs: "Audit Trail",
+    mainNav: "Main Navigation",
+    groupOverview: "Overview",
+    groupMaster: "Master Registry",
+    groupProcurement: "Procurement Flow",
+    groupWarehouse: "Warehouse & Stock",
+    groupCompliance: "Compliance",
     logout: "Sign Out",
+
     loginTitle: "Sign In to CafeStock",
     loginSubtitle:
       "Manage cafe procurement, PR approvals, supplier POs, and atomic Goods Receipts.",
     emailLabel: "Email Address",
     passwordLabel: "Password",
     signInButton: "Sign In",
-    quickDemoAccess: "Quick Seeder Account Fill (1-Click):",
+    quickDemoAccess: "Seeder Demo Accounts",
     fillStaffRole: "Fill USER Account (Staff)",
     fillApproverRole: "Fill APPROVER Account (Manager)",
+
+    status: "Status",
+    actions: "Actions",
+    filter: "Filter",
+    search: "Search",
+    closeForm: "Close Form",
+    all: "All",
+    delete: "Delete",
+    cancel: "Cancel",
+    warehouse: "Warehouse",
+    product: "Product",
+    supplier: "Supplier",
+    quantity: "Quantity",
+    notes: "Notes",
+    timestamp: "Timestamp",
+
     kpiActiveProducts: "Active Products",
     kpiLowStockAlerts: "Low Stock Alerts",
     kpiPendingPr: "PRs Awaiting Approval",
     kpiActivePo: "Active / Ordered POs",
     recentMovements: "Recent Stock Movements",
     recentAuditTrail: "Recent Audit Trail",
+    dashboardSubtitle:
+      "Daily cafe procurement operations and inventory summary.",
+    attentionTitle: "Stock Attention",
+    attentionSubtitle: "Items with balances near or below minimum thresholds.",
+    weeklyVolume: "Weekly Receipt Volume",
+    weeklyVolumeSubtitle: "Estimated aggregate daily stock intake.",
+
     masterTitle: "Master Data Management (Products, Suppliers, Warehouses)",
+    masterSubtitle:
+      "Central registry for products, verified suppliers, and warehouse facilities.",
     productsSection: "Products & Ingredients",
     suppliersSection: "Supplier Partners",
     warehousesSection: "Warehouses & Branches",
+    newProduct: "+ New Product",
+    newSupplier: "+ New Supplier",
+    newWarehouse: "+ New Warehouse",
+    addProductTitle: "Add New SKU Product",
+    addSupplierTitle: "Add New Supplier Partner",
+    addWarehouseTitle: "Add New Warehouse Facility",
+    skuLabel: "SKU Code",
+    nameLabel: "Product Name",
+    unitLabel: "Unit",
+    minStockLabel: "Min Threshold",
+    codeLabel: "Entity Code",
+    contactEmailLabel: "Contact Email",
+    phoneLabel: "Phone Number",
+    addressLabel: "Operational Address",
+    saveProduct: "Save Product",
+    saveSupplier: "Save Supplier",
+    saveWarehouse: "Save Warehouse",
+
     prTitle: "Purchase Requests",
+    prSubtitle:
+      "Draft raw material requirements and managerial approval workflow.",
+    newPr: "+ New Purchase Request",
+    createDraftPr: "Create Purchase Request (DRAFT)",
+    destinationWarehouse: "Destination Warehouse",
+    selectWarehouse: "Select Warehouse...",
+    selectProduct: "Select Product...",
+    saveDraftPr: "Save Draft PR",
+    requestId: "Request ID",
+    warehouseAndRequester: "Warehouse & Requester",
+    requestedItems: "Requested Items",
+    submitPr: "Submit PR",
+    approve: "Approve",
+    reject: "Reject",
+    createPo: "Create PO →",
+
     poTitle: "Purchase Orders",
+    poSubtitle:
+      "Issue official supplier purchase orders and track fulfillment progress.",
+    newPo: "+ New Purchase Order",
+    issuePo: "Issue New Purchase Order",
+    fromApprovedPr: "From Approved PR",
+    directPo: "Direct PO",
+    approvedPr: "Approved PR",
+    supplierPartner: "Supplier Partner",
+    selectSupplier: "Select Supplier...",
+    expectedDelivery: "Expected Delivery",
+    convertPrToPo: "Convert PR to PO",
+    savePo: "Save PO",
+    poNumber: "PO Number",
+    supplierAndWarehouse: "Supplier & Warehouse",
+    fulfillment: "Fulfillment (Received / Ordered)",
+    markOrdered: "Mark Ordered",
+    receiveGoods: "Receive Goods",
+
     grTitle: "Goods Receipts (Atomic Stock Posting)",
+    grSubtitle:
+      "Verify physical delivery from suppliers and atomically post inventory balance increments.",
+    recordReceipt: "+ Record Goods Receipt",
+    recordReceiptTitle: "Record Inbound Goods Receipt",
+    noReceivableOrders:
+      "No Purchase Orders are currently in ORDERED or PARTIALLY_RECEIVED status.",
+    purchaseOrder: "Purchase Order",
+    orderLineItem: "Order Line Item",
+    quantityReceived: "Quantity Received",
+    deliveryNote: "Delivery Note / Ref Notes",
+    postReceipt: "Post Goods Receipt",
+    receiptId: "Receipt ID",
+    poReference: "PO Reference",
+    receivedBy: "Received By",
+    itemsPosted: "Items Posted",
+
     inventoryTitle: "Inventory Balances & Stock Movement Ledger",
+    inventorySubtitle:
+      "Real-time stock balance per warehouse facility and append-only inbound movement ledger.",
+    balancesTab: "Warehouse Balances",
+    movementsTab: "Movement Ledger",
+    allWarehouses: "All Warehouses",
+    lowStockOnly: "Low Stock Only",
+    minThreshold: "Min Threshold",
+    currentStock: "Current Stock",
+    health: "Health",
+    critical: "CRITICAL",
+    healthy: "HEALTHY",
+    movementType: "Movement Type",
+    delta: "Delta",
+    balanceAfter: "Balance After",
+
     auditTitle: "System Transaction Audit Trail",
+    auditSubtitle:
+      "Immutable log of transactional status changes, actions, and operator identities.",
+    allEntities: "All Entities",
+    searchActor: "Search actor or summary...",
+    action: "Action",
+    moduleEntity: "Module / Entity",
+    summary: "Summary",
+    operator: "Operator",
   },
   JP: {
     brandSubtitle: "SSR カフェ購買・在庫管理システム",
@@ -115,31 +487,146 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     navGoodsReceipts: "入荷検収 (GR)",
     navInventory: "在庫残高・入出庫履歴",
     navAuditLogs: "監査ログ",
+    mainNav: "メインナビゲーション",
+    groupOverview: "概要",
+    groupMaster: "マスタ登録",
+    groupProcurement: "調達フロー",
+    groupWarehouse: "倉庫・在庫",
+    groupCompliance: "コンプライアンス",
     logout: "ログアウト",
+
     loginTitle: "CafeStock ログイン",
     loginSubtitle:
       "購買依頼、承認ワークフロー、発注、およびアトミックな入荷在庫更新を管理します。",
     emailLabel: "メールアドレス",
     passwordLabel: "パスワード",
     signInButton: "ログイン",
-    quickDemoAccess: "デモアカウント自動入力 (1クリック):",
+    quickDemoAccess: "デモアカウント",
     fillStaffRole: "USER (スタッフ) を入力",
     fillApproverRole: "APPROVER (承認者) を入力",
+
+    status: "ステータス",
+    actions: "操作",
+    filter: "絞り込み",
+    search: "検索",
+    closeForm: "閉じる",
+    all: "すべて",
+    delete: "削除",
+    cancel: "キャンセル",
+    warehouse: "倉庫",
+    product: "商品",
+    supplier: "仕入先",
+    quantity: "数量",
+    notes: "備考",
+    timestamp: "日時",
+
     kpiActiveProducts: "有効な商品数",
     kpiLowStockAlerts: "在庫不足アラート",
     kpiPendingPr: "承認待ち PR",
     kpiActivePo: "進行中の PO",
     recentMovements: "最近の在庫移動",
     recentAuditTrail: "最近の監査ログ",
+    dashboardSubtitle: "日々の購買業務とカフェ在庫サマリー。",
+    attentionTitle: "在庫注意報",
+    attentionSubtitle: "最小基準値付近または下回っている品目。",
+    weeklyVolume: "週間入荷量推移",
+    weeklyVolumeSubtitle: "日別推定総入庫量。",
+
     masterTitle: "マスターデータ管理（商品・サプライヤー・倉庫）",
+    masterSubtitle: "商品、取引先サプライヤー、倉庫拠点の一元管理。",
     productsSection: "商品・原材料一覧",
     suppliersSection: "サプライヤー一覧",
     warehousesSection: "倉庫・店舗一覧",
+    newProduct: "+ 新規商品",
+    newSupplier: "+ 新規サプライヤー",
+    newWarehouse: "+ 新規倉庫",
+    addProductTitle: "新規SKU商品の追加",
+    addSupplierTitle: "新規サプライヤーの追加",
+    addWarehouseTitle: "新規倉庫拠点の追加",
+    skuLabel: "SKUコード",
+    nameLabel: "商品名",
+    unitLabel: "単位",
+    minStockLabel: "最小基準値",
+    codeLabel: "コード",
+    contactEmailLabel: "連絡先メール",
+    phoneLabel: "電話番号",
+    addressLabel: "所在地",
+    saveProduct: "商品を保存",
+    saveSupplier: "サプライヤーを保存",
+    saveWarehouse: "倉庫を保存",
+
     prTitle: "購買依頼 (Purchase Requests)",
+    prSubtitle: "原材料の購買申請と承認ワークフロー。",
+    newPr: "+ 新規購買依頼",
+    createDraftPr: "購買依頼の作成 (ドラフト)",
+    destinationWarehouse: "納品先倉庫",
+    selectWarehouse: "倉庫を選択...",
+    selectProduct: "商品を選択...",
+    saveDraftPr: "下書きPRを保存",
+    requestId: "申請番号",
+    warehouseAndRequester: "倉庫 & 申請者",
+    requestedItems: "申請品目",
+    submitPr: "PRを提出",
+    approve: "承認",
+    reject: "却下",
+    createPo: "PO作成 →",
+
     poTitle: "発注管理 (Purchase Orders)",
+    poSubtitle: "サプライヤーへの発注書発行と納品進捗の追跡。",
+    newPo: "+ 新規発注書",
+    issuePo: "新規発注書の発行",
+    fromApprovedPr: "承認済みPRから作成",
+    directPo: "直接発注",
+    approvedPr: "承認済みPR",
+    supplierPartner: "取引先サプライヤー",
+    selectSupplier: "サプライヤーを選択...",
+    expectedDelivery: "納品予定日",
+    convertPrToPo: "PRを発注書に変換",
+    savePo: "発注書を保存",
+    poNumber: "発注番号",
+    supplierAndWarehouse: "サプライヤー & 倉庫",
+    fulfillment: "入荷進捗 (受領 / 発注)",
+    markOrdered: "発注済みにする",
+    receiveGoods: "入荷検収を行う",
+
     grTitle: "入荷検収 (Goods Receipts)",
+    grSubtitle: "実物の受領確認およびアトミックな在庫加算の登録。",
+    recordReceipt: "+ 入荷検収を記録",
+    recordReceiptTitle: "入荷受領書の記録",
+    noReceivableOrders: "現在、発注中または一部入荷状態の発注書はありません。",
+    purchaseOrder: "発注書",
+    orderLineItem: "発注品目",
+    quantityReceived: "受領数量",
+    deliveryNote: "納品書番号 / 備考",
+    postReceipt: "入荷を確定",
+    receiptId: "受領番号",
+    poReference: "発注参照",
+    receivedBy: "検収担当者",
+    itemsPosted: "入庫品目",
+
     inventoryTitle: "在庫残高・入出庫台帳",
+    inventorySubtitle: "拠点別リアルタイム在庫残高と入庫履歴台帳。",
+    balancesTab: "倉庫残高",
+    movementsTab: "入出庫履歴",
+    allWarehouses: "全倉庫",
+    lowStockOnly: "在庫注意のみ",
+    minThreshold: "最小基準値",
+    currentStock: "現在在庫",
+    health: "状態",
+    critical: "注意",
+    healthy: "適正",
+    movementType: "移動種別",
+    delta: "変動数",
+    balanceAfter: "受領後残高",
+
     auditTitle: "システム監査ログ",
+    auditSubtitle: "取引ドキュメント変更と操作担当者の不変ログ。",
+    allEntities: "全エンティティ",
+    searchActor: "担当者または概要を検索...",
+    action: "操作",
+    moduleEntity: "モジュール / 対象",
+    summary: "概要",
+    operator: "担当者",
   },
 };
 

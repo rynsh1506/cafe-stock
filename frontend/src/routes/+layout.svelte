@@ -18,41 +18,46 @@
   });
 
   const navItems = $derived([
-    { href: "/", label: dict.navDashboard, group: "Overview", icon: "grid" },
+    {
+      href: "/",
+      label: dict.navDashboard,
+      group: dict.groupOverview,
+      icon: "grid",
+    },
     {
       href: "/master",
       label: dict.navMaster,
-      group: "Master Registry",
+      group: dict.groupMaster,
       icon: "box",
     },
     {
       href: "/purchase-requests",
       label: dict.navPurchaseRequests,
-      group: "Procurement Flow",
+      group: dict.groupProcurement,
       icon: "file",
     },
     {
       href: "/purchase-orders",
       label: dict.navPurchaseOrders,
-      group: "Procurement Flow",
+      group: dict.groupProcurement,
       icon: "cart",
     },
     {
       href: "/goods-receipts",
       label: dict.navGoodsReceipts,
-      group: "Warehouse",
+      group: dict.groupWarehouse,
       icon: "truck",
     },
     {
       href: "/inventory",
       label: dict.navInventory,
-      group: "Warehouse",
+      group: dict.groupWarehouse,
       icon: "layers",
     },
     {
       href: "/audit-logs",
       label: dict.navAuditLogs,
-      group: "Compliance",
+      group: dict.groupCompliance,
       icon: "shield",
     },
   ]);
@@ -207,52 +212,22 @@
         </div>
       </div>
 
-      <!-- Role Banner / Quick Switcher -->
+      <!-- Role Banner -->
       <div class="border-b border-[#332119] bg-[#1C120D] px-4 py-3">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            {#if data.user.role === "APPROVER"}
-              <span
-                class="flex items-center gap-1 rounded border border-[#7B532F] bg-[#4A321E] px-2 py-0.5 text-[11px] font-semibold tracking-wider text-[#F3C592] uppercase"
-              >
-                <span>Approver</span>
-              </span>
-            {:else}
-              <span
-                class="flex items-center gap-1 rounded border border-[#4A5568] bg-[#2D3748] px-2 py-0.5 text-[11px] font-semibold tracking-wider text-[#90CDF4] uppercase"
-              >
-                <span>Staff (User)</span>
-              </span>
-            {/if}
-          </div>
-
-          <form method="POST" action="/login?/quickLogin">
-            <input
-              type="hidden"
-              name="role"
-              value={data.user.role === "USER" ? "APPROVER" : "USER"}
-            />
-            <input type="hidden" name="redirectTo" value={currentPath} />
-            <button
-              type="submit"
-              class="flex cursor-pointer items-center gap-1 rounded border border-[#482F24] bg-[#301F18] px-2 py-1 text-[11px] text-[#CDB8A6] transition hover:bg-[#422B22] hover:text-white"
-              title="Switch Role (USER / APPROVER)"
+        <div class="flex items-center gap-2">
+          {#if data.user.role === "APPROVER"}
+            <span
+              class="flex items-center gap-1 rounded border border-[#7B532F] bg-[#4A321E] px-2.5 py-1 text-[11px] font-semibold tracking-wider text-[#F3C592] uppercase"
             >
-              <svg
-                class="h-3 w-3"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="m16 3 4 4-4 4" />
-                <path d="M20 7H4" />
-                <path d="m8 21-4-4 4-4" />
-                <path d="M4 17h16" />
-              </svg>
-              <span>Switch</span>
-            </button>
-          </form>
+              <span>Manager (Approver)</span>
+            </span>
+          {:else}
+            <span
+              class="flex items-center gap-1 rounded border border-[#4A5568] bg-[#2D3748] px-2.5 py-1 text-[11px] font-semibold tracking-wider text-[#90CDF4] uppercase"
+            >
+              <span>Staff (User)</span>
+            </span>
+          {/if}
         </div>
       </div>
 
@@ -261,7 +236,7 @@
         <div
           class="px-3 pb-2 text-[10px] font-semibold tracking-wider text-[#8A7566] uppercase"
         >
-          Main Navigation
+          {dict.mainNav}
         </div>
         {#each navItems as item}
           {@const isActive = currentPath === item.href}
@@ -472,23 +447,26 @@
           </div>
         </div>
 
-        <form method="POST" action="/login?/quickLogin">
-          <input
-            type="hidden"
-            name="role"
-            value={data.user.role === "USER" ? "APPROVER" : "USER"}
-          />
-          <input type="hidden" name="redirectTo" value={currentPath} />
-          <button
-            type="submit"
-            class="flex items-center gap-1 rounded border px-2 py-1 text-[10px] font-bold tracking-wider uppercase transition {data
-              .user.role === 'APPROVER'
-              ? 'border-[#7B532F] bg-[#4A321E] text-[#F3C592]'
-              : 'border-[#4A5568] bg-[#2D3748] text-[#90CDF4]'}"
-          >
-            <span>⇄ {data.user.role}</span>
-          </button>
-        </form>
+        <!-- Mobile Language Switcher (Zero Flags) -->
+        <div
+          class="flex items-center rounded-lg border border-[#482F24] bg-[#1E130E] p-0.5 font-mono text-[10px] font-bold"
+        >
+          {#each ["EN", "ID", "JP"] as const as l}
+            <form method="POST" action="/login?/setLang" class="inline">
+              <input type="hidden" name="lang" value={l} />
+              <input type="hidden" name="redirectTo" value={currentPath} />
+              <button
+                type="submit"
+                class="cursor-pointer rounded px-1.5 py-0.5 transition {data.lang ===
+                l
+                  ? 'bg-[#5A3825] text-white shadow-xs'
+                  : 'text-[#A69080] hover:text-white'}"
+              >
+                {l}
+              </button>
+            </form>
+          {/each}
+        </div>
       </header>
 
       <!-- Desktop Top Header Bar -->
@@ -502,7 +480,28 @@
         </div>
 
         <div class="flex items-center gap-4">
-          <div class="flex items-center gap-2.5 pl-2">
+          <!-- Desktop Language Switcher (Zero Flags) -->
+          <div
+            class="flex items-center rounded-lg border border-[#EDE4D8] bg-[#FAF7F2] p-0.5 font-mono text-[11px] font-bold"
+          >
+            {#each ["EN", "ID", "JP"] as const as l}
+              <form method="POST" action="/login?/setLang" class="inline">
+                <input type="hidden" name="lang" value={l} />
+                <input type="hidden" name="redirectTo" value={currentPath} />
+                <button
+                  type="submit"
+                  class="cursor-pointer rounded-md px-2 py-0.5 transition {data.lang ===
+                  l
+                    ? 'bg-[#5A3825] text-white shadow-xs'
+                    : 'text-[#8C7665] hover:text-[#5A3825]'}"
+                >
+                  {l}
+                </button>
+              </form>
+            {/each}
+          </div>
+
+          <div class="flex items-center gap-2.5 border-l border-[#EDE4D8] pl-4">
             <div class="text-right">
               <div class="text-xs font-bold text-[#2E1F16]">
                 {data.user.name}

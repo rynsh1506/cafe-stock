@@ -86,7 +86,7 @@
         <div
           class="text-[10px] leading-tight font-bold tracking-wider text-[#8C7665] uppercase sm:text-[11px]"
         >
-          Total Master Products
+          {dict.kpiActiveProducts}
         </div>
         <div
           class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F7F2EB] text-[#5A3825] transition group-hover:scale-105 sm:h-10 sm:w-10"
@@ -139,7 +139,7 @@
         <div
           class="text-[10px] leading-tight font-bold tracking-wider text-[#8C7665] uppercase sm:text-[11px]"
         >
-          PRs Awaiting Review
+          {dict.kpiPendingPr}
         </div>
         <div
           class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FFF8E1] text-[#D97706] transition group-hover:scale-105 sm:h-10 sm:w-10"
@@ -193,7 +193,7 @@
         <div
           class="text-[10px] leading-tight font-bold tracking-wider text-[#8C7665] uppercase sm:text-[11px]"
         >
-          Active Orders / Inbound
+          {dict.kpiActivePo}
         </div>
         <div
           class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F7F2EB] text-[#5A3825] transition group-hover:scale-105 sm:h-10 sm:w-10"
@@ -248,7 +248,7 @@
         <div
           class="text-[10px] leading-tight font-bold tracking-wider text-[#8C7665] uppercase sm:text-[11px]"
         >
-          Critical Stock Alert
+          {dict.kpiLowStockAlerts}
         </div>
         <div
           class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FFEBEE] text-[#C62828] transition group-hover:scale-105 sm:h-10 sm:w-10"
@@ -399,10 +399,10 @@
                 <line x1="12" y1="9" x2="12" y2="13" />
                 <line x1="12" y1="17" x2="12.01" y2="17" />
               </svg>
-              <span>Stock Attention</span>
+              <span>{dict.attentionTitle}</span>
             </div>
             <h3 class="mt-0.5 text-base font-bold text-[#2E1F16]">
-              Low Stock Items
+              {dict.attentionSubtitle}
             </h3>
           </div>
           <span
@@ -431,7 +431,7 @@
                   <span
                     class="shrink-0 rounded border border-[#FFCDD2] bg-[#FFEBEE] px-1.5 py-0.5 text-[10px] font-bold text-[#C62828]"
                   >
-                    Critical
+                    {dict.critical}
                   </span>
                 </div>
                 <div
@@ -498,10 +498,10 @@
           <tr
             class="border-b border-[#EDE4D8] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
           >
-            <th class="px-4 py-3">Action / Module</th>
-            <th class="px-4 py-3">Transaction Summary</th>
-            <th class="px-4 py-3">Operator</th>
-            <th class="px-4 py-3 text-right">Timestamp</th>
+            <th class="px-4 py-3">{dict.action} / {dict.moduleEntity}</th>
+            <th class="px-4 py-3">{dict.summary}</th>
+            <th class="px-4 py-3">{dict.operator}</th>
+            <th class="px-4 py-3 text-right">{dict.timestamp}</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-[#F5EDE4]">
