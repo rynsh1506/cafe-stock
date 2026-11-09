@@ -104,3 +104,7 @@ export const app = new Elysia()
     };
   })
   .all("*", ({ request }) => handleFrontendRequest(request));
+
+(globalThis as Record<string, unknown>).__CAFESTOCK_API_HANDLER = (
+  request: Request,
+): Promise<Response> => app.handle(request);
