@@ -1,4 +1,7 @@
-dist
 node_modules
-.git
-database/*.sqlite*
+dist
+build
+.svelte-kit
+frontend/build
+frontend/.svelte-kit
+bun.lock

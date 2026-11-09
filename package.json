@@ -1,34 +1,22 @@
 {
   "name": "cafe-stock",
+  "version": "3.0.0",
   "private": true,
-  "version": "0.1.0",
   "type": "module",
-  "main": "index.ts",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "bun run index.ts",
-    "start": "bun run index.ts",
-    "test": "bun test"
-  },
-  "dependencies": {
-    "@elysiajs/cors": "^1.4.3",
-    "@elysiajs/static": "^1.4.12",
-    "clsx": "^2.1.1",
-    "elysia": "^1.4.31",
-    "lucide-react": "^1.61.0",
-    "mysql2": "^3.24.6",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "tailwind-merge": "^3.7.0"
+    "dev": "bun run --filter '*' dev",
+    "build": "bun run --filter frontend build",
+    "start": "bun run --filter backend start",
+    "test": "bun run --filter backend test",
+    "check": "bun run --filter '*' check",
+    "format": "prettier --write ."
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.3.3",
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
-    "@vitejs/plugin-react": "^6.0.2",
-    "tailwindcss": "^4.3.3",
-    "typescript": "~6.0.3",
-    "vite": "^8.0.16"
+    "prettier": "^3.9.10",
+    "prettier-plugin-svelte": "^4.1.1"
   }
 }

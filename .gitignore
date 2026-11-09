@@ -7,9 +7,14 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies & Build Outputs
 node_modules
 dist
 dist-ssr
+build
+.svelte-kit
+frontend/build
+frontend/.svelte-kit
 *.local
 
 # Editor directories and files
@@ -27,13 +32,3 @@ dist-ssr
 .env
 .env.*
 !.env.example
-
-# Local SQLite database files
-database/*.sqlite*
-*.sqlite
-*.sqlite-journal
-*.sqlite-wal
-*.sqlite-shm
-*.db
-
-
