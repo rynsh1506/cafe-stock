@@ -40,10 +40,7 @@ export function extractTokenFromRequest(request: Request): string | null {
 }
 
 export async function loginUser(input: LoginInput): Promise<LoginResponse> {
-  let normalizedEmail = input.email.trim().toLowerCase();
-  if (normalizedEmail === "user@cafestock.com") {
-    normalizedEmail = "staff@cafestock.com";
-  }
+  const normalizedEmail = input.email.trim().toLowerCase();
 
   if (!normalizedEmail || !input.password) {
     throw AppError.badRequest(
@@ -61,11 +58,7 @@ export async function loginUser(input: LoginInput): Promise<LoginResponse> {
     throw AppError.unauthorized("Invalid email or password");
   }
 
-  const isPasswordValid =
-    verifyPassword(input.password, user.passwordHash) ||
-    ((user.email === "staff@cafestock.com" ||
-      user.email === "approver@cafestock.com") &&
-      input.password === "password123");
+  const isPasswordValid = verifyPassword(input.password, user.passwordHash);
   if (!isPasswordValid) {
     throw AppError.unauthorized("Invalid email or password");
   }

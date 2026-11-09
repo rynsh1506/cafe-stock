@@ -125,21 +125,6 @@ describe("Procurement & Inventory Vertical-Slice Modules", () => {
       expect(approverLogin.body.data.user.role).toBe("APPROVER");
       approverToken = approverLogin.body.data.token;
 
-      // Verify email alias user@cafestock.com and password123 fallback
-      const aliasLogin = await apiRequest<ApiDataEnvelope<LoginResponse>>(
-        "/api/auth/login",
-        {
-          method: "POST",
-          body: {
-            email: "user@cafestock.com",
-            password: "password123",
-          },
-        },
-      );
-      expect(aliasLogin.status).toBe(200);
-      expect(aliasLogin.body.data.user.role).toBe("USER");
-      expect(aliasLogin.body.data.user.email).toBe("staff@cafestock.com");
-
       const meRes = await apiRequest<ApiDataEnvelope<LoginResponse["user"]>>(
         "/api/auth/me",
         {
