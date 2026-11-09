@@ -18,41 +18,41 @@
   });
 
   const navItems = $derived([
-    { href: "/", label: dict.navDashboard, group: "Beranda", icon: "grid" },
+    { href: "/", label: dict.navDashboard, group: "Overview", icon: "grid" },
     {
       href: "/master",
       label: dict.navMaster,
-      group: "Master Data",
+      group: "Master Registry",
       icon: "box",
     },
     {
       href: "/purchase-requests",
       label: dict.navPurchaseRequests,
-      group: "Procurement",
+      group: "Procurement Flow",
       icon: "file",
     },
     {
       href: "/purchase-orders",
       label: dict.navPurchaseOrders,
-      group: "Procurement",
+      group: "Procurement Flow",
       icon: "cart",
     },
     {
       href: "/goods-receipts",
       label: dict.navGoodsReceipts,
-      group: "Inventory",
+      group: "Warehouse",
       icon: "truck",
     },
     {
       href: "/inventory",
       label: dict.navInventory,
-      group: "Inventory",
+      group: "Warehouse",
       icon: "layers",
     },
     {
       href: "/audit-logs",
       label: dict.navAuditLogs,
-      group: "Sistem",
+      group: "Compliance",
       icon: "shield",
     },
   ]);
@@ -236,7 +236,7 @@
             <button
               type="submit"
               class="flex cursor-pointer items-center gap-1 rounded border border-[#482F24] bg-[#301F18] px-2 py-1 text-[11px] text-[#CDB8A6] transition hover:bg-[#422B22] hover:text-white"
-              title="Beralih Role (USER / APPROVER)"
+              title="Switch Role (USER / APPROVER)"
             >
               <svg
                 class="h-3 w-3"
@@ -261,7 +261,7 @@
         <div
           class="px-3 pb-2 text-[10px] font-semibold tracking-wider text-[#8A7566] uppercase"
         >
-          Menu Utama
+          Main Navigation
         </div>
         {#each navItems as item}
           {@const isActive = currentPath === item.href}
@@ -502,22 +502,7 @@
         </div>
 
         <div class="flex items-center gap-4">
-          <form method="POST" action="/login?/setLang">
-            <input
-              type="hidden"
-              name="lang"
-              value={data.lang === "ID" ? "EN" : "ID"}
-            />
-            <input type="hidden" name="redirectTo" value={currentPath} />
-            <button
-              type="submit"
-              class="cursor-pointer rounded-lg border border-[#EDE4D8] bg-[#FAF7F2] px-2.5 py-1 font-mono text-[11px] font-bold text-[#5A3825] transition hover:border-[#C68B59]"
-            >
-              {data.lang === "ID" ? "ID 🇮🇩" : "EN 🇬🇧"}
-            </button>
-          </form>
-
-          <div class="flex items-center gap-2.5 border-l border-[#EDE4D8] pl-4">
+          <div class="flex items-center gap-2.5 pl-2">
             <div class="text-right">
               <div class="text-xs font-bold text-[#2E1F16]">
                 {data.user.name}

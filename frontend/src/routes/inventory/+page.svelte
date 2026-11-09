@@ -15,7 +15,8 @@
         {dict.navInventory}
       </h1>
       <p class="mt-0.5 text-xs text-[#7D6B5D]">
-        Pemantauan saldo stok aktual per gudang dan riwayat mutasi barang masuk.
+        Real-time stock balance per warehouse facility and append-only inbound
+        movement ledger.
       </p>
     </div>
 
@@ -28,7 +29,7 @@
             ? 'ui-tab-active'
             : ''}"
         >
-          Saldo Gudang ({data.balances.length})
+          Warehouse Balances ({data.balances.length})
         </button>
         <button
           type="button"
@@ -37,7 +38,7 @@
             ? 'ui-tab-active'
             : ''}"
         >
-          Riwayat Mutasi ({data.movements.length})
+          Movement Ledger ({data.movements.length})
         </button>
       </div>
 
@@ -48,7 +49,7 @@
       >
         <div class="w-48">
           <select name="warehouseId" class="ui-select">
-            <option value="">Semua Gudang</option>
+            <option value="">All Warehouses</option>
             {#each data.warehouses as wh}
               <option value={wh.id} selected={data.warehouseFilter === wh.id}>
                 {wh.code} — {wh.name}
@@ -67,7 +68,7 @@
             checked={data.lowStockOnly}
             class="h-3.5 w-3.5 accent-[#5A3825]"
           />
-          <span>Stok Kritis</span>
+          <span>Low Stock Only</span>
         </label>
 
         <button type="submit" class="ui-btn cursor-pointer">Filter</button>
@@ -84,12 +85,12 @@
             <tr
               class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
             >
-              <th class="px-5 py-3.5">Gudang</th>
+              <th class="px-5 py-3.5">Warehouse</th>
               <th class="px-5 py-3.5">SKU</th>
-              <th class="px-5 py-3.5">Nama Produk</th>
-              <th class="px-5 py-3.5 text-right">Batas Min</th>
-              <th class="px-5 py-3.5 text-right">Stok Tersedia</th>
-              <th class="px-5 py-3.5 text-center">Kondisi</th>
+              <th class="px-5 py-3.5">Product Name</th>
+              <th class="px-5 py-3.5 text-right">Min Threshold</th>
+              <th class="px-5 py-3.5 text-right">Current Stock</th>
+              <th class="px-5 py-3.5 text-center">Health</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-[#F5EDE4]">
@@ -125,7 +126,7 @@
                       ? 'border-[#FFCDD2] bg-[#FFEBEE] text-[#C62828]'
                       : 'border-[#B2D3C1] bg-[#E7F2EC] text-[#1D593B]'}"
                   >
-                    {bal.isLowStock ? "KRITIS" : "AMAN"}
+                    {bal.isLowStock ? "CRITICAL" : "HEALTHY"}
                   </span>
                 </td>
               </tr>
@@ -140,12 +141,12 @@
             <tr
               class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
             >
-              <th class="px-5 py-3.5">Produk</th>
-              <th class="px-5 py-3.5">Gudang</th>
-              <th class="px-5 py-3.5">Tipe Mutasi</th>
-              <th class="px-5 py-3.5 text-right">Perubahan</th>
-              <th class="px-5 py-3.5 text-right">Saldo Akhir</th>
-              <th class="px-5 py-3.5 text-right">Waktu</th>
+              <th class="px-5 py-3.5">Product</th>
+              <th class="px-5 py-3.5">Warehouse</th>
+              <th class="px-5 py-3.5">Movement Type</th>
+              <th class="px-5 py-3.5 text-right">Delta</th>
+              <th class="px-5 py-3.5 text-right">Balance After</th>
+              <th class="px-5 py-3.5 text-right">Timestamp</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-[#F5EDE4]">

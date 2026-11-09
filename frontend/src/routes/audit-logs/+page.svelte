@@ -14,7 +14,8 @@
         {dict.navAuditLogs}
       </h1>
       <p class="mt-0.5 text-xs text-[#7D6B5D]">
-        Rekam jejak seluruh perubahan dokumen transaksi dan identitas petugas.
+        Immutable log of transactional status changes, actions, and operator
+        identities.
       </p>
     </div>
 
@@ -25,7 +26,7 @@
     >
       <div class="w-44">
         <select name="entityType" class="ui-select">
-          <option value="">Semua Entitas</option>
+          <option value="">All Entities</option>
           {#each ["USER", "PRODUCT", "SUPPLIER", "WAREHOUSE", "PURCHASE_REQUEST", "PURCHASE_ORDER", "GOODS_RECEIPT"] as entity}
             <option value={entity} selected={data.entityType === entity}>
               {entity}
@@ -39,7 +40,7 @@
           type="text"
           name="search"
           value={data.search}
-          placeholder="Cari petugas atau ringkasan..."
+          placeholder="Search actor or summary..."
           class="ui-input"
         />
       </div>
@@ -56,11 +57,11 @@
           <tr
             class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
           >
-            <th class="px-5 py-3.5">Aksi</th>
-            <th class="px-5 py-3.5">Modul / Entitas</th>
-            <th class="px-5 py-3.5">Ringkasan</th>
-            <th class="px-5 py-3.5">Petugas</th>
-            <th class="px-5 py-3.5 text-right">Waktu</th>
+            <th class="px-5 py-3.5">Action</th>
+            <th class="px-5 py-3.5">Module / Entity</th>
+            <th class="px-5 py-3.5">Summary</th>
+            <th class="px-5 py-3.5">Operator</th>
+            <th class="px-5 py-3.5 text-right">Timestamp</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-[#F5EDE4]">

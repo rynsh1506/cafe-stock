@@ -38,7 +38,7 @@
         {dict.navPurchaseOrders}
       </h1>
       <p class="mt-0.5 text-xs text-[#7D6B5D]">
-        Penerbitan surat pesanan resmi ke pemasok dan pelacakan penerimaan.
+        Issue official supplier purchase orders and track fulfillment progress.
       </p>
     </div>
 
@@ -61,7 +61,7 @@
         onclick={() => (showNewDrawer = !showNewDrawer)}
         class="ui-btn cursor-pointer"
       >
-        {showNewDrawer ? "Tutup Form" : "+ Buat PO Baru"}
+        {showNewDrawer ? "Close Form" : "+ New Purchase Order"}
       </button>
     </div>
   </div>
@@ -90,7 +90,7 @@
         class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-[#F0E7DD] pb-3"
       >
         <h2 class="font-serif text-base font-bold text-[#231712]">
-          Terbitkan Purchase Order Baru
+          Issue New Purchase Order
         </h2>
         <div class="ui-tabs">
           <button
@@ -100,7 +100,7 @@
               ? 'ui-tab-active'
               : ''}"
           >
-            Dari PR Approved
+            From Approved PR
           </button>
           <button
             type="button"
@@ -109,7 +109,7 @@
               ? 'ui-tab-active'
               : ''}"
           >
-            PO Langsung
+            Direct PO
           </button>
         </div>
       </div>
@@ -124,7 +124,7 @@
             <label
               for="po-pr-id"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >PR Disetujui (APPROVED)</label
+              >Approved PR</label
             >
             <select
               id="po-pr-id"
@@ -132,7 +132,7 @@
               required
               class="ui-select"
             >
-              <option value="">Pilih PR...</option>
+              <option value="">Select PR...</option>
               {#each data.approvedPrs as pr}
                 <option value={pr.id}>
                   {pr.requestNumber} ({pr.warehouseName})
@@ -144,7 +144,7 @@
             <label
               for="po-pr-supplier"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Mitra Pemasok</label
+              >Supplier Partner</label
             >
             <select
               id="po-pr-supplier"
@@ -152,7 +152,7 @@
               required
               class="ui-select"
             >
-              <option value="">Pilih Pemasok...</option>
+              <option value="">Select Supplier...</option>
               {#each data.suppliers as sup}
                 <option value={sup.id}>{sup.code} — {sup.name}</option>
               {/each}
@@ -162,7 +162,7 @@
             <label
               for="po-expected-date"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Estimasi Kirim</label
+              >Expected Delivery</label
             >
             <input
               id="po-expected-date"
@@ -172,7 +172,7 @@
             />
           </div>
           <button type="submit" class="ui-btn w-full cursor-pointer">
-            Konversi PR ke PO
+            Convert PR to PO
           </button>
         </form>
       {:else}
@@ -185,7 +185,7 @@
             <label
               for="po-direct-supplier"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Pemasok</label
+              >Supplier</label
             >
             <select
               id="po-direct-supplier"
@@ -193,7 +193,7 @@
               required
               class="ui-select"
             >
-              <option value="">Pilih Pemasok...</option>
+              <option value="">Select Supplier...</option>
               {#each data.suppliers as sup}
                 <option value={sup.id}>{sup.name}</option>
               {/each}
@@ -203,7 +203,7 @@
             <label
               for="po-direct-warehouse"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Gudang</label
+              >Warehouse</label
             >
             <select
               id="po-direct-warehouse"
@@ -211,7 +211,7 @@
               required
               class="ui-select"
             >
-              <option value="">Pilih Gudang...</option>
+              <option value="">Select Warehouse...</option>
               {#each data.warehouses as wh}
                 <option value={wh.id}>{wh.name}</option>
               {/each}
@@ -221,7 +221,7 @@
             <label
               for="po-direct-product"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Produk</label
+              >Product</label
             >
             <select
               id="po-direct-product"
@@ -229,7 +229,7 @@
               required
               class="ui-select"
             >
-              <option value="">Pilih Produk...</option>
+              <option value="">Select Product...</option>
               {#each data.products as prod}
                 <option value={prod.id}>{prod.name}</option>
               {/each}
@@ -239,7 +239,7 @@
             <label
               for="po-direct-qty"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Kuantitas</label
+              >Quantity</label
             >
             <input
               id="po-direct-qty"
@@ -252,7 +252,7 @@
             />
           </div>
           <button type="submit" class="ui-btn w-full cursor-pointer">
-            Simpan PO
+            Save PO
           </button>
         </form>
       {/if}
@@ -267,11 +267,11 @@
           <tr
             class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
           >
-            <th class="px-5 py-3.5">No. PO</th>
-            <th class="px-5 py-3.5">Pemasok &amp; Gudang</th>
-            <th class="px-5 py-3.5">Realisasi (Diterima / Dipesan)</th>
+            <th class="px-5 py-3.5">PO Number</th>
+            <th class="px-5 py-3.5">Supplier &amp; Warehouse</th>
+            <th class="px-5 py-3.5">Fulfillment (Received / Ordered)</th>
             <th class="px-5 py-3.5 text-center">Status</th>
-            <th class="px-5 py-3.5 text-right">Aksi</th>
+            <th class="px-5 py-3.5 text-right">Actions</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-[#F5EDE4]">
@@ -335,7 +335,7 @@
                       href="/goods-receipts?poId={po.id}"
                       class="ui-btn ui-btn-sm"
                     >
-                      Terima Barang
+                      Receive Goods
                     </a>
                   {/if}
                   {#if po.status === "DRAFT" || po.status === "ORDERED"}
@@ -345,7 +345,7 @@
                         type="submit"
                         class="ui-btn-outline ui-btn-sm cursor-pointer text-[#C62828]"
                       >
-                        Batalkan
+                        Cancel
                       </button>
                     </form>
                   {/if}

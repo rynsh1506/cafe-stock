@@ -37,7 +37,7 @@
         {dict.navPurchaseRequests}
       </h1>
       <p class="mt-0.5 text-xs text-[#7D6B5D]">
-        Pengajuan kebutuhan bahan baku gudang dan persetujuan manajerial.
+        Draft raw material requirements and managerial approval workflow.
       </p>
     </div>
 
@@ -61,7 +61,7 @@
           onclick={() => (showNewDrawer = !showNewDrawer)}
           class="ui-btn cursor-pointer"
         >
-          {showNewDrawer ? "Tutup Form" : "+ Buat PR Baru"}
+          {showNewDrawer ? "Close Form" : "+ New Purchase Request"}
         </button>
       {/if}
     </div>
@@ -89,7 +89,7 @@
     <div class="ui-card p-5 sm:p-6">
       <div class="mb-4 border-b border-[#F0E7DD] pb-3">
         <h2 class="font-serif text-base font-bold text-[#231712]">
-          Buat Purchase Request (DRAFT)
+          Create Purchase Request (DRAFT)
         </h2>
       </div>
       <form
@@ -101,7 +101,7 @@
           <label
             for="pr-warehouse"
             class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-            >Gudang Tujuan</label
+            >Destination Warehouse</label
           >
           <select
             id="pr-warehouse"
@@ -109,7 +109,7 @@
             required
             class="ui-select"
           >
-            <option value="">Pilih Gudang...</option>
+            <option value="">Select Warehouse...</option>
             {#each data.warehouses as wh}
               <option value={wh.id}>{wh.code} — {wh.name}</option>
             {/each}
@@ -119,10 +119,10 @@
           <label
             for="pr-product"
             class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-            >Produk</label
+            >Product</label
           >
           <select id="pr-product" name="productId" required class="ui-select">
-            <option value="">Pilih Produk...</option>
+            <option value="">Select Product...</option>
             {#each data.products as prod}
               <option value={prod.id}>
                 {prod.sku} — {prod.name} ({prod.unit})
@@ -134,7 +134,7 @@
           <label
             for="pr-quantity"
             class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-            >Kuantitas</label
+            >Quantity</label
           >
           <input
             id="pr-quantity"
@@ -150,18 +150,18 @@
           <label
             for="pr-notes"
             class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-            >Catatan</label
+            >Notes</label
           >
           <input
             id="pr-notes"
             type="text"
             name="notes"
-            placeholder="Kebutuhan restock..."
+            placeholder="Restock requirement notes..."
             class="ui-input"
           />
         </div>
         <button type="submit" class="ui-btn w-full cursor-pointer">
-          Simpan Draft PR
+          Save Draft PR
         </button>
       </form>
     </div>
@@ -175,11 +175,11 @@
           <tr
             class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
           >
-            <th class="px-5 py-3.5">No. Dokumen</th>
-            <th class="px-5 py-3.5">Gudang &amp; Pemohon</th>
-            <th class="px-5 py-3.5">Item Diminta</th>
+            <th class="px-5 py-3.5">Request ID</th>
+            <th class="px-5 py-3.5">Warehouse &amp; Requester</th>
+            <th class="px-5 py-3.5">Requested Items</th>
             <th class="px-5 py-3.5 text-center">Status</th>
-            <th class="px-5 py-3.5 text-right">Aksi</th>
+            <th class="px-5 py-3.5 text-right">Actions</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-[#F5EDE4]">
@@ -198,7 +198,7 @@
                   {pr.warehouseName}
                 </div>
                 <div class="text-[11px] text-[#8C7665]">
-                  Oleh: {pr.requesterName}
+                  By: {pr.requesterName}
                 </div>
               </td>
               <td class="px-5 py-4">
@@ -242,7 +242,7 @@
                         type="submit"
                         class="ui-btn-outline ui-btn-sm cursor-pointer text-[#C62828]"
                       >
-                        Hapus
+                        Delete
                       </button>
                     </form>
                   {/if}
@@ -268,7 +268,7 @@
                   {/if}
                   {#if pr.status === "APPROVED"}
                     <a href="/purchase-orders" class="ui-btn-outline ui-btn-sm">
-                      Buat PO &rarr;
+                      Create PO &rarr;
                     </a>
                   {/if}
                 </div>

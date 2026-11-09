@@ -14,7 +14,7 @@ export async function handle({
 }): Promise<Response> {
   const rawLang = event.cookies.get(LANG_COOKIE_NAME);
   const validLang: AppLanguage =
-    rawLang === "EN" || rawLang === "JP" || rawLang === "ID" ? rawLang : "ID";
+    rawLang === "EN" || rawLang === "JP" || rawLang === "ID" ? rawLang : "EN";
   event.locals.lang = validLang;
 
   const token = event.cookies.get(SESSION_COOKIE_NAME) ?? null;
