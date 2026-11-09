@@ -82,57 +82,90 @@
       <form
         method="POST"
         action="?/postReceipt"
-        class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5"
+        class="grid grid-cols-1 items-end gap-3 sm:grid-cols-2 lg:grid-cols-5"
       >
-        <select
-          name="purchaseOrderId"
-          bind:value={activePoId}
-          required
-          class="apple-input px-3.5 py-2.5 text-[13px]"
-        >
-          {#each data.receivableOrders as po}
-            <option value={po.id}
-              >{po.orderNumber} — {po.supplierName} ({po.status})</option
-            >
-          {/each}
-        </select>
-
-        <select
-          name="purchaseOrderItemId"
-          required
-          class="apple-input px-3.5 py-2.5 text-[13px]"
-        >
-          {#if selectedOrder}
-            {#each selectedOrder.items.filter((i) => i.remainingQuantity > 0) as item}
-              <option value={item.id}
-                >{item.productName} (Rem: {item.remainingQuantity}
-                {item.productUnit})</option
+        <div>
+          <label
+            for="gr-po"
+            class="mb-1.5 block text-[11px] font-medium text-[#6E6E73]"
+          >
+            Purchase Order
+          </label>
+          <select
+            id="gr-po"
+            name="purchaseOrderId"
+            bind:value={activePoId}
+            required
+            class="apple-select"
+          >
+            {#each data.receivableOrders as po}
+              <option value={po.id}
+                >{po.orderNumber} — {po.supplierName} ({po.status})</option
               >
             {/each}
-          {/if}
-        </select>
+          </select>
+        </div>
 
-        <input
-          type="number"
-          name="quantityReceived"
-          min="1"
-          value="5"
-          required
-          placeholder="Qty Received"
-          class="apple-input px-3.5 py-2.5 text-[13px] tabular-nums"
-        />
+        <div>
+          <label
+            for="gr-item"
+            class="mb-1.5 block text-[11px] font-medium text-[#6E6E73]"
+          >
+            Order Line Item
+          </label>
+          <select
+            id="gr-item"
+            name="purchaseOrderItemId"
+            required
+            class="apple-select"
+          >
+            {#if selectedOrder}
+              {#each selectedOrder.items.filter((i) => i.remainingQuantity > 0) as item}
+                <option value={item.id}
+                  >{item.productName} (Rem: {item.remainingQuantity}
+                  {item.productUnit})</option
+                >
+              {/each}
+            {/if}
+          </select>
+        </div>
 
-        <input
-          type="text"
-          name="notes"
-          placeholder="Delivery note / batch ref..."
-          class="apple-input px-3.5 py-2.5 text-[13px]"
-        />
+        <div>
+          <label
+            for="gr-qty"
+            class="mb-1.5 block text-[11px] font-medium text-[#6E6E73]"
+          >
+            Quantity Received
+          </label>
+          <input
+            id="gr-qty"
+            type="number"
+            name="quantityReceived"
+            min="1"
+            value="5"
+            required
+            placeholder="Qty Received"
+            class="apple-input tabular-nums"
+          />
+        </div>
 
-        <button
-          type="submit"
-          class="apple-btn-primary cursor-pointer px-4 py-2.5 text-[13px]"
-        >
+        <div>
+          <label
+            for="gr-notes"
+            class="mb-1.5 block text-[11px] font-medium text-[#6E6E73]"
+          >
+            Delivery Note / Ref
+          </label>
+          <input
+            id="gr-notes"
+            type="text"
+            name="notes"
+            placeholder="Delivery note / batch ref..."
+            class="apple-input"
+          />
+        </div>
+
+        <button type="submit" class="apple-btn-primary w-full cursor-pointer">
           Post Receipt
         </button>
       </form>

@@ -25,27 +25,28 @@
       action="/audit-logs"
       class="flex flex-wrap items-center gap-2"
     >
-      <select name="entityType" class="apple-input px-3.5 py-2 text-[13px]">
-        <option value="">All Entities</option>
-        {#each ["USER", "PRODUCT", "SUPPLIER", "WAREHOUSE", "PURCHASE_REQUEST", "PURCHASE_ORDER", "GOODS_RECEIPT"] as entity}
-          <option value={entity} selected={data.entityType === entity}>
-            {entity}
-          </option>
-        {/each}
-      </select>
+      <div class="w-full sm:w-44">
+        <select name="entityType" class="apple-select">
+          <option value="">All Entities</option>
+          {#each ["USER", "PRODUCT", "SUPPLIER", "WAREHOUSE", "PURCHASE_REQUEST", "PURCHASE_ORDER", "GOODS_RECEIPT"] as entity}
+            <option value={entity} selected={data.entityType === entity}>
+              {entity}
+            </option>
+          {/each}
+        </select>
+      </div>
 
-      <input
-        type="text"
-        name="search"
-        value={data.search}
-        placeholder="Search actor or summary..."
-        class="apple-input px-3.5 py-2 text-[13px] sm:w-56"
-      />
+      <div class="w-full sm:w-56">
+        <input
+          type="text"
+          name="search"
+          value={data.search}
+          placeholder="Search actor or summary..."
+          class="apple-input"
+        />
+      </div>
 
-      <button
-        type="submit"
-        class="apple-btn-primary cursor-pointer px-4 py-2 text-[13px]"
-      >
+      <button type="submit" class="apple-btn-primary cursor-pointer">
         Filter
       </button>
     </form>
