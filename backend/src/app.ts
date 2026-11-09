@@ -1,6 +1,16 @@
 import { Elysia } from "elysia";
-import { logger } from "@/utils/logger";
+import { auditLogsModule } from "@/modules/audit-logs";
+import { authModule } from "@/modules/auth";
+import { goodsReceiptsModule } from "@/modules/goods-receipts";
+import { inventoryModule } from "@/modules/inventory";
+import { productsModule } from "@/modules/products";
+import { purchaseOrdersModule } from "@/modules/purchase-orders";
+import { purchaseRequestsModule } from "@/modules/purchase-requests";
+import { suppliersModule } from "@/modules/suppliers";
+import { warehousesModule } from "@/modules/warehouses";
+import { AppError } from "@/utils/errors";
 import { handleFrontendRequest } from "@/utils/frontend-ssr";
+import { logger } from "@/utils/logger";
 
 export const APP_VERSION = "3.0.0";
 
@@ -14,6 +24,24 @@ export const app = new Elysia()
   })
   .onError(({ code, error, set, request }) => {
     const url = new URL(request.url);
+
+    if (error instanceof AppError) {
+      set.status = error.statusCode;
+      logger.warn("Handled business/domain error", {
+        statusCode: error.statusCode,
+        code: error.code,
+        method: request.method,
+        path: url.pathname,
+        message: error.message,
+      });
+      return {
+        error: {
+          code: error.code,
+          message: error.message,
+        },
+      };
+    }
+
     const message =
       error instanceof Error ? error.message : "Unexpected server error";
 
@@ -57,6 +85,15 @@ export const app = new Elysia()
     version: APP_VERSION,
     timestamp: new Date().toISOString(),
   }))
+  .use(authModule)
+  .use(productsModule)
+  .use(suppliersModule)
+  .use(warehousesModule)
+  .use(purchaseRequestsModule)
+  .use(purchaseOrdersModule)
+  .use(goodsReceiptsModule)
+  .use(inventoryModule)
+  .use(auditLogsModule)
   .all("/api/*", ({ set }) => {
     set.status = 404;
     return {
