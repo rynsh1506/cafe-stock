@@ -10,8 +10,13 @@
   "scripts": {
     "postinstall": "bun --cwd=frontend x svelte-kit sync && ln -sfn ../frontend/node_modules/\\$app node_modules/\\$app",
     "dev": "bun run --filter '*' dev",
+    "dev:backend": "bun --env-file=../.env --cwd=backend --watch index.ts",
+    "dev:frontend": "bun --env-file=../.env --cwd=frontend run dev",
     "build": "bun run --filter frontend build",
-    "start": "bun run --filter backend start",
+    "start": "bun --env-file=../.env --cwd=backend index.ts",
+    "db:generate": "bun --env-file=../.env --cwd=backend run db:generate",
+    "db:migrate": "bun --env-file=../.env --cwd=backend src/db/migrate.ts",
+    "db:seed": "bun --env-file=../.env --cwd=backend src/db/seed.ts",
     "test": "bun run --filter backend test",
     "check": "bun run --filter '*' check",
     "format": "prettier --write ."
