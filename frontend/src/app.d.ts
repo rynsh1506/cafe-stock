@@ -1,11 +1,12 @@
-// See https://svelte.dev/docs/kit/types#app.d.ts
+import type { AuthUser, AppLanguage } from "@/lib/types";
+
 declare global {
   namespace App {
-    // interface Error {}
-    // interface Locals {}
-    // interface PageData {}
-    // interface PageState {}
-    // interface Platform {}
+    interface Locals {
+      user: AuthUser | null;
+      token: string | null;
+      lang: AppLanguage;
+    }
   }
 }
 

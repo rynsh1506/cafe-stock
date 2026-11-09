@@ -39,13 +39,14 @@ describe("Core Elysia Application", () => {
   });
 
   describe("SvelteKit SSR Integration", () => {
-    it("renders the SvelteKit SSR root page at GET / when frontend build is present", async () => {
-      const response = await app.handle(new Request("http://localhost:3000/"));
+    it("renders the SvelteKit SSR login page at GET /login when frontend build is present", async () => {
+      const response = await app.handle(
+        new Request("http://localhost:3000/login"),
+      );
       expect(response.status).toBe(200);
 
       const html = await response.text();
       expect(html).toContain("CafeStock");
-      expect(html).toContain("Server-side rendered at");
     });
   });
 });
