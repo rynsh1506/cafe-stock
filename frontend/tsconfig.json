@@ -10,6 +10,7 @@
     "sourceMap": true,
     "strict": true,
     "moduleResolution": "bundler",
+    "types": ["$app/types", "bun"],
     "paths": {
       "@/*": ["./src/*"],
       "$lib": ["./src/lib"],

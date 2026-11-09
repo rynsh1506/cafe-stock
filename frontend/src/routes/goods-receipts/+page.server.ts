@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import { fail, redirect, type Actions, type ServerLoad } from "@sveltejs/kit";
 import { callBackendApi } from "@/lib/server/api";
 import type {
@@ -72,7 +71,7 @@ export const actions: Actions = {
     const res = await callBackendApi("/api/goods-receipts", {
       method: "POST",
       token: locals.token,
-      idempotencyKey: randomUUID(),
+      idempotencyKey: crypto.randomUUID(),
       body: {
         purchaseOrderId,
         notes,
