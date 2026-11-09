@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import { fail, redirect, type Actions, type ServerLoad } from "@sveltejs/kit";
 import { callBackendApi } from "@/lib/server/api";
 import type {
@@ -84,7 +83,7 @@ export const actions: Actions = {
     const res = await callBackendApi("/api/purchase-orders", {
       method: "POST",
       token: locals.token,
-      idempotencyKey: randomUUID(),
+      idempotencyKey: crypto.randomUUID(),
       body: {
         purchaseRequestId,
         supplierId,
@@ -110,7 +109,7 @@ export const actions: Actions = {
     const res = await callBackendApi("/api/purchase-orders", {
       method: "POST",
       token: locals.token,
-      idempotencyKey: randomUUID(),
+      idempotencyKey: crypto.randomUUID(),
       body: {
         supplierId,
         warehouseId,
@@ -130,7 +129,7 @@ export const actions: Actions = {
     const res = await callBackendApi(`/api/purchase-orders/${id}/order`, {
       method: "POST",
       token: locals.token,
-      idempotencyKey: randomUUID(),
+      idempotencyKey: crypto.randomUUID(),
     });
     if (!res.ok) {
       return fail(res.status, { error: res.errorMessage });
@@ -145,7 +144,7 @@ export const actions: Actions = {
     const res = await callBackendApi(`/api/purchase-orders/${id}/cancel`, {
       method: "POST",
       token: locals.token,
-      idempotencyKey: randomUUID(),
+      idempotencyKey: crypto.randomUUID(),
     });
     if (!res.ok) {
       return fail(res.status, { error: res.errorMessage });
