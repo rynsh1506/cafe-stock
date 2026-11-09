@@ -87,21 +87,21 @@
             d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"
           />
         </svg>
-        <span>Dari Permintaan hingga Stok Terupdate</span>
+        <span>From Purchase Request to Stock Updated</span>
       </div>
 
       <h1
         class="font-serif text-3xl leading-tight font-bold tracking-tight text-white sm:text-4xl lg:text-5xl"
       >
-        Stok tertata,
+        Stock in order.
         <br />
-        <span class="text-[#D8A57A]">Racikan tetap terjaga.</span>
+        <span class="text-[#D8A57A]">Craft intact.</span>
       </h1>
 
       <p class="max-w-md text-sm leading-relaxed text-[#D0C2B6] sm:text-base">
-        Satu sistem terpusat yang mencatat seluruh siklus pengadaan bahan baku
-        cafe—mulai dari Purchase Request, Approval manajerial, Purchase Order,
-        hingga Goods Receipt dengan saldo stok yang akurat dan konsisten.
+        A unified system recording the entire cafe procurement cycle—from
+        Purchase Requests and managerial Approvals to Purchase Orders and Goods
+        Receipts with reliable, consistent stock balances.
       </p>
 
       <!-- Feature Highlights -->
@@ -118,7 +118,7 @@
             <polyline points="22 4 12 14.01 9 11.01" />
           </svg>
           <span>
-            Kontrak Payload Agregat tunggal untuk form transaksi cepat
+            Single aggregate payload contract for rapid transactional flows
           </span>
         </div>
         <div class="flex items-center gap-2.5">
@@ -132,7 +132,9 @@
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
             <polyline points="22 4 12 14.01 9 11.01" />
           </svg>
-          <span>Pemisahan Saldo Stok dan Riwayat Mutasi (Audit Trail)</span>
+          <span>
+            Strict separation of current stock balances and append-only ledger
+          </span>
         </div>
         <div class="flex items-center gap-2.5">
           <svg
@@ -145,7 +147,7 @@
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
             <polyline points="22 4 12 14.01 9 11.01" />
           </svg>
-          <span>Otorisasi role ketat di backend (USER &amp; APPROVER)</span>
+          <span>Backend-enforced role authorization (USER &amp; APPROVER)</span>
         </div>
       </div>
     </div>
@@ -154,7 +156,7 @@
     <div
       class="relative z-10 border-t border-[#38261E] pt-4 text-[11px] text-[#8C7665]"
     >
-      Kelompok 2 • Inventory Procurement System © 2026
+      Group 2 • Inventory Procurement System © 2026
     </div>
   </div>
 
@@ -164,7 +166,7 @@
       <!-- Header Form -->
       <div>
         <h2 class="font-serif text-2xl font-bold text-[#231712] sm:text-3xl">
-          Selamat datang kembali.
+          Welcome back.
         </h2>
         <p class="mt-1.5 text-xs text-[#7D6B5D] sm:text-sm">
           {dict.loginSubtitle}
@@ -336,7 +338,7 @@
                 <span
                   class="text-xs font-bold text-[#2E1F16] group-hover:text-[#5A3825]"
                 >
-                  Staff Gudang
+                  Warehouse Staff
                 </span>
                 <span
                   class="rounded bg-[#2D3748] px-1.5 py-0.5 text-[10px] font-bold text-[#90CDF4] uppercase"
@@ -348,7 +350,7 @@
                 user@cafestock.com
               </div>
               <div class="mt-0.5 text-[10px] leading-tight text-[#A8988B]">
-                Buat PR, Buat PO, Catat GR
+                Create PR, Issue PO, Receive Goods
               </div>
             </button>
           </form>
@@ -375,7 +377,7 @@
                 approver@cafestock.com
               </div>
               <div class="mt-0.5 text-[10px] leading-tight text-[#A8988B]">
-                Review &amp; Approve/Reject PR
+                Review &amp; Approve / Reject PR
               </div>
             </button>
           </form>

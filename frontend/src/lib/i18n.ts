@@ -144,5 +144,5 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
 };
 
 export function getDictionary(lang: AppLanguage): TranslationDictionary {
-  return translations[lang] ?? translations.ID;
+  return translations[lang] ?? translations.EN;
 }

@@ -38,8 +38,8 @@
         {dict.navGoodsReceipts}
       </h1>
       <p class="mt-0.5 text-xs text-[#7D6B5D]">
-        Verifikasi penerimaan barang fisik dari pemasok dan penambahan stok
-        gudang otomatis.
+        Verify physical delivery from suppliers and atomically post inventory
+        balance increments.
       </p>
     </div>
 
@@ -48,7 +48,7 @@
       onclick={() => (showNewDrawer = !showNewDrawer)}
       class="ui-btn cursor-pointer"
     >
-      {showNewDrawer ? "Tutup Form" : "+ Catat Penerimaan (GR)"}
+      {showNewDrawer ? "Close Form" : "+ Record Goods Receipt"}
     </button>
   </div>
 
@@ -74,14 +74,15 @@
     <div class="ui-card p-5 sm:p-6">
       <div class="mb-4 border-b border-[#F0E7DD] pb-3">
         <h2 class="font-serif text-base font-bold text-[#231712]">
-          Catat Bukti Barang Masuk (Goods Receipt)
+          Record Inbound Goods Receipt
         </h2>
       </div>
       {#if data.receivableOrders.length === 0}
         <div
           class="rounded-xl border border-[#EDE4D8] bg-[#FAF7F2] p-4 text-xs text-[#8C7665]"
         >
-          Belum ada Purchase Order berstatus ORDERED atau PARTIALLY_RECEIVED.
+          No Purchase Orders are currently in ORDERED or PARTIALLY_RECEIVED
+          status.
         </div>
       {:else}
         <form
@@ -114,7 +115,7 @@
             <label
               for="gr-item"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Item Pesanan</label
+              >Order Line Item</label
             >
             <select
               id="gr-item"
@@ -125,7 +126,7 @@
               {#if selectedOrder}
                 {#each selectedOrder.items.filter((i) => i.remainingQuantity > 0) as item}
                   <option value={item.id}>
-                    {item.productName} (Sisa: {item.remainingQuantity}
+                    {item.productName} (Remaining: {item.remainingQuantity}
                     {item.productUnit})
                   </option>
                 {/each}
@@ -137,7 +138,7 @@
             <label
               for="gr-qty"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Kuantitas Diterima</label
+              >Quantity Received</label
             >
             <input
               id="gr-qty"
@@ -154,19 +155,19 @@
             <label
               for="gr-notes"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >No. Surat Jalan / Catatan</label
+              >Delivery Note / Ref Notes</label
             >
             <input
               id="gr-notes"
               type="text"
               name="notes"
-              placeholder="Ref surat jalan..."
+              placeholder="Delivery note reference..."
               class="ui-input"
             />
           </div>
 
           <button type="submit" class="ui-btn w-full cursor-pointer">
-            Simpan Penerimaan
+            Post Goods Receipt
           </button>
         </form>
       {/if}
@@ -181,12 +182,12 @@
           <tr
             class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
           >
-            <th class="px-5 py-3.5">No. GR</th>
-            <th class="px-5 py-3.5">Ref. PO</th>
-            <th class="px-5 py-3.5">Gudang Tujuan</th>
-            <th class="px-5 py-3.5">Petugas Penerima</th>
-            <th class="px-5 py-3.5">Item Masuk</th>
-            <th class="px-5 py-3.5 text-right">Waktu Catat</th>
+            <th class="px-5 py-3.5">Receipt ID</th>
+            <th class="px-5 py-3.5">PO Reference</th>
+            <th class="px-5 py-3.5">Warehouse</th>
+            <th class="px-5 py-3.5">Received By</th>
+            <th class="px-5 py-3.5">Items Posted</th>
+            <th class="px-5 py-3.5 text-right">Timestamp</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-[#F5EDE4]">

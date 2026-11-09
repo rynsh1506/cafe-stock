@@ -30,6 +30,11 @@ const RULES = [
       /Immutable Compliance & Security Event Log|Separated Balance Snapshot/g,
     message: "Forbidden AI-slop pseudo-technical subtitle",
   },
+  {
+    id: "NO_FLAG_EMOJIS",
+    regex: /[\u{1F1E6}-\u{1F1FF}]{2}/gu,
+    message: "Forbidden country flag emoji slop",
+  },
 ];
 
 let violations = 0;

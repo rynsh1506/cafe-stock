@@ -6,13 +6,13 @@
   let dict = $derived(getDictionary(data.lang));
 
   const weeklyVolume = [
-    { day: "Sen", value: 12.4, height: "55%", active: false },
-    { day: "Sel", value: 15.8, height: "70%", active: false },
-    { day: "Rab", value: 19.2, height: "85%", active: false },
-    { day: "Kam", value: 14.7, height: "65%", active: true },
-    { day: "Jum", value: 22.0, height: "100%", active: false },
-    { day: "Sab", value: 17.5, height: "78%", active: false },
-    { day: "Min", value: 10.2, height: "45%", active: false },
+    { day: "Mon", value: 12.4, height: "55%", active: false },
+    { day: "Tue", value: 15.8, height: "70%", active: false },
+    { day: "Wed", value: 19.2, height: "85%", active: false },
+    { day: "Thu", value: 14.7, height: "65%", active: true },
+    { day: "Fri", value: 22.0, height: "100%", active: false },
+    { day: "Sat", value: 17.5, height: "78%", active: false },
+    { day: "Sun", value: 10.2, height: "45%", active: false },
   ];
 </script>
 
@@ -25,7 +25,7 @@
       <div
         class="mb-1.5 flex items-center justify-between gap-2 text-[11px] font-semibold tracking-wider text-[#D8A57A] uppercase sm:justify-start"
       >
-        <span>Sistem Manajemen Pengadaan &amp; Stok</span>
+        <span>Procurement &amp; Inventory Management System</span>
         <span class="opacity-60">•</span>
         <span
           class="shrink-0 rounded-full border border-[#7A4D33] bg-[#5A3825] px-2.5 py-0.5 text-[10px] font-bold whitespace-nowrap text-white"
@@ -36,13 +36,14 @@
       <h1
         class="font-serif text-xl font-bold tracking-tight text-white sm:text-2xl"
       >
-        Selamat Datang di CafeStock, {data.user.name}
+        Welcome to CafeStock, {data.user.name}
       </h1>
       <p
         class="mt-1 max-w-2xl text-xs leading-relaxed text-[#D7CBC1] sm:text-sm"
       >
-        Platform terpusat untuk alur Purchase Request, Approval, Purchase Order,
-        hingga pencatatan Goods Receipt dan saldo stok gudang yang konsisten.
+        Centralized operations platform for Purchase Requests, managerial
+        Approvals, Purchase Orders, Goods Receipts, and verified warehouse stock
+        balances.
       </p>
     </div>
 
@@ -67,8 +68,8 @@
         </svg>
         <span>
           {data.user.role === "APPROVER"
-            ? `Tinjau ${data.pendingPrCount} Permintaan`
-            : "+ Buat Purchase Request"}
+            ? `Review ${data.pendingPrCount} Requests`
+            : "+ Create Purchase Request"}
         </span>
       </a>
     </div>
@@ -76,7 +77,7 @@
 
   <!-- 4 Figma KPI Cards -->
   <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-    <!-- Card 1: Total Master Produk -->
+    <!-- Card 1: Total Master Products -->
     <a
       href="/master"
       class="group flex flex-col justify-between rounded-2xl border border-[#EDE4D8] bg-white p-4 shadow-xs transition hover:border-[#D5C5B5] sm:p-5"
@@ -85,7 +86,7 @@
         <div
           class="text-[10px] leading-tight font-bold tracking-wider text-[#8C7665] uppercase sm:text-[11px]"
         >
-          Total Master Produk
+          Total Master Products
         </div>
         <div
           class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F7F2EB] text-[#5A3825] transition group-hover:scale-105 sm:h-10 sm:w-10"
@@ -124,7 +125,7 @@
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
             <polyline points="22 4 12 14.01 9 11.01" />
           </svg>
-          <span class="truncate">Semua aktif di transaksi</span>
+          <span class="truncate">Active in catalog</span>
         </div>
       </div>
     </a>
@@ -138,7 +139,7 @@
         <div
           class="text-[10px] leading-tight font-bold tracking-wider text-[#8C7665] uppercase sm:text-[11px]"
         >
-          PR Perlu Review
+          PRs Awaiting Review
         </div>
         <div
           class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FFF8E1] text-[#D97706] transition group-hover:scale-105 sm:h-10 sm:w-10"
@@ -163,7 +164,7 @@
         <div
           class="truncate text-lg font-bold text-[#2E1F16] transition group-hover:text-[#B45309] sm:text-2xl"
         >
-          {data.pendingPrCount} Pengajuan
+          {data.pendingPrCount} Pending
         </div>
         <div
           class="mt-1 flex items-center gap-1 truncate text-[10px] font-medium text-[#D97706] sm:text-[11px]"
@@ -192,7 +193,7 @@
         <div
           class="text-[10px] leading-tight font-bold tracking-wider text-[#8C7665] uppercase sm:text-[11px]"
         >
-          PO Aktif / Penerimaan
+          Active Orders / Inbound
         </div>
         <div
           class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F7F2EB] text-[#5A3825] transition group-hover:scale-105 sm:h-10 sm:w-10"
@@ -216,7 +217,7 @@
         <div
           class="truncate text-lg font-bold text-[#2E1F16] transition group-hover:text-[#5A3825] sm:text-2xl"
         >
-          {data.activePoCount} Pesanan
+          {data.activePoCount} Orders
         </div>
         <div
           class="mt-1 flex items-center gap-1 truncate text-[10px] font-medium text-[#5A3825] sm:text-[11px]"
@@ -247,7 +248,7 @@
         <div
           class="text-[10px] leading-tight font-bold tracking-wider text-[#8C7665] uppercase sm:text-[11px]"
         >
-          Stok Kritis Gudang
+          Critical Stock Alert
         </div>
         <div
           class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FFEBEE] text-[#C62828] transition group-hover:scale-105 sm:h-10 sm:w-10"
@@ -267,7 +268,7 @@
       </div>
       <div class="mt-2.5">
         <div class="truncate text-lg font-bold text-[#C62828] sm:text-2xl">
-          {data.lowStockCount} Item
+          {data.lowStockCount} Items
         </div>
         <div
           class="mt-1 flex items-center gap-1 truncate text-[10px] font-medium text-[#C62828] sm:text-[11px]"
@@ -285,7 +286,7 @@
             <line x1="12" y1="9" x2="12" y2="13" />
             <line x1="12" y1="17" x2="12.01" y2="17" />
           </svg>
-          <span class="truncate">Saldo di bawah batas min</span>
+          <span class="truncate">Below reorder threshold</span>
         </div>
       </div>
     </a>
@@ -304,12 +305,12 @@
           <div
             class="text-[10px] font-bold tracking-wider text-[#8C7665] uppercase sm:text-xs"
           >
-            Aktivitas Pengadaan
+            Procurement Activity
           </div>
           <h2 class="mt-0.5 text-sm font-bold text-[#2E1F16] sm:text-base">
-            Volume Bahan Baku Masuk
+            Inbound Material Volume
             <span class="text-xs font-normal whitespace-nowrap text-[#8A7566]">
-              (Minggu Ini)
+              (This Week)
             </span>
           </h2>
         </div>
@@ -334,7 +335,7 @@
               <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
               <polyline points="16 7 22 7 22 13" />
             </svg>
-            <span>+14% vs minggu lalu</span>
+            <span>+14% vs last week</span>
           </div>
         </div>
       </div>
@@ -398,10 +399,10 @@
                 <line x1="12" y1="9" x2="12" y2="13" />
                 <line x1="12" y1="17" x2="12.01" y2="17" />
               </svg>
-              <span>Perhatian Stok</span>
+              <span>Stock Attention</span>
             </div>
             <h3 class="mt-0.5 text-base font-bold text-[#2E1F16]">
-              Bahan Kritis / Menipis
+              Low Stock Items
             </h3>
           </div>
           <span
@@ -415,7 +416,7 @@
           <div
             class="rounded-xl border border-[#EDE4D8] bg-[#FAF7F2] p-4 text-center text-xs text-[#8C7665]"
           >
-            Seluruh stok gudang berada di atas batas minimum.
+            All warehouse items are above minimum reorder threshold.
           </div>
         {:else}
           <div class="space-y-3">
@@ -430,7 +431,7 @@
                   <span
                     class="shrink-0 rounded border border-[#FFCDD2] bg-[#FFEBEE] px-1.5 py-0.5 text-[10px] font-bold text-[#C62828]"
                   >
-                    Kritis
+                    Critical
                   </span>
                 </div>
                 <div
@@ -455,7 +456,7 @@
           href="/purchase-requests"
           class="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#5A3825] px-3 py-2.5 text-xs font-bold text-white shadow-xs transition hover:bg-[#432718]"
         >
-          <span>+ Buat Permintaan Pembelian</span>
+          <span>+ New Purchase Request</span>
           <svg
             class="h-4 w-4"
             viewBox="0 0 24 24"
@@ -480,14 +481,14 @@
     >
       <div>
         <div class="text-xs font-bold tracking-wider text-[#8C7665] uppercase">
-          Riwayat Sistem
+          System History
         </div>
         <h3 class="mt-0.5 text-base font-bold text-[#2E1F16]">
-          Mutasi &amp; Aktivitas Pengadaan Terkini
+          Recent Procurement &amp; Stock Activity
         </h3>
       </div>
       <div class="text-xs text-[#8C7665]">
-        Siklus: PR &rarr; Approval &rarr; PO &rarr; Goods Receipt
+        Cycle: PR &rarr; Approval &rarr; PO &rarr; Goods Receipt
       </div>
     </div>
 
@@ -497,10 +498,10 @@
           <tr
             class="border-b border-[#EDE4D8] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
           >
-            <th class="px-4 py-3">Aksi / Modul</th>
-            <th class="px-4 py-3">Ringkasan Transaksi</th>
-            <th class="px-4 py-3">Petugas</th>
-            <th class="px-4 py-3 text-right">Waktu</th>
+            <th class="px-4 py-3">Action / Module</th>
+            <th class="px-4 py-3">Transaction Summary</th>
+            <th class="px-4 py-3">Operator</th>
+            <th class="px-4 py-3 text-right">Timestamp</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-[#F5EDE4]">

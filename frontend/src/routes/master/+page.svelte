@@ -26,7 +26,8 @@
         {dict.navMaster}
       </h1>
       <p class="mt-0.5 text-xs text-[#7D6B5D]">
-        Kelola katalog SKU produk, mitra pemasok, dan lokasi gudang aktif.
+        Manage product SKU catalog, supplier partners, and active warehouse
+        facilities.
       </p>
     </div>
 
@@ -66,7 +67,7 @@
         onclick={() => (showNewDrawer = !showNewDrawer)}
         class="ui-btn cursor-pointer"
       >
-        {showNewDrawer ? "Tutup Form" : "+ Tambah Data"}
+        {showNewDrawer ? "Close Form" : "+ Add Record"}
       </button>
     </div>
   </div>
@@ -94,7 +95,7 @@
       {#if activeTab === "products"}
         <div class="mb-4 border-b border-[#F0E7DD] pb-3">
           <h2 class="font-serif text-base font-bold text-[#231712]">
-            Tambah SKU Produk Baru
+            Add New SKU Product
           </h2>
         </div>
         <form
@@ -121,7 +122,7 @@
             <label
               for="prod-name"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Nama Produk</label
+              >Product Name</label
             >
             <input
               id="prod-name"
@@ -136,7 +137,7 @@
             <label
               for="prod-cat"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Kategori</label
+              >Category</label
             >
             <input
               id="prod-cat"
@@ -151,7 +152,7 @@
             <label
               for="prod-unit"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Satuan</label
+              >Unit</label
             >
             <select id="prod-unit" name="unit" class="ui-select">
               <option value="kg">kg</option>
@@ -166,7 +167,7 @@
             <label
               for="prod-min"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Stok Min</label
+              >Min Stock</label
             >
             <input
               id="prod-min"
@@ -179,13 +180,13 @@
             />
           </div>
           <button type="submit" class="ui-btn w-full cursor-pointer">
-            Simpan SKU
+            Save SKU
           </button>
         </form>
       {:else if activeTab === "suppliers"}
         <div class="mb-4 border-b border-[#F0E7DD] pb-3">
           <h2 class="font-serif text-base font-bold text-[#231712]">
-            Tambah Mitra Pemasok Baru
+            Add New Supplier Partner
           </h2>
         </div>
         <form
@@ -197,7 +198,7 @@
             <label
               for="sup-code"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Kode</label
+              >Supplier Code</label
             >
             <input
               id="sup-code"
@@ -212,7 +213,7 @@
             <label
               for="sup-name"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Nama Pemasok</label
+              >Supplier Name</label
             >
             <input
               id="sup-name"
@@ -242,7 +243,7 @@
             <label
               for="sup-phone"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Telepon</label
+              >Phone</label
             >
             <input
               id="sup-phone"
@@ -257,25 +258,25 @@
             <label
               for="sup-address"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Alamat</label
+              >Address</label
             >
             <input
               id="sup-address"
               type="text"
               name="address"
               required
-              placeholder="Bandung"
+              placeholder="Bandung Roastery Facility"
               class="ui-input"
             />
           </div>
           <button type="submit" class="ui-btn w-full cursor-pointer">
-            Simpan Pemasok
+            Save Supplier
           </button>
         </form>
       {:else}
         <div class="mb-4 border-b border-[#F0E7DD] pb-3">
           <h2 class="font-serif text-base font-bold text-[#231712]">
-            Tambah Lokasi Gudang Baru
+            Add New Warehouse Facility
           </h2>
         </div>
         <form
@@ -287,7 +288,7 @@
             <label
               for="wh-code"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Kode Gudang</label
+              >Warehouse Code</label
             >
             <input
               id="wh-code"
@@ -302,7 +303,7 @@
             <label
               for="wh-name"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Nama Gudang</label
+              >Facility Name</label
             >
             <input
               id="wh-name"
@@ -317,7 +318,7 @@
             <label
               for="wh-loc"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Alamat</label
+              >Address</label
             >
             <input
               id="wh-loc"
@@ -329,7 +330,7 @@
             />
           </div>
           <button type="submit" class="ui-btn w-full cursor-pointer">
-            Simpan Gudang
+            Save Warehouse
           </button>
         </form>
       {/if}
@@ -346,10 +347,10 @@
               class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
             >
               <th class="px-5 py-3.5">SKU</th>
-              <th class="px-5 py-3.5">Nama Produk</th>
-              <th class="px-5 py-3.5">Kategori</th>
-              <th class="px-5 py-3.5">Satuan</th>
-              <th class="px-5 py-3.5 text-right">Batas Min</th>
+              <th class="px-5 py-3.5">Product Name</th>
+              <th class="px-5 py-3.5">Category</th>
+              <th class="px-5 py-3.5">Unit</th>
+              <th class="px-5 py-3.5 text-right">Min Threshold</th>
               <th class="px-5 py-3.5 text-right">Status</th>
             </tr>
           </thead>
@@ -407,11 +408,11 @@
             <tr
               class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
             >
-              <th class="px-5 py-3.5">Kode</th>
-              <th class="px-5 py-3.5">Nama Pemasok</th>
+              <th class="px-5 py-3.5">Code</th>
+              <th class="px-5 py-3.5">Supplier Name</th>
               <th class="px-5 py-3.5">Email</th>
-              <th class="px-5 py-3.5">Telepon</th>
-              <th class="px-5 py-3.5">Alamat</th>
+              <th class="px-5 py-3.5">Phone</th>
+              <th class="px-5 py-3.5">Address</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-[#F5EDE4]">
@@ -442,9 +443,9 @@
             <tr
               class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
             >
-              <th class="px-5 py-3.5">Kode Gudang</th>
-              <th class="px-5 py-3.5">Nama Gudang</th>
-              <th class="px-5 py-3.5">Alamat / Lokasi</th>
+              <th class="px-5 py-3.5">Warehouse Code</th>
+              <th class="px-5 py-3.5">Facility Name</th>
+              <th class="px-5 py-3.5">Address</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-[#F5EDE4]">
