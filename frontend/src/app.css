@@ -2,24 +2,27 @@
 
 @layer base {
   :root {
+    --font-serif: "Newsreader", Georgia, "Times New Roman", serif;
     --font-sans:
-      -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui,
+      "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, system-ui,
       sans-serif;
-    --font-mono:
-      "SF Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
   }
 
   html,
   body {
-    background-color: #ffffff;
-    color: #111113;
+    background-color: #faf7f2;
+    color: #2d241e;
     font-family: var(--font-sans);
-    font-size: 13px;
-    line-height: 1.45;
-    letter-spacing: -0.01em;
+    font-size: 13.5px;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+  }
+
+  .font-serif {
+    font-family: var(--font-serif);
   }
 
   .font-mono {
@@ -32,27 +35,37 @@
   }
 }
 
+.ui-card {
+  background-color: #ffffff;
+  border: 1px solid #ede4d8;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(35, 23, 18, 0.04);
+}
+
 .ui-input {
   display: block;
   width: 100%;
-  height: 32px;
-  padding: 0 10px;
+  height: 38px;
+  padding: 0 12px;
   background-color: #ffffff;
-  border: 1px solid #d4d4d8;
-  border-radius: 6px;
-  color: #111113;
+  border: 1px solid #ddd2c4;
+  border-radius: 10px;
+  color: #231712;
   font-size: 13px;
-  line-height: 30px;
+  line-height: 36px;
   box-sizing: border-box;
-  transition: border-color 0.12s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .ui-input::placeholder {
-  color: #a1a1aa;
+  color: #a8988b;
 }
 
 .ui-input:focus {
-  border-color: #111113;
+  border-color: #7a4d33;
+  box-shadow: 0 0 0 3px rgba(122, 77, 51, 0.12);
   outline: none;
 }
 
@@ -60,32 +73,36 @@ select.ui-input,
 .ui-select {
   display: block;
   width: 100%;
-  height: 32px;
-  padding: 0 28px 0 10px;
+  height: 38px;
+  padding: 0 32px 0 12px;
   background-color: #ffffff;
-  border: 1px solid #d4d4d8;
-  border-radius: 6px;
-  color: #111113;
+  border: 1px solid #ddd2c4;
+  border-radius: 10px;
+  color: #231712;
   font-size: 13px;
-  line-height: 30px;
+  font-weight: 500;
+  line-height: 36px;
   box-sizing: border-box;
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2371717A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%237A4D33' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 9px center;
-  background-size: 12px 12px;
+  background-position: right 10px center;
+  background-size: 14px 14px;
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
-  transition: border-color 0.12s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 select.ui-input:focus,
 .ui-select:focus {
-  border-color: #111113;
+  border-color: #7a4d33;
+  box-shadow: 0 0 0 3px rgba(122, 77, 51, 0.12);
   outline: none;
 }
 
@@ -94,23 +111,48 @@ select.ui-input:focus,
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: 32px;
-  padding: 0 12px;
-  background-color: #111113;
+  height: 38px;
+  padding: 0 16px;
+  background-color: #5a3825;
   color: #ffffff;
-  border: 1px solid #111113;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
+  border: 1px solid #45281a;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
   line-height: 1;
   white-space: nowrap;
   box-sizing: border-box;
   cursor: pointer;
-  transition: background-color 0.12s ease;
+  box-shadow: 0 1px 2px rgba(35, 23, 18, 0.12);
+  transition: background-color 0.15s ease;
 }
 
 .ui-btn:hover {
-  background-color: #27272a;
+  background-color: #45281a;
+}
+
+.ui-btn-copper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 16px;
+  background-color: #c68b59;
+  color: #ffffff;
+  border: 1px solid #b37948;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.ui-btn-copper:hover {
+  background-color: #b37948;
 }
 
 .ui-btn-outline {
@@ -118,58 +160,61 @@ select.ui-input:focus,
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: 32px;
-  padding: 0 12px;
+  height: 38px;
+  padding: 0 14px;
   background-color: #ffffff;
-  color: #111113;
-  border: 1px solid #e4e4e7;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
+  color: #3d2c20;
+  border: 1px solid #e0d5c7;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
   line-height: 1;
   white-space: nowrap;
   box-sizing: border-box;
   cursor: pointer;
   transition:
-    background-color 0.12s ease,
-    border-color 0.12s ease;
+    background-color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .ui-btn-outline:hover {
-  background-color: #f4f4f5;
-  border-color: #d4d4d8;
+  background-color: #faf4ed;
+  border-color: #c68b59;
 }
 
 .ui-btn-sm {
-  height: 26px;
-  padding: 0 8px;
-  font-size: 11px;
-  border-radius: 5px;
+  height: 30px;
+  padding: 0 10px;
+  font-size: 11.5px;
+  border-radius: 8px;
 }
 
 .ui-tabs {
   display: inline-flex;
   align-items: center;
-  background-color: #f4f4f5;
-  padding: 2px;
-  border-radius: 6px;
+  background-color: #f3ece2;
+  border: 1px solid #e4d9cc;
+  padding: 3px;
+  border-radius: 10px;
 }
 
 .ui-tab {
-  padding: 4px 10px;
-  font-size: 11px;
-  font-weight: 500;
-  color: #71717a;
-  border-radius: 4px;
-  transition: color 0.12s ease;
+  padding: 5px 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #7d6b5d;
+  border-radius: 7px;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
 }
 
 .ui-tab:hover {
-  color: #111113;
+  color: #231712;
 }
 
 .ui-tab-active {
-  background-color: #ffffff;
-  color: #111113;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  background-color: #5a3825;
+  color: #ffffff;
+  box-shadow: 0 1px 2px rgba(35, 23, 18, 0.15);
 }

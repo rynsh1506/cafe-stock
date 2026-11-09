@@ -6,18 +6,16 @@
   let dict = $derived(getDictionary(data.lang));
 </script>
 
-<div>
-  <!-- Toolbar -->
-  <div
-    class="flex flex-wrap items-center justify-between gap-3 border-b border-[#EDEDED] px-5 py-3 sm:px-6"
-  >
-    <div class="flex items-center gap-2.5">
-      <h1 class="text-[15px] font-semibold tracking-tight text-[#111]">
+<div class="space-y-6">
+  <!-- Header & Filter Bar -->
+  <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+    <div>
+      <h1 class="font-serif text-2xl font-bold tracking-tight text-[#231712]">
         {dict.navAuditLogs}
       </h1>
-      <span class="font-mono text-[11px] text-[#777]">
-        {data.logs.length} events
-      </span>
+      <p class="mt-0.5 text-xs text-[#7D6B5D]">
+        Rekam jejak seluruh perubahan dokumen transaksi dan identitas petugas.
+      </p>
     </div>
 
     <form
@@ -27,7 +25,7 @@
     >
       <div class="w-44">
         <select name="entityType" class="ui-select">
-          <option value="">All Entities</option>
+          <option value="">Semua Entitas</option>
           {#each ["USER", "PRODUCT", "SUPPLIER", "WAREHOUSE", "PURCHASE_REQUEST", "PURCHASE_ORDER", "GOODS_RECEIPT"] as entity}
             <option value={entity} selected={data.entityType === entity}>
               {entity}
@@ -41,79 +39,61 @@
           type="text"
           name="search"
           value={data.search}
-          placeholder="Search actor or summary..."
+          placeholder="Cari petugas atau ringkasan..."
           class="ui-input"
         />
       </div>
 
-      <button type="submit" class="ui-btn-outline cursor-pointer">
-        Filter
-      </button>
+      <button type="submit" class="ui-btn cursor-pointer">Filter</button>
     </form>
   </div>
 
-  <!-- Desktop Table -->
-  <div class="hidden overflow-x-auto md:block">
-    <table class="w-full text-left text-[13px]">
-      <thead>
-        <tr
-          class="border-b border-[#EDEDED] bg-[#FAFAFA] text-[11px] font-medium text-[#777]"
-        >
-          <th class="px-5 py-2.5 sm:px-6">Action</th>
-          <th class="px-5 py-2.5 sm:px-6">Entity</th>
-          <th class="px-5 py-2.5 sm:px-6">Summary</th>
-          <th class="px-5 py-2.5 sm:px-6">Actor</th>
-          <th class="px-5 py-2.5 text-right sm:px-6">Timestamp</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-[#F2F2F2]">
-        {#each data.logs as log}
-          <tr class="hover:bg-[#FAFAFA]">
-            <td
-              class="px-5 py-2.5 font-mono text-[11px] font-semibold text-[#111] sm:px-6"
-            >
-              {log.action}
-            </td>
-            <td class="px-5 py-2.5 font-mono text-[11px] text-[#666] sm:px-6">
-              {log.entityType}
-            </td>
-            <td class="px-5 py-2.5 text-[#111] sm:px-6">
-              {log.summary}
-            </td>
-            <td class="px-5 py-2.5 text-[12px] text-[#555] sm:px-6">
-              {log.actorName}
-              <span class="font-mono text-[11px] text-[#888]"
-                >({log.actorRole})</span
-              >
-            </td>
-            <td
-              class="px-5 py-2.5 text-right font-mono text-[11px] text-[#777] sm:px-6"
-            >
-              {new Date(log.createdAt).toLocaleString()}
-            </td>
+  <!-- Audit Table Card -->
+  <div class="ui-card overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-left text-xs">
+        <thead>
+          <tr
+            class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
+          >
+            <th class="px-5 py-3.5">Aksi</th>
+            <th class="px-5 py-3.5">Modul / Entitas</th>
+            <th class="px-5 py-3.5">Ringkasan</th>
+            <th class="px-5 py-3.5">Petugas</th>
+            <th class="px-5 py-3.5 text-right">Waktu</th>
           </tr>
-        {/each}
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Mobile List -->
-  <div class="divide-y divide-[#EDEDED] md:hidden">
-    {#each data.logs as log}
-      <div class="space-y-1 px-5 py-3">
-        <div class="flex items-center justify-between gap-2">
-          <span class="font-mono text-[11px] font-semibold text-[#111]">
-            {log.action} · {log.entityType}
-          </span>
-          <span class="font-mono text-[11px] text-[#777]">
-            {new Date(log.createdAt).toLocaleDateString()}
-          </span>
-        </div>
-        <div class="text-[13px] text-[#111]">{log.summary}</div>
-        <div class="text-[11px] text-[#777]">
-          {log.actorName} ({log.actorRole})
-        </div>
-      </div>
-    {/each}
+        </thead>
+        <tbody class="divide-y divide-[#F5EDE4]">
+          {#each data.logs as log}
+            <tr class="transition hover:bg-[#FAF7F2]">
+              <td class="px-5 py-3.5">
+                <span
+                  class="rounded-full border border-[#E0D5C7] bg-[#FAF4ED] px-2.5 py-0.5 font-mono text-[10px] font-bold text-[#5A3825]"
+                >
+                  {log.action}
+                </span>
+              </td>
+              <td class="px-5 py-3.5 font-mono text-[11px] text-[#6A574A]">
+                {log.entityType}
+              </td>
+              <td class="px-5 py-3.5 font-medium text-[#2E1F16]">
+                {log.summary}
+              </td>
+              <td class="px-5 py-3.5 text-[#6A574A]">
+                {log.actorName}
+                <span class="font-mono text-[10px] text-[#8C7665]"
+                  >({log.actorRole})</span
+                >
+              </td>
+              <td
+                class="px-5 py-3.5 text-right font-mono text-[11px] text-[#8C7665]"
+              >
+                {new Date(log.createdAt).toLocaleString()}
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
