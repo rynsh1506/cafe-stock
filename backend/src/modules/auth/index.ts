@@ -20,8 +20,8 @@ import {
 } from "@/modules/auth/service";
 
 export const authModule = new Elysia({ prefix: "/api/auth" })
-  .get("/google", ({ query, redirect }) => {
-    const url = getGoogleAuthUrl();
+  .get("/google", async ({ query, redirect }) => {
+    const url = await getGoogleAuthUrl();
     if (query?.json === "true") {
       return { data: { url } };
     }

@@ -36,5 +36,36 @@ export async function handle({
     }
   }
 
+  const pathname = event.url.pathname;
+  const isApiRoute = pathname.startsWith("/api");
+  const isSetupRoute = pathname === "/setup";
+  const isAsset =
+    pathname.startsWith("/_app") ||
+    pathname.startsWith("/favicon") ||
+    pathname.includes(".");
+
+  if (!isApiRoute && !isAsset) {
+    const setupStatus = await callBackendApi<{
+      data: { isInitialized: boolean };
+    }>("/api/setup/status");
+    const isInitialized = Boolean(
+      setupStatus.ok && setupStatus.data?.data?.isInitialized,
+    );
+
+    if (!isInitialized && !isSetupRoute) {
+      return new Response(null, {
+        status: 303,
+        headers: { Location: "/setup" },
+      });
+    }
+
+    if (isInitialized && isSetupRoute) {
+      return new Response(null, {
+        status: 303,
+        headers: { Location: "/login" },
+      });
+    }
+  }
+
   return resolve(event);
 }

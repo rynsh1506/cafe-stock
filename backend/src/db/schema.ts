@@ -57,6 +57,14 @@ export const sessions = pgTable("sessions", {
     .defaultNow(),
 });
 
+export const systemSettings = pgTable("system_settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
 export const warehouses = pgTable("warehouses", {
   id: uuid("id").primaryKey().defaultRandom(),
   code: text("code").notNull().unique(),

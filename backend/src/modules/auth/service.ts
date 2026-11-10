@@ -1,6 +1,6 @@
 import { and, desc, eq, gt } from "drizzle-orm";
 import { db } from "@/db/index";
-import { otpVerifications, sessions, users } from "@/db/schema";
+import { otpVerifications, sessions, systemSettings, users } from "@/db/schema";
 import type {
   AuthenticatedUser,
   LoginInput,
@@ -18,11 +18,21 @@ import { logger } from "@/utils/logger";
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 7;
 export const SESSION_COOKIE_NAME = "cafestock_session";
 
-export function getGoogleAuthUrl(): string {
-  const clientId = process.env.GOOGLE_CLIENT_ID || "";
+export async function getGoogleAuthUrl(): Promise<string> {
+  let clientId = process.env.GOOGLE_CLIENT_ID || "";
   const redirectUri =
     process.env.GOOGLE_REDIRECT_URI ||
     "http://localhost:3000/api/auth/google/callback";
+
+  if (!clientId) {
+    const setting = await db
+      .select()
+      .from(systemSettings)
+      .where(eq(systemSettings.key, "google_client_id"));
+    if (setting[0]?.value) {
+      clientId = setting[0].value;
+    }
+  }
 
   const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   url.searchParams.set("client_id", clientId);
@@ -42,11 +52,24 @@ export type GoogleOAuthResult =
 export async function handleGoogleCallback(
   code: string,
 ): Promise<GoogleOAuthResult> {
-  const clientId = process.env.GOOGLE_CLIENT_ID || "";
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET || "";
+  let clientId = process.env.GOOGLE_CLIENT_ID || "";
+  let clientSecret = process.env.GOOGLE_CLIENT_SECRET || "";
   const redirectUri =
     process.env.GOOGLE_REDIRECT_URI ||
     "http://localhost:3000/api/auth/google/callback";
+
+  if (!clientId || !clientSecret) {
+    const idSetting = await db
+      .select()
+      .from(systemSettings)
+      .where(eq(systemSettings.key, "google_client_id"));
+    const secretSetting = await db
+      .select()
+      .from(systemSettings)
+      .where(eq(systemSettings.key, "google_client_secret"));
+    if (idSetting[0]?.value) clientId = idSetting[0].value;
+    if (secretSetting[0]?.value) clientSecret = secretSetting[0].value;
+  }
 
   let email = "";
   let name = "Google User";

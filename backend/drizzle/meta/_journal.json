@@ -15,6 +15,13 @@
       "when": 1794286535520,
       "tag": "0001_sticky_gideon",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794314150000,
+      "tag": "0002_smooth_system_settings",
+      "breakpoints": true
     }
   ]
 }

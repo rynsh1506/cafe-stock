@@ -6,6 +6,7 @@ import { inventoryModule } from "@/modules/inventory";
 import { productsModule } from "@/modules/products";
 import { purchaseOrdersModule } from "@/modules/purchase-orders";
 import { purchaseRequestsModule } from "@/modules/purchase-requests";
+import { setupModule } from "@/modules/setup";
 import { suppliersModule } from "@/modules/suppliers";
 import { warehousesModule } from "@/modules/warehouses";
 import { AppError } from "@/utils/errors";
@@ -86,6 +87,7 @@ export const app = new Elysia()
     timestamp: new Date().toISOString(),
   }))
   .use(authModule)
+  .use(setupModule)
   .use(productsModule)
   .use(suppliersModule)
   .use(warehousesModule)
