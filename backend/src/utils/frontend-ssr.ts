@@ -17,10 +17,9 @@ interface SvelteKitServerModule {
   server: SvelteKitServer;
 }
 
-const FRONTEND_BUILD_DIR = resolve(
-  import.meta.dirname,
-  "../../../frontend/build",
-);
+const FRONTEND_BUILD_DIR =
+  process.env.FRONTEND_BUILD_DIR ||
+  resolve(import.meta.dirname, "../../../frontend/build");
 const FRONTEND_CLIENT_DIR = join(FRONTEND_BUILD_DIR, "client");
 const FRONTEND_SERVER_ENTRY = join(FRONTEND_BUILD_DIR, "server/server.js");
 
