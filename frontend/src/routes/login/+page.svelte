@@ -323,6 +323,8 @@
           <!-- Google OAuth Primary Button -->
           <a
             href="/api/auth/google"
+            data-sveltekit-reload
+            rel="external"
             class="flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-[#D5C5B5] bg-white px-4 py-3 text-sm font-semibold text-[#2E1F16] shadow-xs transition hover:border-[#7A4D33] hover:bg-[#FAF7F2] hover:shadow-sm"
           >
             <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24">
