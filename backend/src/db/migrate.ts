@@ -6,7 +6,9 @@ import { getDatabaseConnection } from "@/db/index";
 import type * as schema from "@/db/schema";
 import { logger } from "@/utils/logger";
 
-const MIGRATIONS_FOLDER = resolve(import.meta.dirname, "../../drizzle");
+const MIGRATIONS_FOLDER =
+  process.env.MIGRATIONS_FOLDER ||
+  resolve(import.meta.dirname, "../../drizzle");
 
 export async function runMigrations(): Promise<void> {
   const conn = getDatabaseConnection();

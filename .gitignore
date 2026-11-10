@@ -15,6 +15,7 @@ build
 .svelte-kit
 frontend/build
 frontend/.svelte-kit
+backend/dist
 *.local
 
 # Editor directories and files
