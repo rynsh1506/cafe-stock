@@ -235,7 +235,7 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     roasteryPortfolioSubtitle:
       "Estimasi komposisi stok bahan baku utama dan kemasan.",
     metricVolume: "Volume Masuk (KG)",
-    metricSpend: "Nilai Pembelian ($)",
+    metricSpend: "Nilai Pembelian (Rp)",
     metricVelocity: "Kecepatan Order (Hari)",
 
     masterTitle: "Manajemen Master Data (Produk, Supplier, Gudang)",
@@ -405,7 +405,7 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     roasteryPortfolioSubtitle:
       "Inventory composition of green coffee, dairy, and degassing packaging.",
     metricVolume: "Inbound Volume (KG)",
-    metricSpend: "Procurement Capital ($)",
+    metricSpend: "Procurement Capital (IDR)",
     metricVelocity: "Fulfillment Velocity (Days)",
 
     masterTitle: "Master Data Management (Products, Suppliers, Warehouses)",
@@ -571,7 +571,7 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     roasteryPortfolio: "ロースタリー原材料構成",
     roasteryPortfolioSubtitle: "生豆・副資材・パッケージの在庫構成比率。",
     metricVolume: "入荷総量 (KG)",
-    metricSpend: "購買総額 ($)",
+    metricSpend: "購買総額 (IDR)",
     metricVelocity: "納入速度 (日数)",
 
     masterTitle: "マスターデータ管理（商品・サプライヤー・倉庫）",

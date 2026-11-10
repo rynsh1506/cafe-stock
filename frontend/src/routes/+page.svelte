@@ -155,123 +155,123 @@
     },
     spend: {
       "7D": {
-        title: "Procurement Capital Outflow ($)",
-        headline: "$4,850.00",
+        title: "Procurement Capital Outflow (IDR)",
+        headline: "Rp 74.850.000",
         deltaText: "-6.2% vs previous 7 days",
-        unit: "$",
+        unit: "Rp",
         points: [
           {
             label: "Mon",
             sublabel: "Nov 03",
-            value: 420,
-            unit: "$",
+            value: 6420000,
+            unit: "Rp",
             delta: "+12.0%",
           },
           {
             label: "Tue",
             sublabel: "Nov 04",
-            value: 1250,
-            unit: "$",
+            value: 18250000,
+            unit: "Rp",
             delta: "+197.6%",
           },
           {
             label: "Wed",
             sublabel: "Nov 05",
-            value: 310,
-            unit: "$",
+            value: 4310000,
+            unit: "Rp",
             delta: "-75.2%",
           },
           {
             label: "Thu",
             sublabel: "Nov 06",
-            value: 1680,
-            unit: "$",
+            value: 26680000,
+            unit: "Rp",
             delta: "+441.9%",
           },
           {
             label: "Fri",
             sublabel: "Nov 07",
-            value: 540,
-            unit: "$",
+            value: 8540000,
+            unit: "Rp",
             delta: "-67.8%",
           },
           {
             label: "Sat",
             sublabel: "Nov 08",
-            value: 650,
-            unit: "$",
+            value: 10650000,
+            unit: "Rp",
             delta: "+20.3%",
           },
           {
             label: "Sun",
             sublabel: "Nov 09",
             value: 0,
-            unit: "$",
+            unit: "Rp",
             delta: "-100.0%",
           },
         ],
       },
       "30D": {
-        title: "Monthly Procurement Capital ($)",
-        headline: "$21,420.00",
+        title: "Monthly Procurement Capital (IDR)",
+        headline: "Rp 328.400.000",
         deltaText: "+8.9% vs previous month",
-        unit: "$",
+        unit: "Rp",
         points: [
           {
             label: "W1",
             sublabel: "Bean Contracts",
-            value: 6400,
-            unit: "$",
+            value: 98400000,
+            unit: "Rp",
             delta: "+14.0%",
           },
           {
             label: "W2",
             sublabel: "Packaging Run",
-            value: 4200,
-            unit: "$",
+            value: 64200000,
+            unit: "Rp",
             delta: "-34.3%",
           },
           {
             label: "W3",
             sublabel: "Dairy & Consumables",
-            value: 5100,
-            unit: "$",
+            value: 78100000,
+            unit: "Rp",
             delta: "+21.4%",
           },
           {
             label: "W4",
             sublabel: "Equipment Maint.",
-            value: 5720,
-            unit: "$",
+            value: 87700000,
+            unit: "Rp",
             delta: "+12.1%",
           },
         ],
       },
       "90D": {
-        title: "Quarterly Procurement Capital ($)",
-        headline: "$64,280.00",
+        title: "Quarterly Procurement Capital (IDR)",
+        headline: "Rp 984.600.000",
         deltaText: "+15.8% budget utilization",
-        unit: "$",
+        unit: "Rp",
         points: [
           {
             label: "Aug",
             sublabel: "Capex & Imports",
-            value: 18200,
-            unit: "$",
+            value: 282000000,
+            unit: "Rp",
             delta: "+5.0%",
           },
           {
             label: "Sep",
             sublabel: "Seasonal Stocking",
-            value: 26400,
-            unit: "$",
+            value: 416400000,
+            unit: "Rp",
             delta: "+45.0%",
           },
           {
             label: "Oct",
             sublabel: "Rebalancing",
-            value: 19680,
-            unit: "$",
+            value: 286200000,
+            unit: "Rp",
             delta: "-25.4%",
           },
         ],
@@ -488,6 +488,13 @@
       stock: "24 Units",
     },
   ];
+
+  function formatPointValue(pt: { value: number; unit: string }): string {
+    if (pt.unit === "Rp") {
+      return `Rp ${pt.value.toLocaleString("id-ID")}`;
+    }
+    return `${pt.value} ${pt.unit}`;
+  }
 </script>
 
 <div class="space-y-6">
@@ -841,7 +848,7 @@
             class="cursor-pointer"
             role="button"
             tabindex="0"
-            aria-label="{point.label}: {point.value} {point.unit}"
+            aria-label="{point.label}: {formatPointValue(point)}"
             onmouseenter={() => (hoveredPointIndex = index)}
             onmouseleave={() => (hoveredPointIndex = null)}
             onfocus={() => (hoveredPointIndex = index)}
@@ -899,8 +906,7 @@
             {hp.label} ({hp.sublabel})
           </div>
           <div class="font-mono text-sm font-bold text-white">
-            {hp.value}
-            {hp.unit}
+            {formatPointValue(hp)}
           </div>
           <div class="text-[9.5px] font-medium text-[#A5D6A7]">
             {hp.delta} vs cycle avg
