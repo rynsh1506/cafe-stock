@@ -5,19 +5,29 @@ import type { AppLanguage, AuthUser } from "@/lib/types";
 
 export interface LoginPageServerData {
   lang: AppLanguage;
+  status?: string;
+  email?: string;
+  hint?: string;
+  error?: string;
 }
 
 export interface LoginActionData {
   error?: string;
   email?: string;
+  status?: string;
+  success?: boolean;
 }
 
-export const load: ServerLoad = ({ locals }): LoginPageServerData => {
+export const load: ServerLoad = ({ locals, url }): LoginPageServerData => {
   if (locals.user) {
     throw redirect(303, "/");
   }
   return {
     lang: locals.lang,
+    status: url.searchParams.get("status") ?? undefined,
+    email: url.searchParams.get("email") ?? undefined,
+    hint: url.searchParams.get("hint") ?? undefined,
+    error: url.searchParams.get("error") ?? undefined,
   };
 };
 
@@ -56,6 +66,41 @@ export const actions: Actions = {
     });
 
     throw redirect(303, "/");
+  },
+
+  verifyOtp: async ({ request }) => {
+    const formData = await request.formData();
+    const email = String(formData.get("email") ?? "").trim();
+    const code = String(formData.get("code") ?? "").trim();
+
+    if (!email || !code) {
+      return fail(400, {
+        error: "Email dan kode OTP wajib diisi",
+        email,
+        status: "otp_required",
+      });
+    }
+
+    const res = await callBackendApi<{
+      data: { success: boolean; message: string };
+    }>("/api/auth/otp/verify", {
+      method: "POST",
+      body: { email, code },
+    });
+
+    if (!res.ok) {
+      return fail(res.status || 400, {
+        error:
+          res.errorMessage ?? "Kode OTP tidak valid atau telah kedaluwarsa",
+        email,
+        status: "otp_required",
+      });
+    }
+
+    throw redirect(
+      303,
+      `/login?status=pending_approval&email=${encodeURIComponent(email)}`,
+    );
   },
 
   logout: async ({ cookies, locals }) => {

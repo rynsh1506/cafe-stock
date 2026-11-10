@@ -199,11 +199,6 @@
               class="flex items-center gap-1.5 font-serif text-lg font-bold tracking-wide text-white"
             >
               <span>CafeStock</span>
-              <span
-                class="rounded border border-[#683C25] bg-[#45281A] px-1.5 py-0.5 font-sans text-[10px] font-semibold tracking-wider text-[#D8A57A] uppercase"
-              >
-                v1.0
-              </span>
             </div>
             <div class="text-[11px] tracking-tight text-[#A69080]">
               {dict.inventoryAndProcurement}

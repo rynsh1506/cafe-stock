@@ -25,10 +25,23 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash").notNull(),
   role: text("role").$type<UserRole>().notNull().default("USER"),
   isActive: boolean("is_active").notNull().default(true),
+  avatarUrl: text("avatar_url"),
+  googleId: text("google_id"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export const otpVerifications = pgTable("otp_verifications", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  email: text("email").notNull(),
+  code: text("code").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  isVerified: boolean("is_verified").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
 });

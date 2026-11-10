@@ -8,12 +8,23 @@ import type {
   Warehouse,
 } from "@/lib/types";
 
+export interface PendingUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  avatarUrl: string | null;
+  createdAt: string;
+}
+
 export interface MasterPageData {
   lang: AppLanguage;
   search: string;
   products: Product[];
   suppliers: Supplier[];
   warehouses: Warehouse[];
+  pendingUsers: PendingUser[];
+  isApprover: boolean;
 }
 
 export interface MasterActionData {
@@ -34,23 +45,32 @@ export const load: ServerLoad = async ({
     ? `?limit=50&search=${encodeURIComponent(search)}`
     : "?limit=50";
 
-  const [productsRes, suppliersRes, warehousesRes] = await Promise.all([
-    callBackendApi<PaginatedResponse<Product>>(`/api/products${querySuffix}`, {
-      token: locals.token,
-    }),
-    callBackendApi<PaginatedResponse<Supplier>>(
-      `/api/suppliers${querySuffix}`,
-      {
-        token: locals.token,
-      },
-    ),
-    callBackendApi<PaginatedResponse<Warehouse>>(
-      `/api/warehouses${querySuffix}`,
-      {
-        token: locals.token,
-      },
-    ),
-  ]);
+  const [productsRes, suppliersRes, warehousesRes, pendingRes] =
+    await Promise.all([
+      callBackendApi<PaginatedResponse<Product>>(
+        `/api/products${querySuffix}`,
+        {
+          token: locals.token,
+        },
+      ),
+      callBackendApi<PaginatedResponse<Supplier>>(
+        `/api/suppliers${querySuffix}`,
+        {
+          token: locals.token,
+        },
+      ),
+      callBackendApi<PaginatedResponse<Warehouse>>(
+        `/api/warehouses${querySuffix}`,
+        {
+          token: locals.token,
+        },
+      ),
+      locals.user.role === "APPROVER"
+        ? callBackendApi<{ data: PendingUser[] }>("/api/auth/pending-users", {
+            token: locals.token,
+          })
+        : Promise.resolve({ ok: true, data: { data: [] } }),
+    ]);
 
   return {
     lang: locals.lang,
@@ -58,6 +78,8 @@ export const load: ServerLoad = async ({
     products: productsRes.data?.data ?? [],
     suppliers: suppliersRes.data?.data ?? [],
     warehouses: warehousesRes.data?.data ?? [],
+    pendingUsers: pendingRes.data?.data ?? [],
+    isApprover: locals.user.role === "APPROVER",
   };
 };
 
@@ -167,5 +189,35 @@ export const actions: Actions = {
       return fail(res.status, { error: res.errorMessage });
     }
     return { success: "Warehouse status updated" };
+  },
+
+  approveUser: async ({ request, locals }) => {
+    if (!locals.token) throw redirect(303, "/login");
+    const formData = await request.formData();
+    const id = String(formData.get("id") ?? "");
+    const role = String(formData.get("role") ?? "USER");
+    const res = await callBackendApi(`/api/auth/users/${id}/approve`, {
+      method: "POST",
+      token: locals.token,
+      body: { role },
+    });
+    if (!res.ok) {
+      return fail(res.status, { error: res.errorMessage });
+    }
+    return { success: "Akun pengguna berhasil dikonfirmasi dan diaktifkan" };
+  },
+
+  rejectUser: async ({ request, locals }) => {
+    if (!locals.token) throw redirect(303, "/login");
+    const formData = await request.formData();
+    const id = String(formData.get("id") ?? "");
+    const res = await callBackendApi(`/api/auth/users/${id}/reject`, {
+      method: "POST",
+      token: locals.token,
+    });
+    if (!res.ok) {
+      return fail(res.status, { error: res.errorMessage });
+    }
+    return { success: "Pengajuan akun pengguna berhasil ditolak" };
   },
 };

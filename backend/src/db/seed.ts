@@ -17,44 +17,58 @@ export interface SeedResult {
   productsCount: number;
 }
 
-export async function seedDatabase(): Promise<SeedResult> {
+export async function seedDatabase(options?: {
+  seedUsers?: boolean;
+}): Promise<SeedResult> {
   logger.info("Starting database master data seeding");
 
-  const defaultUserEmail = process.env.SEED_USER_EMAIL || "staff@cafestock.com";
-  const defaultUserPassword = process.env.SEED_USER_PASSWORD || "User123!";
-  const defaultApproverEmail =
-    process.env.SEED_APPROVER_EMAIL || "approver@cafestock.com";
-  const defaultApproverPassword =
-    process.env.SEED_APPROVER_PASSWORD || "Approver123!";
+  const isTest =
+    process.env.NODE_ENV === "test" ||
+    Boolean(process.env.BUN_TEST) ||
+    typeof (globalThis as Record<string, unknown>).describe === "function";
 
-  const existingStaff = await db
-    .select()
-    .from(users)
-    .where(eq(users.email, defaultUserEmail));
+  const shouldSeedUsers =
+    options?.seedUsers ??
+    (isTest || process.env.SEED_DEFAULT_USERS !== "false");
 
-  if (existingStaff.length === 0) {
-    await db.insert(users).values({
-      email: defaultUserEmail,
-      name: "Budi Santoso (Barista & Inventory Staff)",
-      passwordHash: hashPassword(defaultUserPassword),
-      role: "USER",
-      isActive: true,
-    });
-  }
+  if (shouldSeedUsers) {
+    const defaultUserEmail =
+      process.env.SEED_USER_EMAIL || "staff@cafestock.com";
+    const defaultUserPassword = process.env.SEED_USER_PASSWORD || "User123!";
+    const defaultApproverEmail =
+      process.env.SEED_APPROVER_EMAIL || "approver@cafestock.com";
+    const defaultApproverPassword =
+      process.env.SEED_APPROVER_PASSWORD || "Approver123!";
 
-  const existingApprover = await db
-    .select()
-    .from(users)
-    .where(eq(users.email, defaultApproverEmail));
+    const existingStaff = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, defaultUserEmail));
 
-  if (existingApprover.length === 0) {
-    await db.insert(users).values({
-      email: defaultApproverEmail,
-      name: "Siti Rahma (Procurement Approver)",
-      passwordHash: hashPassword(defaultApproverPassword),
-      role: "APPROVER",
-      isActive: true,
-    });
+    if (existingStaff.length === 0) {
+      await db.insert(users).values({
+        email: defaultUserEmail,
+        name: "Budi Santoso (Barista & Inventory Staff)",
+        passwordHash: hashPassword(defaultUserPassword),
+        role: "USER",
+        isActive: true,
+      });
+    }
+
+    const existingApprover = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, defaultApproverEmail));
+
+    if (existingApprover.length === 0) {
+      await db.insert(users).values({
+        email: defaultApproverEmail,
+        name: "Siti Rahma (Procurement Approver)",
+        passwordHash: hashPassword(defaultApproverPassword),
+        role: "APPROVER",
+        isActive: true,
+      });
+    }
   }
 
   const seedWarehouses = [
