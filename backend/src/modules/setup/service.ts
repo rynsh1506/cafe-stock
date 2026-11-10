@@ -1,10 +1,26 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db/index";
 import { auditLogs, sessions, systemSettings, users } from "@/db/schema";
+import type { AuthenticatedUser } from "@/modules/auth/model";
 import { generateSessionToken, hashPassword } from "@/utils/crypto";
 import { AppError } from "@/utils/errors";
 import { logger } from "@/utils/logger";
-import type { InitialSetupInput } from "./model";
+import type { InitialSetupInput, UpdateSystemSettingsInput } from "./model";
+
+export interface SystemSettingsSummary {
+  cafeName: string;
+  appUrl: string;
+  smtpHost: string;
+  smtpPort: number;
+  smtpUser: string;
+  smtpFrom: string;
+  hasSmtpPassword: boolean;
+  googleClientId: string;
+  hasGoogleClientSecret: boolean;
+  isSmtpConfigured: boolean;
+  isGoogleOAuthConfigured: boolean;
+  initializedAt?: string;
+}
 
 export async function checkSetupStatus(): Promise<{
   isInitialized: boolean;
@@ -158,4 +174,130 @@ export async function executeInitialSetup(input: InitialSetupInput) {
       },
     };
   });
+}
+
+export async function getSystemSettings(
+  user: AuthenticatedUser,
+): Promise<SystemSettingsSummary> {
+  if (user.role !== "APPROVER") {
+    throw AppError.forbidden("Only approvers can access system settings");
+  }
+
+  const rows = await db.select().from(systemSettings);
+  const map = new Map<string, string>();
+  for (const r of rows) {
+    map.set(r.key, r.value);
+  }
+
+  const smtpHost = map.get("smtp_host") || "";
+  const smtpPortStr = map.get("smtp_port") || "587";
+  const smtpUser = map.get("smtp_user") || "";
+  const smtpFrom = map.get("smtp_from") || "";
+  const smtpPassword = map.get("smtp_password") || "";
+
+  const googleClientId = map.get("google_client_id") || "";
+  const googleClientSecret = map.get("google_client_secret") || "";
+
+  const isSmtpConfigured = Boolean(smtpHost && smtpUser);
+  const isGoogleOAuthConfigured = Boolean(googleClientId && googleClientSecret);
+
+  return {
+    cafeName: map.get("cafe_name") || "CafeStock Roastery",
+    appUrl: map.get("app_url") || "http://localhost:3000",
+    smtpHost,
+    smtpPort: Number(smtpPortStr) || 587,
+    smtpUser,
+    smtpFrom,
+    hasSmtpPassword: Boolean(smtpPassword),
+    googleClientId,
+    hasGoogleClientSecret: Boolean(googleClientSecret),
+    isSmtpConfigured,
+    isGoogleOAuthConfigured,
+    initializedAt: map.get("initialized_at"),
+  };
+}
+
+export async function updateSystemSettings(
+  user: AuthenticatedUser,
+  input: UpdateSystemSettingsInput,
+): Promise<SystemSettingsSummary> {
+  if (user.role !== "APPROVER") {
+    throw AppError.forbidden("Only approvers can modify system settings");
+  }
+
+  const updates: Array<{ key: string; value: string }> = [];
+
+  if (input.cafeName !== undefined) {
+    updates.push({ key: "cafe_name", value: input.cafeName.trim() });
+  }
+  if (input.appUrl !== undefined) {
+    updates.push({ key: "app_url", value: input.appUrl.trim() });
+  }
+  if (input.smtpHost !== undefined) {
+    updates.push({ key: "smtp_host", value: input.smtpHost.trim() });
+  }
+  if (input.smtpPort !== undefined) {
+    updates.push({ key: "smtp_port", value: String(input.smtpPort) });
+  }
+  if (input.smtpUser !== undefined) {
+    updates.push({ key: "smtp_user", value: input.smtpUser.trim() });
+  }
+  if (input.smtpFrom !== undefined) {
+    updates.push({ key: "smtp_from", value: input.smtpFrom.trim() });
+  }
+  if (
+    input.smtpPassword !== undefined &&
+    input.smtpPassword.trim().length > 0
+  ) {
+    updates.push({ key: "smtp_password", value: input.smtpPassword.trim() });
+  }
+  if (input.googleClientId !== undefined) {
+    updates.push({
+      key: "google_client_id",
+      value: input.googleClientId.trim(),
+    });
+  }
+  if (
+    input.googleClientSecret !== undefined &&
+    input.googleClientSecret.trim().length > 0
+  ) {
+    updates.push({
+      key: "google_client_secret",
+      value: input.googleClientSecret.trim(),
+    });
+  }
+
+  for (const item of updates) {
+    await db
+      .insert(systemSettings)
+      .values({
+        key: item.key,
+        value: item.value,
+        updatedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: systemSettings.key,
+        set: { value: item.value, updatedAt: new Date() },
+      });
+  }
+
+  await db.insert(auditLogs).values({
+    actorId: user.id,
+    actorName: user.name,
+    actorRole: user.role,
+    action: "SYSTEM_SETTINGS_UPDATED",
+    entityType: "SYSTEM",
+    entityId: user.id,
+    summary: `System integrations and parameters updated by ${user.name}`,
+    metadata: {
+      updatedKeys: updates.map((u) => u.key),
+    },
+  });
+
+  logger.info("System settings updated", {
+    userId: user.id,
+    updatedKeys: updates.map((u) => u.key),
+  });
+
+  return await getSystemSettings(user);
 }

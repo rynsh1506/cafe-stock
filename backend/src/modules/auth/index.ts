@@ -4,16 +4,20 @@ import {
   disable2FaBodySchema,
   enable2FaBodySchema,
   loginBodySchema,
+  toggleUserStatusBodySchema,
+  updateUserRoleBodySchema,
   verify2FaBodySchema,
   verifyOtpBodySchema,
 } from "@/modules/auth/model";
 import {
   approvePendingUser,
+  deleteUser,
   disable2Fa,
   enable2Fa,
   extractTokenFromRequest,
   getGoogleAuthUrl,
   handleGoogleCallback,
+  listAllUsers,
   listPendingUsers,
   loginUser,
   logoutSession,
@@ -22,6 +26,8 @@ import {
   requireAuthenticatedUser,
   SESSION_COOKIE_NAME,
   setup2Fa,
+  toggleUserStatus,
+  updateUserRole,
   verify2FaLogin,
   verifyUserOtp,
 } from "@/modules/auth/service";
@@ -111,6 +117,60 @@ export const authModule = new Elysia({ prefix: "/api/auth" })
       data: pending,
     };
   })
+  .get("/users", async ({ request }) => {
+    const admin = await requireApproverUser(request);
+    const usersList = await listAllUsers(admin);
+    return {
+      data: usersList,
+    };
+  })
+  .patch(
+    "/users/:id/role",
+    async ({ request, params, body }) => {
+      const admin = await requireApproverUser(request);
+      const updated = await updateUserRole(admin, params.id, body.role);
+      return {
+        data: updated,
+      };
+    },
+    {
+      params: t.Object({
+        id: t.String(),
+      }),
+      body: updateUserRoleBodySchema,
+    },
+  )
+  .patch(
+    "/users/:id/status",
+    async ({ request, params, body }) => {
+      const admin = await requireApproverUser(request);
+      const updated = await toggleUserStatus(admin, params.id, body.isActive);
+      return {
+        data: updated,
+      };
+    },
+    {
+      params: t.Object({
+        id: t.String(),
+      }),
+      body: toggleUserStatusBodySchema,
+    },
+  )
+  .delete(
+    "/users/:id",
+    async ({ request, params }) => {
+      const admin = await requireApproverUser(request);
+      const res = await deleteUser(admin, params.id);
+      return {
+        data: res,
+      };
+    },
+    {
+      params: t.Object({
+        id: t.String(),
+      }),
+    },
+  )
   .post(
     "/users/:id/approve",
     async ({ request, params, body }) => {
