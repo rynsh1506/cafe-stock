@@ -1,5 +1,6 @@
 <script lang="ts">
   import { getDictionary } from "@/lib/i18n";
+  import CustomSelect from "@/lib/components/CustomSelect.svelte";
   import type {
     PurchaseRequestsActionData,
     PurchaseRequestsPageData,
@@ -14,6 +15,37 @@
   } = $props();
   let dict = $derived(getDictionary(data.lang));
   let showNewDrawer = $state(false);
+
+  let selectedMobileStatus = $state("");
+  $effect(() => {
+    selectedMobileStatus = data.statusFilter || "";
+  });
+  let selectedPrWarehouse = $state("");
+  let selectedPrProduct = $state("");
+
+  let statusFilterOptions = $derived([
+    { value: "", label: dict.all.toUpperCase() },
+    ...["DRAFT", "SUBMITTED", "APPROVED", "REJECTED"].map((s) => ({
+      value: s,
+      label: s,
+    })),
+  ]);
+
+  let warehouseSelectOptions = $derived([
+    { value: "", label: dict.selectWarehouse },
+    ...data.warehouses.map((wh) => ({
+      value: wh.id,
+      label: `${wh.code} — ${wh.name}`,
+    })),
+  ]);
+
+  let productSelectOptions = $derived([
+    { value: "", label: dict.selectProduct },
+    ...data.products.map((prod) => ({
+      value: prod.id,
+      label: `${prod.sku} — ${prod.name} (${prod.unit})`,
+    })),
+  ]);
 
   function statusBadgeClass(status: string): string {
     if (status === "APPROVED") {
@@ -51,24 +83,15 @@
     <div class="flex flex-wrap items-center gap-2.5">
       <!-- Mobile Filter Dropdown -->
       <div class="w-full sm:hidden">
-        <select
-          class="ui-select"
-          onchange={(e) => {
-            const val = e.currentTarget.value;
+        <CustomSelect
+          bind:value={selectedMobileStatus}
+          options={statusFilterOptions}
+          onchange={(val) => {
             window.location.href = val
               ? `/purchase-requests?status=${val}`
               : "/purchase-requests";
           }}
-        >
-          <option value="" selected={!data.statusFilter}>
-            {dict.all.toUpperCase()}
-          </option>
-          {#each ["DRAFT", "SUBMITTED", "APPROVED", "REJECTED"] as status}
-            <option value={status} selected={data.statusFilter === status}>
-              {status}
-            </option>
-          {/each}
-        </select>
+        />
       </div>
 
       <!-- Desktop Smooth Non-wrapping Tabs -->
@@ -133,17 +156,12 @@
             class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
             >{dict.destinationWarehouse}</label
           >
-          <select
-            id="pr-warehouse"
+          <CustomSelect
             name="warehouseId"
-            required
-            class="ui-select"
-          >
-            <option value="">{dict.selectWarehouse}</option>
-            {#each data.warehouses as wh}
-              <option value={wh.id}>{wh.code} — {wh.name}</option>
-            {/each}
-          </select>
+            bind:value={selectedPrWarehouse}
+            options={warehouseSelectOptions}
+            placeholder={dict.selectWarehouse}
+          />
         </div>
         <div>
           <label
@@ -151,14 +169,12 @@
             class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
             >{dict.product}</label
           >
-          <select id="pr-product" name="productId" required class="ui-select">
-            <option value="">{dict.selectProduct}</option>
-            {#each data.products as prod}
-              <option value={prod.id}>
-                {prod.sku} — {prod.name} ({prod.unit})
-              </option>
-            {/each}
-          </select>
+          <CustomSelect
+            name="productId"
+            bind:value={selectedPrProduct}
+            options={productSelectOptions}
+            placeholder={dict.selectProduct}
+          />
         </div>
         <div>
           <label

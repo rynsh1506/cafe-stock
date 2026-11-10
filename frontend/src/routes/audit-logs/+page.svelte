@@ -1,9 +1,30 @@
 <script lang="ts">
   import { getDictionary } from "@/lib/i18n";
+  import CustomSelect from "@/lib/components/CustomSelect.svelte";
   import type { AuditLogsPageData } from "@/routes/audit-logs/+page.server";
 
   let { data }: { data: AuditLogsPageData } = $props();
   let dict = $derived(getDictionary(data.lang));
+
+  let entityOptions = $derived([
+    { value: "", label: dict.allEntities },
+    ...[
+      "USER",
+      "PRODUCT",
+      "SUPPLIER",
+      "WAREHOUSE",
+      "PURCHASE_REQUEST",
+      "PURCHASE_ORDER",
+      "GOODS_RECEIPT",
+    ].map((e) => ({
+      value: e,
+      label: e,
+    })),
+  ]);
+  let selectedEntity = $state("");
+  $effect(() => {
+    selectedEntity = data.entityType || "";
+  });
 </script>
 
 <div class="space-y-6">
@@ -23,15 +44,13 @@
       action="/audit-logs"
       class="flex flex-wrap items-center gap-2"
     >
-      <div class="w-44">
-        <select name="entityType" class="ui-select">
-          <option value="">{dict.allEntities}</option>
-          {#each ["USER", "PRODUCT", "SUPPLIER", "WAREHOUSE", "PURCHASE_REQUEST", "PURCHASE_ORDER", "GOODS_RECEIPT"] as entity}
-            <option value={entity} selected={data.entityType === entity}>
-              {entity}
-            </option>
-          {/each}
-        </select>
+      <div class="w-48">
+        <CustomSelect
+          name="entityType"
+          bind:value={selectedEntity}
+          options={entityOptions}
+          placeholder={dict.allEntities}
+        />
       </div>
 
       <div class="w-52">

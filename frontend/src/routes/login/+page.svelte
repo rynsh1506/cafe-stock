@@ -65,7 +65,7 @@
             </span>
           </div>
           <div class="text-xs text-[#A69080]">
-            Inventory &amp; Procurement System
+            {dict.brandSubtitle}
           </div>
         </div>
       </div>
@@ -87,21 +87,19 @@
             d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"
           />
         </svg>
-        <span>From Purchase Request to Stock Updated</span>
+        <span>{dict.loginHeroBadge}</span>
       </div>
 
       <h1
         class="font-serif text-3xl leading-tight font-bold tracking-tight text-white sm:text-4xl lg:text-5xl"
       >
-        Stock in order.
+        {dict.loginHeroTitle1}
         <br />
-        <span class="text-[#D8A57A]">Craft intact.</span>
+        <span class="text-[#D8A57A]">{dict.loginHeroTitle2}</span>
       </h1>
 
       <p class="max-w-md text-sm leading-relaxed text-[#D0C2B6] sm:text-base">
-        A unified system recording the entire cafe procurement cycle—from
-        Purchase Requests and managerial Approvals to Purchase Orders and Goods
-        Receipts with reliable, consistent stock balances.
+        {dict.loginHeroDesc}
       </p>
 
       <!-- Feature Highlights -->
@@ -117,9 +115,7 @@
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
             <polyline points="22 4 12 14.01 9 11.01" />
           </svg>
-          <span>
-            Single aggregate payload contract for rapid transactional flows
-          </span>
+          <span>{dict.loginFeature1}</span>
         </div>
         <div class="flex items-center gap-2.5">
           <svg
@@ -132,9 +128,7 @@
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
             <polyline points="22 4 12 14.01 9 11.01" />
           </svg>
-          <span>
-            Strict separation of current stock balances and append-only ledger
-          </span>
+          <span>{dict.loginFeature2}</span>
         </div>
         <div class="flex items-center gap-2.5">
           <svg
@@ -147,7 +141,7 @@
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
             <polyline points="22 4 12 14.01 9 11.01" />
           </svg>
-          <span>Backend-enforced role authorization (USER &amp; APPROVER)</span>
+          <span>{dict.loginFeature3}</span>
         </div>
       </div>
     </div>
@@ -156,7 +150,7 @@
     <div
       class="relative z-10 border-t border-[#38261E] pt-4 text-[11px] text-[#8C7665]"
     >
-      Group 2 • Inventory Procurement System © 2026
+      {dict.loginHeroFooter}
     </div>
   </div>
 
@@ -330,8 +324,8 @@
 
         <div class="pt-2 text-center">
           <p class="font-mono text-[11px] text-[#8C7665]">
-            Default credentials: <span class="font-semibold text-[#5A3825]"
-              >staff@cafestock.com</span
+            {dict.loginDemoCredentials}
+            <span class="font-semibold text-[#5A3825]">staff@cafestock.com</span
             >
             / <span class="font-semibold text-[#5A3825]">User123!</span> &bull;
             <span class="font-semibold text-[#5A3825]"

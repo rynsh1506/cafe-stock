@@ -1,5 +1,6 @@
 <script lang="ts">
   import { getDictionary } from "@/lib/i18n";
+  import CustomSelect from "@/lib/components/CustomSelect.svelte";
   import type {
     MasterActionData,
     MasterPageData,
@@ -16,6 +17,16 @@
 
   let activeTab = $state<"products" | "suppliers" | "warehouses">("products");
   let showNewDrawer = $state(false);
+
+  const unitOptions = [
+    { value: "kg", label: "kg" },
+    { value: "liter", label: "liter" },
+    { value: "box", label: "box" },
+    { value: "pack", label: "pack" },
+    { value: "pcs", label: "pcs" },
+    { value: "bottle", label: "bottle" },
+  ];
+  let selectedUnit = $state("kg");
 
   let newButtonLabel = $derived.by(() => {
     if (showNewDrawer) return dict.closeForm;
@@ -160,14 +171,11 @@
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
               >{dict.thUnit}</label
             >
-            <select id="prod-unit" name="unit" class="ui-select">
-              <option value="kg">kg</option>
-              <option value="liter">liter</option>
-              <option value="box">box</option>
-              <option value="pack">pack</option>
-              <option value="pcs">pcs</option>
-              <option value="bottle">bottle</option>
-            </select>
+            <CustomSelect
+              name="unit"
+              bind:value={selectedUnit}
+              options={unitOptions}
+            />
           </div>
           <div>
             <label
