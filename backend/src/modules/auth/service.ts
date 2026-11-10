@@ -14,6 +14,14 @@ import {
 } from "@/utils/crypto";
 import { AppError } from "@/utils/errors";
 import { logger } from "@/utils/logger";
+import {
+  generateBackupCodes,
+  generateTotpCode,
+  generateTotpSecret,
+  generateTotpUri,
+  hashBackupCode,
+  verifyTotpCode,
+} from "@/utils/totp";
 
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 7;
 export const SESSION_COOKIE_NAME = "cafestock_session";
@@ -486,6 +494,21 @@ export async function loginUser(input: LoginInput): Promise<LoginResponse> {
     throw AppError.unauthorized("Invalid email or password");
   }
 
+  if (user.totpEnabled) {
+    return {
+      token: "",
+      requires2Fa: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        isActive: user.isActive,
+        totpEnabled: true,
+      },
+    };
+  }
+
   const token = generateSessionToken();
   const expiresAt = new Date(Date.now() + SESSION_DURATION_MS);
 
@@ -501,6 +524,7 @@ export async function loginUser(input: LoginInput): Promise<LoginResponse> {
     name: user.name,
     role: user.role,
     isActive: user.isActive,
+    totpEnabled: false,
   };
 
   await recordAuditLog({
@@ -518,6 +542,193 @@ export async function loginUser(input: LoginInput): Promise<LoginResponse> {
   return {
     token,
     user: authenticatedUser,
+    requires2Fa: false,
+  };
+}
+
+export async function setup2Fa(user: AuthenticatedUser) {
+  const secret = generateTotpSecret();
+  const uri = generateTotpUri(user.email, secret);
+  const { plainCodes, hashedCodes } = generateBackupCodes();
+
+  return {
+    secret,
+    uri,
+    backupCodes: plainCodes,
+    hashedCodes,
+  };
+}
+
+export async function enable2Fa(
+  user: AuthenticatedUser,
+  code: string,
+  secret: string,
+  hashedBackupCodes?: string[],
+) {
+  const isValid = verifyTotpCode(code, secret);
+  if (!isValid) {
+    throw AppError.badRequest(
+      "INVALID_2FA_CODE",
+      "Kode verifikasi 6-digit Authenticator tidak cocok atau salah",
+    );
+  }
+
+  const backupCodesToStore =
+    hashedBackupCodes && hashedBackupCodes.length > 0
+      ? hashedBackupCodes
+      : generateBackupCodes().hashedCodes;
+
+  await db
+    .update(users)
+    .set({
+      totpSecret: secret,
+      totpEnabled: true,
+      backupCodes: backupCodesToStore,
+    })
+    .where(eq(users.id, user.id));
+
+  await recordAuditLog({
+    actor: { id: user.id, name: user.name, role: user.role },
+    action: "USER_2FA_ENABLED",
+    entityType: "USER",
+    entityId: user.id,
+    summary: `User ${user.email} enabled RFC 6238 Authenticator 2FA`,
+  });
+
+  return {
+    success: true,
+    message: "Autentikasi dua faktor (2FA) berhasil diaktifkan",
+  };
+}
+
+export async function verify2FaLogin(
+  email: string,
+  code: string,
+): Promise<LoginResponse> {
+  const normalizedEmail = email.trim().toLowerCase();
+  const normalizedCode = code.trim().toUpperCase();
+
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, normalizedEmail));
+
+  if (!user || !user.isActive || !user.totpEnabled || !user.totpSecret) {
+    throw AppError.badRequest(
+      "INVALID_2FA_REQUEST",
+      "2FA is not enabled for this account",
+    );
+  }
+
+  let isValid = false;
+  let usedBackupCode = false;
+
+  if (/^\d{6}$/.test(normalizedCode)) {
+    isValid = verifyTotpCode(normalizedCode, user.totpSecret);
+  }
+
+  if (!isValid && user.backupCodes && user.backupCodes.length > 0) {
+    const hashed = hashBackupCode(normalizedCode);
+    const codeIndex = user.backupCodes.indexOf(hashed);
+    if (codeIndex !== -1) {
+      isValid = true;
+      usedBackupCode = true;
+      const remaining = [...user.backupCodes];
+      remaining.splice(codeIndex, 1);
+      await db
+        .update(users)
+        .set({ backupCodes: remaining })
+        .where(eq(users.id, user.id));
+    }
+  }
+
+  if (!isValid) {
+    throw AppError.badRequest(
+      "INVALID_2FA_CODE",
+      "Token Authenticator atau kode cadangan tidak valid",
+    );
+  }
+
+  const token = generateSessionToken();
+  const expiresAt = new Date(Date.now() + SESSION_DURATION_MS);
+
+  await db.insert(sessions).values({
+    token,
+    userId: user.id,
+    expiresAt,
+  });
+
+  const authenticatedUser: AuthenticatedUser = {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    isActive: user.isActive,
+    totpEnabled: user.totpEnabled,
+  };
+
+  await recordAuditLog({
+    actor: {
+      id: authenticatedUser.id,
+      name: authenticatedUser.name,
+      role: authenticatedUser.role,
+    },
+    action: usedBackupCode
+      ? "USER_LOGIN_2FA_BACKUP_CODE"
+      : "USER_LOGIN_2FA_TOTP",
+    entityType: "USER",
+    entityId: authenticatedUser.id,
+    summary: `User ${authenticatedUser.email} authenticated via ${usedBackupCode ? "Recovery Backup Code" : "Authenticator TOTP"}`,
+  });
+
+  return {
+    token,
+    user: authenticatedUser,
+    requires2Fa: false,
+  };
+}
+
+export async function disable2Fa(
+  user: AuthenticatedUser,
+  passwordConfirm: string,
+) {
+  const [currentUser] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, user.id));
+
+  if (!currentUser) {
+    throw AppError.notFound("User not found");
+  }
+
+  const isPasswordValid = verifyPassword(
+    passwordConfirm,
+    currentUser.passwordHash,
+  );
+  if (!isPasswordValid) {
+    throw AppError.unauthorized("Password konfirmasi salah");
+  }
+
+  await db
+    .update(users)
+    .set({
+      totpSecret: null,
+      totpEnabled: false,
+      backupCodes: null,
+    })
+    .where(eq(users.id, user.id));
+
+  await recordAuditLog({
+    actor: { id: user.id, name: user.name, role: user.role },
+    action: "USER_2FA_DISABLED",
+    entityType: "USER",
+    entityId: user.id,
+    summary: `User ${user.email} disabled Authenticator 2FA`,
+  });
+
+  return {
+    success: true,
+    message: "Autentikasi dua faktor (2FA) dinonaktifkan",
   };
 }
 
@@ -543,6 +754,7 @@ export async function getUserFromSessionToken(
       name: users.name,
       role: users.role,
       isActive: users.isActive,
+      totpEnabled: users.totpEnabled,
     })
     .from(sessions)
     .innerJoin(users, eq(sessions.userId, users.id))

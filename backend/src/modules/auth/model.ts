@@ -7,6 +7,7 @@ export interface AuthenticatedUser {
   name: string;
   role: UserRole;
   isActive: boolean;
+  totpEnabled?: boolean;
 }
 
 export interface LoginInput {
@@ -17,6 +18,7 @@ export interface LoginInput {
 export interface LoginResponse {
   token: string;
   user: AuthenticatedUser;
+  requires2Fa?: boolean;
 }
 
 export const loginBodySchema = t.Object({
@@ -31,4 +33,18 @@ export const verifyOtpBodySchema = t.Object({
 
 export const approveUserBodySchema = t.Object({
   role: t.Optional(t.Union([t.Literal("USER"), t.Literal("APPROVER")])),
+});
+
+export const enable2FaBodySchema = t.Object({
+  code: t.String({ minLength: 6, maxLength: 6 }),
+  secret: t.String({ minLength: 16 }),
+});
+
+export const verify2FaBodySchema = t.Object({
+  email: t.String({ minLength: 3 }),
+  code: t.String({ minLength: 6, maxLength: 9 }),
+});
+
+export const disable2FaBodySchema = t.Object({
+  password: t.String({ minLength: 1 }),
 });

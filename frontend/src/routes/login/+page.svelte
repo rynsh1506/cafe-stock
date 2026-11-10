@@ -272,6 +272,102 @@
             </div>
           </form>
         </div>
+      {:else if data.status === "2fa_required" || form?.status === "2fa_required"}
+        <!-- 2FA Authenticator Verification View -->
+        <div class="space-y-6">
+          <div class="space-y-2">
+            <div
+              class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#D5C5B5] bg-[#EFE7DE] text-[#5A3825]"
+            >
+              <svg
+                class="h-5 w-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+            </div>
+            <h2 class="font-serif text-2xl font-bold text-[#231712]">
+              Verifikasi 2FA Authenticator
+            </h2>
+            <p class="text-xs text-[#8C7665]">
+              Buka aplikasi Authenticator Anda (Google Authenticator, Authy,
+              atau Apple Passwords) dan masukkan 6 digit token saat ini atau
+              kode pemulihan cadangan.
+            </p>
+          </div>
+
+          {#if form?.error || data.error}
+            <div
+              class="flex items-center gap-2.5 rounded-xl border border-[#F5C2C7] bg-[#FFF5F5] px-4 py-3 text-xs font-semibold text-[#C62828]"
+            >
+              <span class="h-2 w-2 shrink-0 rounded-full bg-[#C62828]"></span>
+              <span>{form?.error || data.error}</span>
+            </div>
+          {/if}
+
+          <form method="POST" action="?/verify2Fa" class="space-y-4">
+            <input
+              type="hidden"
+              name="email"
+              value={data.email ?? form?.email ?? ""}
+            />
+
+            <div class="space-y-1.5">
+              <label
+                for="totpCode"
+                class="block text-xs font-bold tracking-wider text-[#5A4537] uppercase"
+              >
+                Kode Token / Kode Cadangan
+              </label>
+              <input
+                id="totpCode"
+                name="code"
+                type="text"
+                maxlength="9"
+                required
+                autocomplete="one-time-code"
+                placeholder="123456 atau XXXX-XXXX"
+                class="w-full rounded-xl border border-[#DDD2C4] bg-white py-3 text-center font-mono text-xl tracking-widest text-[#231712] placeholder-[#B5A597] shadow-xs transition focus:border-[#7A4D33] focus:ring-2 focus:ring-[#7A4D33]/15 focus:outline-none"
+              />
+              <p class="text-[11px] text-[#8C7665]">
+                Kode token diperbarui otomatis setiap 30 detik pada aplikasi HP
+                Anda.
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#5A3825] px-4 py-3 text-sm font-bold tracking-wide text-white shadow-md transition hover:bg-[#45281A] hover:shadow-lg active:bg-[#341F14]"
+            >
+              <span>Verifikasi & Masuk</span>
+              <svg
+                class="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
+            </button>
+
+            <div class="text-center">
+              <a
+                href="/login"
+                class="text-xs font-semibold text-[#7A4D33] hover:underline"
+              >
+                ← {dict.backToLogin}
+              </a>
+            </div>
+          </form>
+        </div>
       {:else if data.status === "pending_approval"}
         <!-- Pending Super Admin Approval View -->
         <div class="space-y-6 text-center">

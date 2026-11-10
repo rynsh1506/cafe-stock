@@ -1,11 +1,16 @@
 import { Elysia, t } from "elysia";
 import {
   approveUserBodySchema,
+  disable2FaBodySchema,
+  enable2FaBodySchema,
   loginBodySchema,
+  verify2FaBodySchema,
   verifyOtpBodySchema,
 } from "@/modules/auth/model";
 import {
   approvePendingUser,
+  disable2Fa,
+  enable2Fa,
   extractTokenFromRequest,
   getGoogleAuthUrl,
   handleGoogleCallback,
@@ -16,6 +21,8 @@ import {
   requireApproverUser,
   requireAuthenticatedUser,
   SESSION_COOKIE_NAME,
+  setup2Fa,
+  verify2FaLogin,
   verifyUserOtp,
 } from "@/modules/auth/service";
 
@@ -126,14 +133,55 @@ export const authModule = new Elysia({ prefix: "/api/auth" })
     "/login",
     async ({ body, set }) => {
       const result = await loginUser(body);
-      set.headers["Set-Cookie"] =
-        `${SESSION_COOKIE_NAME}=${encodeURIComponent(result.token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800`;
+      if (!result.requires2Fa && result.token) {
+        set.headers["Set-Cookie"] =
+          `${SESSION_COOKIE_NAME}=${encodeURIComponent(result.token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800`;
+      }
       return {
         data: result,
       };
     },
     {
       body: loginBodySchema,
+    },
+  )
+  .get("/2fa/setup", async ({ request }) => {
+    const user = await requireAuthenticatedUser(request);
+    const data = await setup2Fa(user);
+    return { data };
+  })
+  .post(
+    "/2fa/enable",
+    async ({ request, body }) => {
+      const user = await requireAuthenticatedUser(request);
+      const data = await enable2Fa(user, body.code, body.secret);
+      return { data };
+    },
+    {
+      body: enable2FaBodySchema,
+    },
+  )
+  .post(
+    "/2fa/verify",
+    async ({ body, set }) => {
+      const result = await verify2FaLogin(body.email, body.code);
+      set.headers["Set-Cookie"] =
+        `${SESSION_COOKIE_NAME}=${encodeURIComponent(result.token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800`;
+      return { data: result };
+    },
+    {
+      body: verify2FaBodySchema,
+    },
+  )
+  .post(
+    "/2fa/disable",
+    async ({ request, body }) => {
+      const user = await requireAuthenticatedUser(request);
+      const data = await disable2Fa(user, body.password);
+      return { data };
+    },
+    {
+      body: disable2FaBodySchema,
     },
   )
   .post("/logout", async ({ request, set }) => {

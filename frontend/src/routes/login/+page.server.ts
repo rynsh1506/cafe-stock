@@ -45,7 +45,7 @@ export const actions: Actions = {
     }
 
     const res = await callBackendApi<{
-      data: { token: string; user: AuthUser };
+      data: { token: string; user: AuthUser; requires2Fa?: boolean };
     }>("/api/auth/login", {
       method: "POST",
       body: { email, password },
@@ -55,6 +55,53 @@ export const actions: Actions = {
       return fail(res.status || 401, {
         error: res.errorMessage ?? "Invalid email or password",
         email,
+      });
+    }
+
+    if (res.data.data.requires2Fa) {
+      return {
+        status: "2fa_required",
+        email,
+      };
+    }
+
+    cookies.set(SESSION_COOKIE_NAME, res.data.data.token, {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    throw redirect(303, "/");
+  },
+
+  verify2Fa: async ({ request, cookies }) => {
+    const formData = await request.formData();
+    const email = String(formData.get("email") ?? "").trim();
+    const code = String(formData.get("code") ?? "").trim();
+
+    if (!email || !code) {
+      return fail(400, {
+        error: "Token Authenticator atau kode cadangan wajib diisi",
+        email,
+        status: "2fa_required",
+      });
+    }
+
+    const res = await callBackendApi<{
+      data: { token: string; user: AuthUser };
+    }>("/api/auth/2fa/verify", {
+      method: "POST",
+      body: { email, code },
+    });
+
+    if (!res.ok || !res.data?.data) {
+      return fail(res.status || 400, {
+        error:
+          res.errorMessage ??
+          "Token Authenticator atau kode cadangan tidak valid",
+        email,
+        status: "2fa_required",
       });
     }
 
