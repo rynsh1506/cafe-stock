@@ -82,16 +82,17 @@
   <!-- Roastery Espresso Dropdown Menu -->
   {#if isOpen}
     <div
-      class="absolute top-full left-0 z-50 mt-1.5 max-h-60 w-full min-w-[220px] overflow-y-auto rounded-xl border border-[#EDE4D8] bg-white p-1 shadow-xl transition-all"
+      class="absolute top-full left-0 z-50 mt-1.5 max-h-72 w-full min-w-full overflow-y-auto rounded-xl border border-[#EDE4D8] bg-white p-1 shadow-xl transition-all [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
     >
       {#each options as opt}
         {@const isSelected = opt.value === value}
         <button
           type="button"
-          class="flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition {isSelected
+          class="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-xs transition {isSelected
             ? 'bg-[#F5EDE4] font-bold text-[#5A3825]'
             : 'text-[#4A3B32] hover:bg-[#FAF7F2] hover:text-[#231712]'}"
           onclick={() => handleSelect(opt.value)}
+          title={opt.label}
         >
           <span class="truncate">{opt.label}</span>
           {#if isSelected}

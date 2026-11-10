@@ -15,7 +15,9 @@
   } = $props();
   let dict = $derived(getDictionary(data.lang));
 
-  let activeTab = $state<"products" | "suppliers" | "warehouses">("products");
+  let activeTab = $state<"products" | "suppliers" | "warehouses" | "users">(
+    "products",
+  );
   let showNewDrawer = $state(false);
 
   const unitOptions = [
@@ -32,7 +34,8 @@
     if (showNewDrawer) return dict.closeForm;
     if (activeTab === "products") return dict.newProduct;
     if (activeTab === "suppliers") return dict.newSupplier;
-    return dict.newWarehouse;
+    if (activeTab === "warehouses") return dict.newWarehouse;
+    return "";
   });
 </script>
 
@@ -77,15 +80,28 @@
         >
           {dict.warehousesSection} ({data.warehouses.length})
         </button>
+        {#if data.isApprover}
+          <button
+            type="button"
+            onclick={() => (activeTab = "users")}
+            class="ui-tab cursor-pointer {activeTab === 'users'
+              ? 'ui-tab-active'
+              : ''}"
+          >
+            {dict.pendingAccounts} ({data.pendingUsers.length})
+          </button>
+        {/if}
       </div>
 
-      <button
-        type="button"
-        onclick={() => (showNewDrawer = !showNewDrawer)}
-        class="ui-btn cursor-pointer"
-      >
-        {newButtonLabel}
-      </button>
+      {#if activeTab !== "users"}
+        <button
+          type="button"
+          onclick={() => (showNewDrawer = !showNewDrawer)}
+          class="ui-btn cursor-pointer"
+        >
+          {newButtonLabel}
+        </button>
+      {/if}
     </div>
   </div>
 
@@ -459,7 +475,7 @@
           </tbody>
         </table>
       </div>
-    {:else}
+    {:else if activeTab === "warehouses"}
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-left text-xs">
           <thead>
@@ -487,6 +503,86 @@
             {/each}
           </tbody>
         </table>
+      </div>
+    {:else if activeTab === "users"}
+      <div class="overflow-x-auto">
+        {#if data.pendingUsers.length === 0}
+          <div class="p-12 text-center text-xs text-[#8C7665]">
+            <p class="font-serif text-base font-bold text-[#2E1F16]">
+              {dict.noPendingUsers}
+            </p>
+            <p class="mt-1 text-[#A8988B]">
+              Semua akun pengguna yang terdaftar telah aktif atau diverifikasi.
+            </p>
+          </div>
+        {:else}
+          <table class="w-full border-collapse text-left text-xs">
+            <thead>
+              <tr
+                class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
+              >
+                <th class="px-5 py-3.5">Nama & Profil</th>
+                <th class="px-5 py-3.5">{dict.emailLabel}</th>
+                <th class="px-5 py-3.5">{dict.registeredAt}</th>
+                <th class="px-5 py-3.5 text-right">{dict.actions}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#F5EDE4]">
+              {#each data.pendingUsers as u}
+                <tr class="transition hover:bg-[#FAF7F2]">
+                  <td class="px-5 py-3.5">
+                    <div class="flex items-center gap-2.5">
+                      <div
+                        class="flex h-8 w-8 items-center justify-center rounded-full border border-[#D5C5B5] bg-[#EFE7DE] text-xs font-bold text-[#5A3825]"
+                      >
+                        {u.name.slice(0, 2).toUpperCase()}
+                      </div>
+                      <span class="font-semibold text-[#2E1F16]">{u.name}</span>
+                    </div>
+                  </td>
+                  <td class="px-5 py-3.5 font-mono text-[#5A3825]">{u.email}</td
+                  >
+                  <td class="px-5 py-3.5 text-[#6A574A]">
+                    {new Date(u.createdAt).toLocaleString()}
+                  </td>
+                  <td class="px-5 py-3.5 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                      <form
+                        method="POST"
+                        action="?/approveUser"
+                        class="inline-flex items-center gap-1.5"
+                      >
+                        <input type="hidden" name="id" value={u.id} />
+                        <select
+                          name="role"
+                          class="cursor-pointer rounded-lg border border-[#DDD2C4] bg-white px-2 py-1 text-[11px] text-[#2E1F16]"
+                        >
+                          <option value="USER">Staff (USER)</option>
+                          <option value="APPROVER">Manajer (APPROVER)</option>
+                        </select>
+                        <button
+                          type="submit"
+                          class="cursor-pointer rounded-lg bg-[#5A3825] px-3 py-1 text-[11px] font-bold text-white transition hover:bg-[#45281A]"
+                        >
+                          {dict.approveAccount}
+                        </button>
+                      </form>
+                      <form method="POST" action="?/rejectUser" class="inline">
+                        <input type="hidden" name="id" value={u.id} />
+                        <button
+                          type="submit"
+                          class="cursor-pointer rounded-lg border border-[#F5C2C7] bg-[#FFF5F5] px-2.5 py-1 text-[11px] font-bold text-[#C62828] transition hover:bg-[#FFEBEE]"
+                        >
+                          {dict.rejectAccount}
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        {/if}
       </div>
     {/if}
   </div>

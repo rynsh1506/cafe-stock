@@ -1,17 +1,417 @@
-import { and, eq, gt } from "drizzle-orm";
+import { and, desc, eq, gt } from "drizzle-orm";
 import { db } from "@/db/index";
-import { sessions, users } from "@/db/schema";
+import { otpVerifications, sessions, users } from "@/db/schema";
 import type {
   AuthenticatedUser,
   LoginInput,
   LoginResponse,
 } from "@/modules/auth/model";
 import { recordAuditLog } from "@/utils/audit";
-import { generateSessionToken, verifyPassword } from "@/utils/crypto";
+import {
+  generateSessionToken,
+  hashPassword,
+  verifyPassword,
+} from "@/utils/crypto";
 import { AppError } from "@/utils/errors";
+import { logger } from "@/utils/logger";
 
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 7;
 export const SESSION_COOKIE_NAME = "cafestock_session";
+
+export function getGoogleAuthUrl(): string {
+  const clientId = process.env.GOOGLE_CLIENT_ID || "";
+  const redirectUri =
+    process.env.GOOGLE_REDIRECT_URI ||
+    "http://localhost:3000/api/auth/google/callback";
+
+  const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+  url.searchParams.set("client_id", clientId);
+  url.searchParams.set("redirect_uri", redirectUri);
+  url.searchParams.set("response_type", "code");
+  url.searchParams.set("scope", "openid email profile");
+  url.searchParams.set("access_type", "offline");
+  url.searchParams.set("prompt", "consent");
+  return url.toString();
+}
+
+export type GoogleOAuthResult =
+  | { type: "LOGGED_IN"; token: string; user: AuthenticatedUser }
+  | { type: "OTP_REQUIRED"; email: string; otpCode: string }
+  | { type: "PENDING_APPROVAL"; email: string };
+
+export async function handleGoogleCallback(
+  code: string,
+): Promise<GoogleOAuthResult> {
+  const clientId = process.env.GOOGLE_CLIENT_ID || "";
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET || "";
+  const redirectUri =
+    process.env.GOOGLE_REDIRECT_URI ||
+    "http://localhost:3000/api/auth/google/callback";
+
+  let email = "";
+  let name = "Google User";
+  let picture: string | null = null;
+  let sub: string | null = null;
+
+  try {
+    const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
+        grant_type: "authorization_code",
+      }),
+    });
+
+    const tokenData = (await tokenRes.json()) as {
+      access_token?: string;
+      error?: string;
+      error_description?: string;
+    };
+
+    if (!tokenRes.ok || !tokenData.access_token) {
+      throw new Error(
+        tokenData.error_description ||
+          tokenData.error ||
+          "Failed to exchange code",
+      );
+    }
+
+    const userInfoRes = await fetch(
+      "https://www.googleapis.com/oauth2/v3/userinfo",
+      {
+        headers: { Authorization: `Bearer ${tokenData.access_token}` },
+      },
+    );
+
+    const profile = (await userInfoRes.json()) as {
+      email?: string;
+      name?: string;
+      picture?: string;
+      sub?: string;
+    };
+
+    email = (profile.email || "").toLowerCase().trim();
+    name = profile.name || email.split("@")[0] || "Google User";
+    picture = profile.picture || null;
+    sub = profile.sub || null;
+  } catch (err) {
+    logger.error("Google OAuth token exchange error", {
+      error: err instanceof Error ? err.message : String(err),
+    });
+    throw AppError.badRequest(
+      "GOOGLE_OAUTH_FAILED",
+      `Google OAuth verification failed: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+
+  if (!email) {
+    throw AppError.badRequest(
+      "INVALID_EMAIL",
+      "No email received from Google profile",
+    );
+  }
+
+  const existingAllUsers = await db.select({ id: users.id }).from(users);
+  const [existingUser] = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, email));
+
+  // Case 1: First user ever in the entire database => Super Admin!
+  if (existingAllUsers.length === 0) {
+    const [superAdmin] = await db
+      .insert(users)
+      .values({
+        email,
+        name: `${name} (Super Admin)`,
+        passwordHash: hashPassword(crypto.randomUUID()),
+        role: "APPROVER",
+        isActive: true,
+        avatarUrl: picture,
+        googleId: sub,
+      })
+      .returning();
+
+    const token = generateSessionToken();
+    const expiresAt = new Date(Date.now() + SESSION_DURATION_MS);
+    await db.insert(sessions).values({
+      token,
+      userId: superAdmin.id,
+      expiresAt,
+    });
+
+    const authenticatedUser: AuthenticatedUser = {
+      id: superAdmin.id,
+      email: superAdmin.email,
+      name: superAdmin.name,
+      role: superAdmin.role,
+      isActive: superAdmin.isActive,
+    };
+
+    await recordAuditLog({
+      actor: {
+        id: superAdmin.id,
+        name: superAdmin.name,
+        role: superAdmin.role,
+      },
+      action: "SUPER_ADMIN_INITIALIZED",
+      entityType: "USER",
+      entityId: superAdmin.id,
+      summary: `Initial Super Admin ${superAdmin.email} registered and authorized via Google OAuth`,
+    });
+
+    return {
+      type: "LOGGED_IN",
+      token,
+      user: authenticatedUser,
+    };
+  }
+
+  // Case 2: Existing user
+  if (existingUser) {
+    if (existingUser.isActive) {
+      const token = generateSessionToken();
+      const expiresAt = new Date(Date.now() + SESSION_DURATION_MS);
+      await db.insert(sessions).values({
+        token,
+        userId: existingUser.id,
+        expiresAt,
+      });
+
+      const authenticatedUser: AuthenticatedUser = {
+        id: existingUser.id,
+        email: existingUser.email,
+        name: existingUser.name,
+        role: existingUser.role,
+        isActive: existingUser.isActive,
+      };
+
+      await recordAuditLog({
+        actor: {
+          id: existingUser.id,
+          name: existingUser.name,
+          role: existingUser.role,
+        },
+        action: "USER_LOGIN_OAUTH",
+        entityType: "USER",
+        entityId: existingUser.id,
+        summary: `User ${existingUser.email} signed in via Google OAuth`,
+      });
+
+      return {
+        type: "LOGGED_IN",
+        token,
+        user: authenticatedUser,
+      };
+    }
+
+    // Account awaiting Super Admin confirmation
+    await recordAuditLog({
+      actor: {
+        id: existingUser.id,
+        name: existingUser.name,
+        role: existingUser.role,
+      },
+      action: "USER_LOGIN_PENDING_APPROVAL",
+      entityType: "USER",
+      entityId: existingUser.id,
+      summary: `User ${existingUser.email} attempted login, pending Super Admin confirmation`,
+    });
+
+    return {
+      type: "PENDING_APPROVAL",
+      email: existingUser.email,
+    };
+  }
+
+  // Case 3: Subsequent user (2nd user and onwards) - New account registration
+  const [newUser] = await db
+    .insert(users)
+    .values({
+      email,
+      name,
+      passwordHash: hashPassword(crypto.randomUUID()),
+      role: "USER",
+      isActive: false, // Inactive until Super Admin confirmation!
+      avatarUrl: picture,
+      googleId: sub,
+    })
+    .returning();
+
+  // Generate 6-digit OTP code
+  const otpCode = String(Math.floor(100000 + Math.random() * 900000));
+  const otpExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+
+  await db.insert(otpVerifications).values({
+    email: newUser.email,
+    code: otpCode,
+    expiresAt: otpExpiry,
+    isVerified: false,
+  });
+
+  await recordAuditLog({
+    actor: {
+      id: newUser.id,
+      name: newUser.name,
+      role: newUser.role,
+    },
+    action: "USER_OAUTH_REGISTER_OTP_REQUIRED",
+    entityType: "USER",
+    entityId: newUser.id,
+    summary: `New account ${newUser.email} created via Google OAuth. OTP generated, awaiting Super Admin confirmation`,
+  });
+
+  return {
+    type: "OTP_REQUIRED",
+    email: newUser.email,
+    otpCode,
+  };
+}
+
+export async function verifyUserOtp(
+  email: string,
+  code: string,
+): Promise<{ success: boolean; message: string }> {
+  const normalizedEmail = email.trim().toLowerCase();
+  const normalizedCode = code.trim();
+
+  const now = new Date();
+  const records = await db
+    .select()
+    .from(otpVerifications)
+    .where(
+      and(
+        eq(otpVerifications.email, normalizedEmail),
+        eq(otpVerifications.code, normalizedCode),
+        eq(otpVerifications.isVerified, false),
+        gt(otpVerifications.expiresAt, now),
+      ),
+    )
+    .orderBy(desc(otpVerifications.createdAt));
+
+  const record = records[0];
+  if (!record) {
+    throw AppError.badRequest(
+      "INVALID_OTP",
+      "Kode OTP salah atau telah kedaluwarsa",
+    );
+  }
+
+  await db
+    .update(otpVerifications)
+    .set({ isVerified: true })
+    .where(eq(otpVerifications.id, record.id));
+
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, normalizedEmail));
+
+  await recordAuditLog({
+    actor: user ? { id: user.id, name: user.name, role: user.role } : null,
+    action: "OTP_VERIFIED",
+    entityType: "USER",
+    entityId: user ? user.id : normalizedEmail,
+    summary: `OTP successfully verified for ${normalizedEmail}. Account status is awaiting Super Admin confirmation`,
+  });
+
+  return {
+    success: true,
+    message:
+      "OTP berhasil diverifikasi. Akun Anda menunggu konfirmasi dari Super Admin.",
+  };
+}
+
+export async function listPendingUsers(admin: AuthenticatedUser) {
+  if (admin.role !== "APPROVER") {
+    throw AppError.forbidden("Only approvers can view pending users");
+  }
+
+  return await db
+    .select({
+      id: users.id,
+      email: users.email,
+      name: users.name,
+      role: users.role,
+      avatarUrl: users.avatarUrl,
+      createdAt: users.createdAt,
+    })
+    .from(users)
+    .where(eq(users.isActive, false))
+    .orderBy(desc(users.createdAt));
+}
+
+export async function approvePendingUser(
+  admin: AuthenticatedUser,
+  targetUserId: string,
+  newRole: "USER" | "APPROVER" = "USER",
+) {
+  if (admin.role !== "APPROVER") {
+    throw AppError.forbidden("Only approvers can confirm accounts");
+  }
+
+  const [targetUser] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, targetUserId));
+
+  if (!targetUser) {
+    throw AppError.notFound("User not found");
+  }
+
+  await db
+    .update(users)
+    .set({ isActive: true, role: newRole, updatedAt: new Date() })
+    .where(eq(users.id, targetUserId));
+
+  await recordAuditLog({
+    actor: { id: admin.id, name: admin.name, role: admin.role },
+    action: "USER_APPROVED_BY_ADMIN",
+    entityType: "USER",
+    entityId: targetUser.id,
+    summary: `Super Admin ${admin.name} confirmed and activated account ${targetUser.email} with role ${newRole}`,
+  });
+
+  return {
+    id: targetUser.id,
+    email: targetUser.email,
+    name: targetUser.name,
+    role: newRole,
+    isActive: true,
+  };
+}
+
+export async function rejectPendingUser(
+  admin: AuthenticatedUser,
+  targetUserId: string,
+) {
+  if (admin.role !== "APPROVER") {
+    throw AppError.forbidden("Only approvers can reject accounts");
+  }
+
+  const [targetUser] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, targetUserId));
+
+  if (!targetUser) {
+    throw AppError.notFound("User not found");
+  }
+
+  await db.delete(users).where(eq(users.id, targetUserId));
+
+  await recordAuditLog({
+    actor: { id: admin.id, name: admin.name, role: admin.role },
+    action: "USER_REJECTED_BY_ADMIN",
+    entityType: "USER",
+    entityId: targetUser.id,
+    summary: `Super Admin ${admin.name} rejected and deleted registration for ${targetUser.email}`,
+  });
+}
 
 export function extractTokenFromRequest(request: Request): string | null {
   const authHeader = request.headers.get("authorization");

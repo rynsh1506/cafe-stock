@@ -36,6 +36,21 @@ export interface TranslationDictionary {
   emailLabel: string;
   passwordLabel: string;
   signInButton: string;
+  signInWithGoogle: string;
+  orSignInWithEmail: string;
+  otpTitle: string;
+  otpDesc: string;
+  otpPlaceholder: string;
+  verifyOtpButton: string;
+  pendingApprovalTitle: string;
+  pendingApprovalDesc: string;
+  backToLogin: string;
+  manageUsers: string;
+  pendingAccounts: string;
+  approveAccount: string;
+  rejectAccount: string;
+  noPendingUsers: string;
+  registeredAt: string;
   quickDemoAccess: string;
   fillStaffRole: string;
   fillApproverRole: string;
@@ -282,6 +297,23 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     emailLabel: "Alamat Email",
     passwordLabel: "Kata Sandi",
     signInButton: "Masuk Sekarang",
+    signInWithGoogle: "Masuk dengan Google",
+    orSignInWithEmail: "atau masuk dengan kredensial staf",
+    otpTitle: "Verifikasi OTP Akun Baru",
+    otpDesc:
+      "Masukkan 6 digit kode verifikasi untuk melanjutkan proses aktivasi akun Anda.",
+    otpPlaceholder: "Contoh: 123456",
+    verifyOtpButton: "Verifikasi OTP",
+    pendingApprovalTitle: "Menunggu Konfirmasi Super Admin",
+    pendingApprovalDesc:
+      "Akun Anda telah terverifikasi via Google OAuth dan menunggu konfirmasi dari akun pertama (Super Admin) sebelum dapat mengakses sistem.",
+    backToLogin: "Kembali ke Halaman Masuk",
+    manageUsers: "Kelola Pengguna & Persetujuan",
+    pendingAccounts: "Persetujuan Akun Baru",
+    approveAccount: "Konfirmasi & Aktifkan",
+    rejectAccount: "Tolak",
+    noPendingUsers: "Tidak ada akun baru yang menunggu persetujuan.",
+    registeredAt: "Terdaftar Pada",
     quickDemoAccess: "Akses Demo Akun Seeder",
     fillStaffRole: "Isi Akun USER (Staff)",
     fillApproverRole: "Isi Akun APPROVER (Manajer)",
@@ -531,6 +563,23 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     emailLabel: "Email Address",
     passwordLabel: "Password",
     signInButton: "Sign In",
+    signInWithGoogle: "Sign in with Google",
+    orSignInWithEmail: "or sign in with staff credentials",
+    otpTitle: "New Account OTP Verification",
+    otpDesc:
+      "Enter the 6-digit verification code to proceed with your account registration.",
+    otpPlaceholder: "e.g. 123456",
+    verifyOtpButton: "Verify OTP",
+    pendingApprovalTitle: "Awaiting Super Admin Approval",
+    pendingApprovalDesc:
+      "Your account has been verified via Google OAuth and is awaiting confirmation from the initial Super Admin account before access is granted.",
+    backToLogin: "Back to Login",
+    manageUsers: "User Management & Approvals",
+    pendingAccounts: "New Account Approvals",
+    approveAccount: "Approve & Activate",
+    rejectAccount: "Reject",
+    noPendingUsers: "No pending account registrations.",
+    registeredAt: "Registered At",
     quickDemoAccess: "Seeder Demo Accounts",
     fillStaffRole: "Fill USER Account (Staff)",
     fillApproverRole: "Fill APPROVER Account (Manager)",
@@ -778,6 +827,23 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     emailLabel: "メールアドレス",
     passwordLabel: "パスワード",
     signInButton: "ログイン",
+    signInWithGoogle: "Googleでログイン",
+    orSignInWithEmail: "またはスタッフ情報でログイン",
+    otpTitle: "新規アカウントOTP認証",
+    otpDesc:
+      "アカウントの認証手続きを完了するため、6桁の確認コードを入力してください。",
+    otpPlaceholder: "例: 123456",
+    verifyOtpButton: "OTPを認証する",
+    pendingApprovalTitle: "スーパー管理者の承認待ち",
+    pendingApprovalDesc:
+      "Google OAuth認証が完了しました。システムを利用するには、初期スーパー管理者アカウントによる承認が必要です。",
+    backToLogin: "ログイン画面に戻る",
+    manageUsers: "ユーザー管理・承認",
+    pendingAccounts: "新規アカウント承認",
+    approveAccount: "承認して有効化",
+    rejectAccount: "却下",
+    noPendingUsers: "承認待ちのアカウントはありません。",
+    registeredAt: "登録日時",
     quickDemoAccess: "デモアカウント",
     fillStaffRole: "USER (スタッフ) を入力",
     fillApproverRole: "APPROVER (承認者) を入力",

@@ -1,14 +1,125 @@
-import { Elysia } from "elysia";
-import { loginBodySchema } from "@/modules/auth/model";
+import { Elysia, t } from "elysia";
 import {
+  approveUserBodySchema,
+  loginBodySchema,
+  verifyOtpBodySchema,
+} from "@/modules/auth/model";
+import {
+  approvePendingUser,
   extractTokenFromRequest,
+  getGoogleAuthUrl,
+  handleGoogleCallback,
+  listPendingUsers,
   loginUser,
   logoutSession,
+  rejectPendingUser,
+  requireApproverUser,
   requireAuthenticatedUser,
   SESSION_COOKIE_NAME,
+  verifyUserOtp,
 } from "@/modules/auth/service";
 
 export const authModule = new Elysia({ prefix: "/api/auth" })
+  .get("/google", ({ query, set }) => {
+    const url = getGoogleAuthUrl();
+    if (query?.json === "true") {
+      return { data: { url } };
+    }
+    set.redirect = url;
+  })
+  .get(
+    "/google/callback",
+    async ({ query, set }) => {
+      const code = query?.code;
+      const error = query?.error;
+
+      if (error || !code) {
+        set.redirect = `/login?error=${encodeURIComponent(error || "Google authentication was cancelled or failed")}`;
+        return;
+      }
+
+      try {
+        const result = await handleGoogleCallback(code);
+        if (result.type === "LOGGED_IN") {
+          set.headers["Set-Cookie"] =
+            `${SESSION_COOKIE_NAME}=${encodeURIComponent(result.token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800`;
+          set.redirect = "/";
+          return;
+        }
+
+        if (result.type === "OTP_REQUIRED") {
+          set.redirect = `/login?status=otp_required&email=${encodeURIComponent(result.email)}&hint=${encodeURIComponent(result.otpCode)}`;
+          return;
+        }
+
+        if (result.type === "PENDING_APPROVAL") {
+          set.redirect = `/login?status=pending_approval&email=${encodeURIComponent(result.email)}`;
+          return;
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        set.redirect = `/login?error=${encodeURIComponent(msg)}`;
+      }
+    },
+    {
+      query: t.Object({
+        code: t.Optional(t.String()),
+        error: t.Optional(t.String()),
+      }),
+    },
+  )
+  .post(
+    "/otp/verify",
+    async ({ body }) => {
+      const result = await verifyUserOtp(body.email, body.code);
+      return {
+        data: result,
+      };
+    },
+    {
+      body: verifyOtpBodySchema,
+    },
+  )
+  .get("/pending-users", async ({ request }) => {
+    const admin = await requireApproverUser(request);
+    const pending = await listPendingUsers(admin);
+    return {
+      data: pending,
+    };
+  })
+  .post(
+    "/users/:id/approve",
+    async ({ request, params, body }) => {
+      const admin = await requireApproverUser(request);
+      const approved = await approvePendingUser(admin, params.id, body.role);
+      return {
+        data: approved,
+      };
+    },
+    {
+      params: t.Object({
+        id: t.String(),
+      }),
+      body: approveUserBodySchema,
+    },
+  )
+  .post(
+    "/users/:id/reject",
+    async ({ request, params }) => {
+      const admin = await requireApproverUser(request);
+      await rejectPendingUser(admin, params.id);
+      return {
+        data: {
+          success: true,
+        },
+      };
+    },
+    {
+      params: t.Object({
+        id: t.String(),
+      }),
+    },
+  )
   .post(
     "/login",
     async ({ body, set }) => {
