@@ -18,10 +18,17 @@
   $effect(() => {
     selectedWarehouse = data.warehouseFilter || "";
   });
+  let totalStockUnits = $derived(
+    data.balances.reduce((acc, b) => acc + Number(b.quantity), 0),
+  );
+  let lowStockCount = $derived(
+    data.balances.filter((b) => Number(b.quantity) <= Number(b.minStock))
+      .length,
+  );
 </script>
 
 <div class="space-y-6">
-  <!-- Header & Filter Bar -->
+  <!-- Header Title -->
   <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
     <div>
       <h1 class="font-serif text-2xl font-bold tracking-tight text-[#231712]">
@@ -31,61 +38,200 @@
         {dict.inventorySubtitle}
       </p>
     </div>
+  </div>
 
-    <div class="flex flex-wrap items-center gap-2.5">
-      <div class="ui-tabs">
-        <button
-          type="button"
-          onclick={() => (activeView = "balances")}
-          class="ui-tab cursor-pointer {activeView === 'balances'
-            ? 'ui-tab-active'
-            : ''}"
+  <!-- KPI Metrics Grid -->
+  <div class="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
+    <div
+      class="ui-card flex items-center gap-3.5 p-4 transition hover:border-[#C68B59] hover:shadow-md"
+    >
+      <div
+        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#FAF2EA] text-[#7A4D33]"
+      >
+        <svg
+          class="h-5 w-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
         >
-          {dict.balancesTab} ({data.balances.length})
-        </button>
-        <button
-          type="button"
-          onclick={() => (activeView = "movements")}
-          class="ui-tab cursor-pointer {activeView === 'movements'
-            ? 'ui-tab-active'
-            : ''}"
+          <path
+            d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"
+          />
+          <path d="m3.3 7 8.7 5 8.7-5" />
+          <path d="M12 22V12" />
+        </svg>
+      </div>
+      <div>
+        <div
+          class="text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
         >
-          {dict.movementsTab} ({data.movements.length})
-        </button>
+          Item Terdaftar
+        </div>
+        <div class="font-mono text-xl font-extrabold text-[#231712]">
+          {data.balances.length}
+          <span class="text-xs font-normal text-[#8C7665]">SKU</span>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="ui-card flex items-center gap-3.5 p-4 transition hover:border-[#C68B59] hover:shadow-md"
+    >
+      <div
+        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#FAF2EA] text-[#7A4D33]"
+      >
+        <svg
+          class="h-5 w-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+        </svg>
+      </div>
+      <div>
+        <div
+          class="text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
+        >
+          Total Stok Fisik
+        </div>
+        <div class="font-mono text-xl font-extrabold text-[#231712]">
+          {totalStockUnits.toLocaleString("id-ID")}
+          <span class="text-xs font-normal text-[#8C7665]">Unit</span>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="ui-card flex items-center gap-3.5 p-4 transition hover:border-[#C68B59] hover:shadow-md {lowStockCount >
+      0
+        ? 'border-amber-300 bg-amber-50/40'
+        : ''}"
+    >
+      <div
+        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl {lowStockCount >
+        0
+          ? 'bg-amber-100 text-amber-800'
+          : 'bg-[#FAF2EA] text-[#7A4D33]'}"
+      >
+        <svg
+          class="h-5 w-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+          />
+          <line x1="12" y1="9" x2="12" y2="13" />
+          <line x1="12" y1="17" x2="12.01" y2="17" />
+        </svg>
+      </div>
+      <div>
+        <div
+          class="text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
+        >
+          Stok Menipis
+        </div>
+        <div
+          class="font-mono text-xl font-extrabold {lowStockCount > 0
+            ? 'text-amber-900'
+            : 'text-[#231712]'}"
+        >
+          {lowStockCount}
+          <span class="text-xs font-normal text-[#8C7665]">Perlu Order</span>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="ui-card flex items-center gap-3.5 p-4 transition hover:border-[#C68B59] hover:shadow-md"
+    >
+      <div
+        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#FAF2EA] text-[#7A4D33]"
+      >
+        <svg
+          class="h-5 w-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+      </div>
+      <div>
+        <div
+          class="text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
+        >
+          Fasilitas Gudang
+        </div>
+        <div class="font-mono text-xl font-extrabold text-[#231712]">
+          {data.warehouses.length}
+          <span class="text-xs font-normal text-[#8C7665]">Lokasi</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Bar & Filter Toolbar -->
+  <div
+    class="flex flex-col justify-between gap-3 border-y border-[#EDE4D8] py-3 sm:flex-row sm:items-center"
+  >
+    <div class="ui-tabs">
+      <button
+        type="button"
+        onclick={() => (activeView = "balances")}
+        class="ui-tab cursor-pointer {activeView === 'balances'
+          ? 'ui-tab-active'
+          : ''}"
+      >
+        {dict.balancesTab} ({data.balances.length})
+      </button>
+      <button
+        type="button"
+        onclick={() => (activeView = "movements")}
+        class="ui-tab cursor-pointer {activeView === 'movements'
+          ? 'ui-tab-active'
+          : ''}"
+      >
+        {dict.movementsTab} ({data.movements.length})
+      </button>
+    </div>
+
+    <form
+      method="GET"
+      action="/inventory"
+      class="flex flex-wrap items-center gap-2"
+    >
+      <div class="w-56">
+        <CustomSelect
+          name="warehouseId"
+          bind:value={selectedWarehouse}
+          options={warehouseOptions}
+          placeholder={dict.allWarehouses}
+        />
       </div>
 
-      <form
-        method="GET"
-        action="/inventory"
-        class="flex flex-wrap items-center gap-2"
+      <label
+        class="ui-btn-outline flex cursor-pointer items-center gap-1.5 text-xs"
       >
-        <div class="w-56">
-          <CustomSelect
-            name="warehouseId"
-            bind:value={selectedWarehouse}
-            options={warehouseOptions}
-            placeholder={dict.allWarehouses}
-          />
-        </div>
+        <input
+          type="checkbox"
+          name="lowStock"
+          value="true"
+          checked={data.lowStockOnly}
+          class="h-3.5 w-3.5 accent-[#5A3825]"
+        />
+        <span>{dict.lowStockOnly}</span>
+      </label>
 
-        <label
-          class="ui-btn-outline flex cursor-pointer items-center gap-1.5 text-xs"
-        >
-          <input
-            type="checkbox"
-            name="lowStock"
-            value="true"
-            checked={data.lowStockOnly}
-            class="h-3.5 w-3.5 accent-[#5A3825]"
-          />
-          <span>{dict.lowStockOnly}</span>
-        </label>
-
-        <button type="submit" class="ui-btn cursor-pointer"
-          >{dict.filter}</button
-        >
-      </form>
-    </div>
+      <button type="submit" class="ui-btn cursor-pointer">{dict.filter}</button>
+    </form>
   </div>
 
   <!-- Table Card -->
