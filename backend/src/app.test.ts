@@ -133,6 +133,47 @@ describe("Core Elysia Application", () => {
       expect(response.status).toBe(303);
       expect(response.headers.get("Location")).toBe("/setup");
     });
+
+    it("successfully completes initial setup, initializes root admin, and locks setup", async () => {
+      const response = await app.handle(
+        new Request("http://localhost:3000/api/setup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            adminName: "Owner Admin",
+            adminEmail: "owner@cafestock.com",
+            adminPassword: "Password123!",
+            cafeName: "CafeStock Roastery",
+          }),
+        }),
+      );
+      expect(response.status).toBe(201);
+
+      const payload = (await response.json()) as {
+        data: {
+          success: boolean;
+          token: string;
+          user: { id: string; email: string; role: string; isActive: boolean };
+        };
+      };
+      expect(payload.data.success).toBe(true);
+      expect(payload.data.token.length).toBeGreaterThan(20);
+      expect(payload.data.user.role).toBe("APPROVER");
+      expect(payload.data.user.isActive).toBe(true);
+
+      const secondAttempt = await app.handle(
+        new Request("http://localhost:3000/api/setup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            adminName: "Hacker",
+            adminEmail: "hacker@cafestock.com",
+            adminPassword: "Password123!",
+          }),
+        }),
+      );
+      expect(secondAttempt.status).toBe(400);
+    });
   });
 
   describe("RFC 6238 TOTP Authenticator Engine", () => {

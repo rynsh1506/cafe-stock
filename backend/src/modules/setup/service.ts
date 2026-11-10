@@ -116,7 +116,7 @@ export async function executeInitialSetup(input: InitialSetupInput) {
         });
     }
 
-    const sessionToken = generateSecureToken();
+    const sessionToken = generateSessionToken();
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     await tx.insert(sessions).values({
       token: sessionToken,
