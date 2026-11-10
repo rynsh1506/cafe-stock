@@ -27,6 +27,9 @@ export const users = pgTable("users", {
   isActive: boolean("is_active").notNull().default(true),
   avatarUrl: text("avatar_url"),
   googleId: text("google_id"),
+  totpSecret: text("totp_secret"),
+  totpEnabled: boolean("totp_enabled").notNull().default(false),
+  backupCodes: jsonb("backup_codes").$type<string[]>(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
