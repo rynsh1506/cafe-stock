@@ -164,7 +164,7 @@
   {/if}
 {/snippet}
 
-{#if currentPath === "/login" || !data.user}
+{#if currentPath === "/login" || currentPath === "/setup" || !data.user}
   {@render children()}
 {:else}
   <div class="flex h-screen w-full overflow-hidden bg-[#FAF7F2] text-[#2D241E]">

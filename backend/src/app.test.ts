@@ -78,6 +78,35 @@ describe("Core Elysia Application", () => {
     });
   });
 
+  describe("Gitea-Style Initial Setup Wizard", () => {
+    it("returns setup initialization status at GET /api/setup/status", async () => {
+      const response = await app.handle(
+        new Request("http://localhost:3000/api/setup/status"),
+      );
+      expect(response.status).toBe(200);
+
+      const payload = (await response.json()) as {
+        data: { isInitialized: boolean };
+      };
+      expect(typeof payload.data.isInitialized).toBe("boolean");
+    });
+
+    it("rejects invalid setup payload with validation error", async () => {
+      const response = await app.handle(
+        new Request("http://localhost:3000/api/setup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            adminName: "A",
+            adminEmail: "invalid-email",
+            adminPassword: "123",
+          }),
+        }),
+      );
+      expect(response.status).toBe(422);
+    });
+  });
+
   describe("SvelteKit SSR Integration", () => {
     it("renders the SvelteKit SSR login page at GET /login when frontend build is present", async () => {
       const response = await app.handle(

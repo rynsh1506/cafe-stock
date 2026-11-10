@@ -29,7 +29,7 @@ export async function seedDatabase(options?: {
 
   const shouldSeedUsers =
     options?.seedUsers ??
-    (isTest || process.env.SEED_DEFAULT_USERS !== "false");
+    (isTest ? true : process.env.SEED_DEFAULT_USERS === "true");
 
   if (shouldSeedUsers) {
     const defaultUserEmail =
