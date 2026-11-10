@@ -373,7 +373,9 @@ export async function verifyUserOtp(
     .where(eq(users.email, normalizedEmail));
 
   await recordAuditLog({
-    actor: user ? { id: user.id, name: user.name, role: user.role } : null,
+    actor: user
+      ? { id: user.id, name: user.name, role: user.role }
+      : { id: "system", name: normalizedEmail, role: "USER" },
     action: "OTP_VERIFIED",
     entityType: "USER",
     entityId: user ? user.id : normalizedEmail,
@@ -421,7 +423,7 @@ export async function approvePendingUser(
     .where(eq(users.id, targetUserId));
 
   if (!targetUser) {
-    throw AppError.notFound("User not found");
+    throw AppError.notFound("USER_NOT_FOUND", "User not found");
   }
 
   await db
@@ -460,7 +462,7 @@ export async function rejectPendingUser(
     .where(eq(users.id, targetUserId));
 
   if (!targetUser) {
-    throw AppError.notFound("User not found");
+    throw AppError.notFound("USER_NOT_FOUND", "User not found");
   }
 
   await db.delete(users).where(eq(users.id, targetUserId));
@@ -737,7 +739,7 @@ export async function disable2Fa(
     .where(eq(users.id, user.id));
 
   if (!currentUser) {
-    throw AppError.notFound("User not found");
+    throw AppError.notFound("USER_NOT_FOUND", "User not found");
   }
 
   const isPasswordValid = verifyPassword(
