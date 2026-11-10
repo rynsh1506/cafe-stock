@@ -21,3 +21,18 @@ export const InitialSetupRequestSchema = t.Object({
 });
 
 export type InitialSetupInput = typeof InitialSetupRequestSchema.static;
+
+export const UpdateSystemSettingsSchema = t.Object({
+  cafeName: t.Optional(t.String({ maxLength: 100 })),
+  appUrl: t.Optional(t.String({ maxLength: 255 })),
+  smtpHost: t.Optional(t.String({ maxLength: 255 })),
+  smtpPort: t.Optional(t.Number()),
+  smtpUser: t.Optional(t.String({ maxLength: 255 })),
+  smtpPassword: t.Optional(t.String({ maxLength: 255 })),
+  smtpFrom: t.Optional(t.String({ maxLength: 255 })),
+  googleClientId: t.Optional(t.String({ maxLength: 255 })),
+  googleClientSecret: t.Optional(t.String({ maxLength: 255 })),
+});
+
+export type UpdateSystemSettingsInput =
+  typeof UpdateSystemSettingsSchema.static;

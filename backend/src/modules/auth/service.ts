@@ -448,6 +448,198 @@ export async function approvePendingUser(
   };
 }
 
+export async function listAllUsers(admin: AuthenticatedUser) {
+  if (admin.role !== "APPROVER") {
+    throw AppError.forbidden("Only approvers can view user accounts");
+  }
+
+  return await db
+    .select({
+      id: users.id,
+      email: users.email,
+      name: users.name,
+      role: users.role,
+      isActive: users.isActive,
+      avatarUrl: users.avatarUrl,
+      totpEnabled: users.totpEnabled,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt,
+    })
+    .from(users)
+    .orderBy(desc(users.createdAt));
+}
+
+export async function updateUserRole(
+  admin: AuthenticatedUser,
+  targetUserId: string,
+  newRole: "USER" | "APPROVER",
+) {
+  if (admin.role !== "APPROVER") {
+    throw AppError.forbidden("Only approvers can update user roles");
+  }
+
+  const [targetUser] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, targetUserId));
+
+  if (!targetUser) {
+    throw AppError.notFound("USER_NOT_FOUND", "User not found");
+  }
+
+  if (targetUser.role === "APPROVER" && newRole === "USER") {
+    const activeApprovers = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(and(eq(users.role, "APPROVER"), eq(users.isActive, true)));
+
+    if (activeApprovers.length <= 1) {
+      throw AppError.badRequest(
+        "CANNOT_DEMOTE_LAST_APPROVER",
+        "Cannot demote the sole remaining active approver in the system",
+      );
+    }
+  }
+
+  await db
+    .update(users)
+    .set({ role: newRole, updatedAt: new Date() })
+    .where(eq(users.id, targetUserId));
+
+  await recordAuditLog({
+    actor: { id: admin.id, name: admin.name, role: admin.role },
+    action: "USER_ROLE_UPDATED",
+    entityType: "USER",
+    entityId: targetUser.id,
+    summary: `Admin ${admin.name} updated role for ${targetUser.email} to ${newRole}`,
+  });
+
+  return {
+    id: targetUser.id,
+    email: targetUser.email,
+    name: targetUser.name,
+    role: newRole,
+    isActive: targetUser.isActive,
+  };
+}
+
+export async function toggleUserStatus(
+  admin: AuthenticatedUser,
+  targetUserId: string,
+  isActive: boolean,
+) {
+  if (admin.role !== "APPROVER") {
+    throw AppError.forbidden("Only approvers can toggle user active status");
+  }
+
+  if (targetUserId === admin.id && !isActive) {
+    throw AppError.badRequest(
+      "CANNOT_DEACTIVATE_SELF",
+      "You cannot deactivate your own administrative account",
+    );
+  }
+
+  const [targetUser] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, targetUserId));
+
+  if (!targetUser) {
+    throw AppError.notFound("USER_NOT_FOUND", "User not found");
+  }
+
+  if (targetUser.role === "APPROVER" && !isActive) {
+    const activeApprovers = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(and(eq(users.role, "APPROVER"), eq(users.isActive, true)));
+
+    if (activeApprovers.length <= 1) {
+      throw AppError.badRequest(
+        "CANNOT_DEACTIVATE_LAST_APPROVER",
+        "Cannot deactivate the sole remaining active approver in the system",
+      );
+    }
+  }
+
+  await db
+    .update(users)
+    .set({ isActive, updatedAt: new Date() })
+    .where(eq(users.id, targetUserId));
+
+  if (!isActive) {
+    await db.delete(sessions).where(eq(sessions.userId, targetUserId));
+  }
+
+  await recordAuditLog({
+    actor: { id: admin.id, name: admin.name, role: admin.role },
+    action: isActive ? "USER_ACTIVATED" : "USER_DEACTIVATED",
+    entityType: "USER",
+    entityId: targetUser.id,
+    summary: `Admin ${admin.name} ${isActive ? "activated" : "deactivated"} account ${targetUser.email}`,
+  });
+
+  return {
+    id: targetUser.id,
+    email: targetUser.email,
+    name: targetUser.name,
+    role: targetUser.role,
+    isActive,
+  };
+}
+
+export async function deleteUser(
+  admin: AuthenticatedUser,
+  targetUserId: string,
+) {
+  if (admin.role !== "APPROVER") {
+    throw AppError.forbidden("Only approvers can delete accounts");
+  }
+
+  if (targetUserId === admin.id) {
+    throw AppError.badRequest(
+      "CANNOT_DELETE_SELF",
+      "You cannot delete your own administrative account",
+    );
+  }
+
+  const [targetUser] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, targetUserId));
+
+  if (!targetUser) {
+    throw AppError.notFound("USER_NOT_FOUND", "User not found");
+  }
+
+  if (targetUser.role === "APPROVER") {
+    const activeApprovers = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(and(eq(users.role, "APPROVER"), eq(users.isActive, true)));
+
+    if (activeApprovers.length <= 1) {
+      throw AppError.badRequest(
+        "CANNOT_DELETE_LAST_APPROVER",
+        "Cannot delete the sole remaining active approver in the system",
+      );
+    }
+  }
+
+  await db.delete(sessions).where(eq(sessions.userId, targetUserId));
+  await db.delete(users).where(eq(users.id, targetUserId));
+
+  await recordAuditLog({
+    actor: { id: admin.id, name: admin.name, role: admin.role },
+    action: "USER_DELETED_BY_ADMIN",
+    entityType: "USER",
+    entityId: targetUser.id,
+    summary: `Admin ${admin.name} permanently deleted account ${targetUser.email}`,
+  });
+
+  return { success: true };
+}
+
 export async function rejectPendingUser(
   admin: AuthenticatedUser,
   targetUserId: string,

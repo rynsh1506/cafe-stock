@@ -47,6 +47,11 @@ export interface TranslationDictionary {
   backToLogin: string;
   manageUsers: string;
   pendingAccounts: string;
+  usersManagementSection: string;
+  systemSettingsSection: string;
+  confirmLogoutTitle: string;
+  confirmLogoutDesc: string;
+  confirmAction: string;
   approveAccount: string;
   rejectAccount: string;
   noPendingUsers: string;
@@ -310,6 +315,12 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     backToLogin: "Kembali ke Halaman Masuk",
     manageUsers: "Kelola Pengguna & Persetujuan",
     pendingAccounts: "Persetujuan Akun Baru",
+    usersManagementSection: "Kelola Pengguna & Akses",
+    systemSettingsSection: "Pengaturan & Integrasi",
+    confirmLogoutTitle: "Konfirmasi Keluar Sesi",
+    confirmLogoutDesc:
+      "Apakah Anda yakin ingin keluar dari akun CafeStock saat ini?",
+    confirmAction: "Konfirmasi",
     approveAccount: "Konfirmasi & Aktifkan",
     rejectAccount: "Tolak",
     noPendingUsers: "Tidak ada akun baru yang menunggu persetujuan.",
@@ -576,6 +587,12 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     backToLogin: "Back to Login",
     manageUsers: "User Management & Approvals",
     pendingAccounts: "New Account Approvals",
+    usersManagementSection: "Users & Access Control",
+    systemSettingsSection: "System & Integrations",
+    confirmLogoutTitle: "Confirm Sign Out",
+    confirmLogoutDesc:
+      "Are you sure you want to end your current CafeStock session?",
+    confirmAction: "Confirm",
     approveAccount: "Approve & Activate",
     rejectAccount: "Reject",
     noPendingUsers: "No pending account registrations.",
@@ -840,6 +857,11 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     backToLogin: "ログイン画面に戻る",
     manageUsers: "ユーザー管理・承認",
     pendingAccounts: "新規アカウント承認",
+    usersManagementSection: "ユーザー＆アクセス管理",
+    systemSettingsSection: "システム・連携設定",
+    confirmLogoutTitle: "ログアウトの確認",
+    confirmLogoutDesc: "現在のCafeStockセッションを終了してもよろしいですか？",
+    confirmAction: "確認",
     approveAccount: "承認して有効化",
     rejectAccount: "却下",
     noPendingUsers: "承認待ちのアカウントはありません。",

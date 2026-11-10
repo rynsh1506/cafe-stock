@@ -17,6 +17,33 @@ export interface PendingUser {
   createdAt: string;
 }
 
+export interface UserAccountItem {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  isActive: boolean;
+  avatarUrl: string | null;
+  totpEnabled: boolean | null;
+  createdAt: string;
+  updatedAt: string | null;
+}
+
+export interface SystemSettingsData {
+  cafeName: string;
+  appUrl: string;
+  smtpHost: string;
+  smtpPort: number;
+  smtpUser: string;
+  smtpFrom: string;
+  hasSmtpPassword: boolean;
+  googleClientId: string;
+  hasGoogleClientSecret: boolean;
+  isSmtpConfigured: boolean;
+  isGoogleOAuthConfigured: boolean;
+  initializedAt?: string;
+}
+
 export interface MasterPageData {
   lang: AppLanguage;
   search: string;
@@ -24,6 +51,9 @@ export interface MasterPageData {
   suppliers: Supplier[];
   warehouses: Warehouse[];
   pendingUsers: PendingUser[];
+  allUsers: UserAccountItem[];
+  systemSettings: SystemSettingsData | null;
+  currentUserId: string;
   isApprover: boolean;
 }
 
@@ -45,32 +75,50 @@ export const load: ServerLoad = async ({
     ? `?limit=50&search=${encodeURIComponent(search)}`
     : "?limit=50";
 
-  const [productsRes, suppliersRes, warehousesRes, pendingRes] =
-    await Promise.all([
-      callBackendApi<PaginatedResponse<Product>>(
-        `/api/products${querySuffix}`,
-        {
+  const isApprover = locals.user.role === "APPROVER";
+
+  const [
+    productsRes,
+    suppliersRes,
+    warehousesRes,
+    pendingRes,
+    allUsersRes,
+    settingsRes,
+  ] = await Promise.all([
+    callBackendApi<PaginatedResponse<Product>>(`/api/products${querySuffix}`, {
+      token: locals.token,
+    }),
+    callBackendApi<PaginatedResponse<Supplier>>(
+      `/api/suppliers${querySuffix}`,
+      {
+        token: locals.token,
+      },
+    ),
+    callBackendApi<PaginatedResponse<Warehouse>>(
+      `/api/warehouses${querySuffix}`,
+      {
+        token: locals.token,
+      },
+    ),
+    isApprover
+      ? callBackendApi<{ data: PendingUser[] }>("/api/auth/pending-users", {
           token: locals.token,
-        },
-      ),
-      callBackendApi<PaginatedResponse<Supplier>>(
-        `/api/suppliers${querySuffix}`,
-        {
+        })
+      : Promise.resolve({ ok: true, data: { data: [] as PendingUser[] } }),
+    isApprover
+      ? callBackendApi<{ data: UserAccountItem[] }>("/api/auth/users", {
           token: locals.token,
-        },
-      ),
-      callBackendApi<PaginatedResponse<Warehouse>>(
-        `/api/warehouses${querySuffix}`,
-        {
+        })
+      : Promise.resolve({ ok: true, data: { data: [] as UserAccountItem[] } }),
+    isApprover
+      ? callBackendApi<{ data: SystemSettingsData }>("/api/setup/settings", {
           token: locals.token,
-        },
-      ),
-      locals.user.role === "APPROVER"
-        ? callBackendApi<{ data: PendingUser[] }>("/api/auth/pending-users", {
-            token: locals.token,
-          })
-        : Promise.resolve({ ok: true, data: { data: [] } }),
-    ]);
+        })
+      : Promise.resolve({
+          ok: true,
+          data: { data: null as SystemSettingsData | null },
+        }),
+  ]);
 
   return {
     lang: locals.lang,
@@ -79,7 +127,10 @@ export const load: ServerLoad = async ({
     suppliers: suppliersRes.data?.data ?? [],
     warehouses: warehousesRes.data?.data ?? [],
     pendingUsers: pendingRes.data?.data ?? [],
-    isApprover: locals.user.role === "APPROVER",
+    allUsers: allUsersRes.data?.data ?? [],
+    systemSettings: settingsRes.data?.data ?? null,
+    currentUserId: locals.user.id,
+    isApprover,
   };
 };
 
@@ -219,5 +270,92 @@ export const actions: Actions = {
       return fail(res.status, { error: res.errorMessage });
     }
     return { success: "Pengajuan akun pengguna berhasil ditolak" };
+  },
+
+  updateUserRole: async ({ request, locals }) => {
+    if (!locals.token) throw redirect(303, "/login");
+    const formData = await request.formData();
+    const id = String(formData.get("id") ?? "");
+    const role = String(formData.get("role") ?? "USER");
+    const res = await callBackendApi(`/api/auth/users/${id}/role`, {
+      method: "PATCH",
+      token: locals.token,
+      body: { role },
+    });
+    if (!res.ok) {
+      return fail(res.status, { error: res.errorMessage });
+    }
+    return { success: `Peran pengguna berhasil diubah menjadi ${role}` };
+  },
+
+  toggleUserStatus: async ({ request, locals }) => {
+    if (!locals.token) throw redirect(303, "/login");
+    const formData = await request.formData();
+    const id = String(formData.get("id") ?? "");
+    const isActive = formData.get("isActive") === "true";
+    const res = await callBackendApi(`/api/auth/users/${id}/status`, {
+      method: "PATCH",
+      token: locals.token,
+      body: { isActive },
+    });
+    if (!res.ok) {
+      return fail(res.status, { error: res.errorMessage });
+    }
+    return {
+      success: isActive
+        ? "Akun pengguna berhasil diaktifkan kembali"
+        : "Akun pengguna berhasil dinonaktifkan / disuspend",
+    };
+  },
+
+  deleteUser: async ({ request, locals }) => {
+    if (!locals.token) throw redirect(303, "/login");
+    const formData = await request.formData();
+    const id = String(formData.get("id") ?? "");
+    const res = await callBackendApi(`/api/auth/users/${id}`, {
+      method: "DELETE",
+      token: locals.token,
+    });
+    if (!res.ok) {
+      return fail(res.status, { error: res.errorMessage });
+    }
+    return { success: "Akun pengguna berhasil dihapus secara permanen" };
+  },
+
+  updateSettings: async ({ request, locals }) => {
+    if (!locals.token) throw redirect(303, "/login");
+    const formData = await request.formData();
+    const cafeName = String(formData.get("cafeName") ?? "").trim();
+    const appUrl = String(formData.get("appUrl") ?? "").trim();
+    const smtpHost = String(formData.get("smtpHost") ?? "").trim();
+    const smtpPortRaw = String(formData.get("smtpPort") ?? "").trim();
+    const smtpUser = String(formData.get("smtpUser") ?? "").trim();
+    const smtpPassword = String(formData.get("smtpPassword") ?? "").trim();
+    const smtpFrom = String(formData.get("smtpFrom") ?? "").trim();
+    const googleClientId = String(formData.get("googleClientId") ?? "").trim();
+    const googleClientSecret = String(
+      formData.get("googleClientSecret") ?? "",
+    ).trim();
+
+    const payload: Record<string, unknown> = {};
+    if (cafeName) payload.cafeName = cafeName;
+    if (appUrl) payload.appUrl = appUrl;
+    if (smtpHost !== undefined) payload.smtpHost = smtpHost;
+    if (smtpPortRaw) payload.smtpPort = Number(smtpPortRaw);
+    if (smtpUser !== undefined) payload.smtpUser = smtpUser;
+    if (smtpPassword) payload.smtpPassword = smtpPassword;
+    if (smtpFrom !== undefined) payload.smtpFrom = smtpFrom;
+    if (googleClientId !== undefined) payload.googleClientId = googleClientId;
+    if (googleClientSecret) payload.googleClientSecret = googleClientSecret;
+
+    const res = await callBackendApi("/api/setup/settings", {
+      method: "PUT",
+      token: locals.token,
+      body: payload,
+    });
+    if (!res.ok) {
+      return fail(res.status, { error: res.errorMessage });
+    }
+    return { success: "Konfigurasi sistem & integrasi berhasil disimpan" };
   },
 };

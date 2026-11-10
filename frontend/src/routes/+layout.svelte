@@ -11,6 +11,7 @@
   let dict = $derived(getDictionary(data.lang));
   let currentPath = $derived(page.url.pathname);
   let mobileMenuOpen = $state(false);
+  let showLogoutConfirm = $state(false);
 
   $effect(() => {
     void currentPath;
@@ -238,26 +239,25 @@
           <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
           <span class="font-medium text-[#D5C5B5]">CafeStock v3.0.0</span>
         </div>
-        <form method="POST" action="/login?/logout">
-          <button
-            type="submit"
-            class="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold text-[#BFAEA0] transition hover:bg-[#341F18] hover:text-[#E57373]"
-            title={dict.logout}
+        <button
+          type="button"
+          onclick={() => (showLogoutConfirm = true)}
+          class="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold text-[#BFAEA0] transition hover:bg-[#341F18] hover:text-[#E57373]"
+          title={dict.logout}
+        >
+          <svg
+            class="h-3.5 w-3.5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
           >
-            <svg
-              class="h-3.5 w-3.5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
-            <span>{dict.logout}</span>
-          </button>
-        </form>
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          <span>{dict.logout}</span>
+        </button>
       </div>
     </aside>
 
@@ -345,14 +345,16 @@
                     : dict.roleStaff}
                 </div>
               </div>
-              <form method="POST" action="/login?/logout">
-                <button
-                  type="submit"
-                  class="rounded-md bg-[#341F18] px-2.5 py-1.5 text-xs font-semibold text-[#E57373]"
-                >
-                  {dict.logout}
-                </button>
-              </form>
+              <button
+                type="button"
+                onclick={() => {
+                  mobileMenuOpen = false;
+                  showLogoutConfirm = true;
+                }}
+                class="cursor-pointer rounded-md bg-[#341F18] px-2.5 py-1.5 text-xs font-semibold text-[#E57373] transition hover:bg-[#48281F]"
+              >
+                {dict.logout}
+              </button>
             </div>
           </div>
         </div>
@@ -513,25 +515,24 @@
                 .join("")}
             </div>
 
-            <form method="POST" action="/login?/logout" class="ml-0.5">
-              <button
-                type="submit"
-                class="cursor-pointer rounded-lg p-1.5 text-[#8C7665] transition hover:bg-[#F5EDE4] hover:text-[#C62828]"
-                title={dict.logout}
+            <button
+              type="button"
+              onclick={() => (showLogoutConfirm = true)}
+              class="cursor-pointer rounded-lg p-1.5 text-[#8C7665] transition hover:bg-[#F5EDE4] hover:text-[#C62828]"
+              title={dict.logout}
+            >
+              <svg
+                class="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
               >
-                <svg
-                  class="h-4 w-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                  <polyline points="16 17 21 12 16 7" />
-                  <line x1="21" y1="12" x2="9" y2="12" />
-                </svg>
-              </button>
-            </form>
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+            </button>
           </div>
         </div>
       </header>
@@ -544,4 +545,67 @@
       </main>
     </div>
   </div>
+
+  <!-- Logout Confirmation Dialog Modal -->
+  {#if showLogoutConfirm}
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs"
+    >
+      <div
+        class="w-full max-w-md space-y-4 rounded-2xl border border-[#EDE4D8] bg-white p-6 shadow-2xl"
+      >
+        <div class="flex items-center gap-3">
+          <div
+            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#F2C2B8] bg-[#FDF2F0] text-[#C62828]"
+          >
+            <svg
+              class="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-serif text-lg font-bold text-[#231712]">
+              {dict.confirmLogoutTitle}
+            </h3>
+            <p class="text-xs text-[#7A6453]">
+              {dict.confirmLogoutDesc}
+            </p>
+          </div>
+        </div>
+        <p
+          class="rounded-xl border border-[#EDE4D8] bg-[#FAF7F2] p-3 text-xs leading-relaxed text-[#5A4537]"
+        >
+          Anda akan mengakhiri sesi kerja aktif sebagai <strong
+            >{data.user.name}</strong
+          >
+          ({data.user.email}). Anda harus memasukkan kredensial login kembali
+          untuk melanjutkan pekerjaan.
+        </p>
+        <div class="flex items-center justify-end gap-3 pt-2">
+          <button
+            type="button"
+            onclick={() => (showLogoutConfirm = false)}
+            class="cursor-pointer rounded-xl border border-[#D5C5B5] px-4 py-2 text-xs font-semibold text-[#5A3825] transition hover:bg-[#F5EFE6]"
+          >
+            {dict.cancel}
+          </button>
+          <form method="POST" action="/login?/logout">
+            <button
+              type="submit"
+              class="cursor-pointer rounded-xl bg-[#C62828] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#A82323]"
+            >
+              Ya, Keluar Sesi
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  {/if}
 {/if}

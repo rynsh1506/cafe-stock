@@ -16,6 +16,8 @@ import {
  * verifying API health checks, structured 404 API error responses, and SSR delegation.
  */
 describe("Core Elysia Application", () => {
+  let enrolledTotpSecret = "";
+
   beforeAll(async () => {
     resetDatabaseConnection("pglite");
     await runMigrations();
@@ -303,6 +305,7 @@ describe("Core Elysia Application", () => {
           hashedCodes: string[];
         };
       };
+      enrolledTotpSecret = setupPayload.data.secret;
       expect(setupPayload.data.qrCodeDataUrl).toMatch(
         /^data:image\/png;base64,/,
       );
@@ -330,6 +333,153 @@ describe("Core Elysia Application", () => {
         data: { success: boolean; message: string };
       };
       expect(enablePayload.data.success).toBe(true);
+    });
+  });
+
+  describe("User Management and System Integration Settings", () => {
+    let adminToken = "";
+    let adminUserId = "";
+
+    it("logs in as the newly initialized owner admin", async () => {
+      const loginRes = await app.handle(
+        new Request("http://localhost:3000/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: "owner@cafestock.com",
+            password: "Password123!",
+          }),
+        }),
+      );
+      expect(loginRes.status).toBe(200);
+      const loginPayload = (await loginRes.json()) as {
+        data: { requires2Fa: boolean };
+      };
+      expect(loginPayload.data.requires2Fa).toBe(true);
+
+      const verifyRes = await app.handle(
+        new Request("http://localhost:3000/api/auth/2fa/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: "owner@cafestock.com",
+            code: generateTotpCode(enrolledTotpSecret),
+          }),
+        }),
+      );
+      expect(verifyRes.status).toBe(200);
+      const verifyPayload = (await verifyRes.json()) as {
+        data: { token: string; user: { id: string } };
+      };
+      adminToken = verifyPayload.data.token;
+      adminUserId = verifyPayload.data.user.id;
+      expect(adminToken.length).toBeGreaterThan(20);
+    });
+
+    it("fetches system configuration settings at GET /api/setup/settings", async () => {
+      const response = await app.handle(
+        new Request("http://localhost:3000/api/setup/settings", {
+          headers: {
+            Authorization: `Bearer ${adminToken}`,
+          },
+        }),
+      );
+      expect(response.status).toBe(200);
+      const payload = (await response.json()) as {
+        data: {
+          cafeName: string;
+          appUrl: string;
+          isSmtpConfigured: boolean;
+          isGoogleOAuthConfigured: boolean;
+        };
+      };
+      expect(payload.data.cafeName).toBeDefined();
+      expect(payload.data.appUrl).toBeDefined();
+    });
+
+    it("updates system configuration settings at PUT /api/setup/settings", async () => {
+      const response = await app.handle(
+        new Request("http://localhost:3000/api/setup/settings", {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${adminToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            cafeName: "CafeStock Roastery Artisanal",
+            smtpHost: "smtp.example.com",
+            smtpPort: 465,
+            smtpUser: "notifications@example.com",
+            googleClientId: "test-google-id.apps.googleusercontent.com",
+          }),
+        }),
+      );
+      expect(response.status).toBe(200);
+      const payload = (await response.json()) as {
+        data: {
+          cafeName: string;
+          smtpHost: string;
+          smtpPort: number;
+          googleClientId: string;
+          isSmtpConfigured: boolean;
+        };
+      };
+      expect(payload.data.cafeName).toBe("CafeStock Roastery Artisanal");
+      expect(payload.data.smtpHost).toBe("smtp.example.com");
+      expect(payload.data.smtpPort).toBe(465);
+      expect(payload.data.googleClientId).toBe(
+        "test-google-id.apps.googleusercontent.com",
+      );
+    });
+
+    it("lists all user accounts at GET /api/auth/users", async () => {
+      const response = await app.handle(
+        new Request("http://localhost:3000/api/auth/users", {
+          headers: {
+            Authorization: `Bearer ${adminToken}`,
+          },
+        }),
+      );
+      expect(response.status).toBe(200);
+      const payload = (await response.json()) as {
+        data: Array<{
+          id: string;
+          email: string;
+          role: string;
+          isActive: boolean;
+        }>;
+      };
+      expect(Array.isArray(payload.data)).toBe(true);
+      expect(payload.data.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("prevents an approver from demoting or deleting their own account when sole active approver", async () => {
+      const demoteResponse = await app.handle(
+        new Request(
+          `http://localhost:3000/api/auth/users/${adminUserId}/role`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${adminToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              role: "USER",
+            }),
+          },
+        ),
+      );
+      expect(demoteResponse.status).toBe(400);
+
+      const deleteResponse = await app.handle(
+        new Request(`http://localhost:3000/api/auth/users/${adminUserId}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${adminToken}`,
+          },
+        }),
+      );
+      expect(deleteResponse.status).toBe(400);
     });
   });
 });

@@ -35,6 +35,14 @@ export const approveUserBodySchema = t.Object({
   role: t.Optional(t.Union([t.Literal("USER"), t.Literal("APPROVER")])),
 });
 
+export const updateUserRoleBodySchema = t.Object({
+  role: t.Union([t.Literal("USER"), t.Literal("APPROVER")]),
+});
+
+export const toggleUserStatusBodySchema = t.Object({
+  isActive: t.Boolean(),
+});
+
 export const enable2FaBodySchema = t.Object({
   code: t.String({ minLength: 6, maxLength: 6 }),
   secret: t.String({ minLength: 16 }),
