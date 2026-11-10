@@ -65,6 +65,42 @@ export interface TranslationDictionary {
   metricVolume: string;
   metricSpend: string;
   metricVelocity: string;
+  bannerSystemTitle: string;
+  roleBadgePrefix: string;
+  welcomeUserPrefix: string;
+  bannerSubtitle: string;
+  reviewPendingCount: (count: number) => string;
+  activeCatalogDesc: string;
+  pendingSignoffDesc: string;
+  inTransitDesc: string;
+  underReorderDesc: string;
+  interactiveTrendsTitle: string;
+  hoverTelemetryNotice: string;
+  realtimeProgression: string;
+  stage: string;
+  stageDraftTitle: string;
+  stageDraftDesc: string;
+  stageApprovalTitle: string;
+  stageApprovalDesc: string;
+  stagePoTitle: string;
+  stagePoDesc: string;
+  stageReceivingTitle: string;
+  stageReceivingDesc: string;
+  stageSettledTitle: string;
+  stageSettledDesc: string;
+  storageTelemetry: string;
+  viewLedger: string;
+  skusStored: string;
+  totalStoredVolume: string;
+  units: string;
+  materialMix: string;
+  activeStockComposition: string;
+  compositeReserveDays: string;
+  operatingDays: string;
+  allStockHealthy: string;
+  complianceLedger: string;
+  auditTrailTitle: string;
+  fullAuditLog: string;
 
   // Master Data
   masterTitle: string;
@@ -237,6 +273,44 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     metricVolume: "Volume Masuk (KG)",
     metricSpend: "Nilai Pembelian (Rp)",
     metricVelocity: "Kecepatan Order (Hari)",
+    bannerSystemTitle: "Manajemen Pengadaan & Inventori Terpadu",
+    roleBadgePrefix: "PERAN:",
+    welcomeUserPrefix: "Selamat datang di CafeStock,",
+    bannerSubtitle:
+      "Konsol operasional terpusat untuk pengajuan PR, persetujuan manajerial, PO pemasok, penerimaan barang dok gudang, dan buku besar saldo inventori.",
+    reviewPendingCount: (count: number) => `Tinjau ${count} Permintaan`,
+    activeCatalogDesc: "Terdaftar aktif dalam katalog",
+    pendingSignoffDesc: "Menunggu persetujuan manajer",
+    inTransitDesc: "Dalam perjalanan & antrean dok",
+    underReorderDesc: "Di bawah batas aman stok",
+    interactiveTrendsTitle: "Tren Operasional Interaktif",
+    hoverTelemetryNotice: "Arahkan kursor pada titik untuk data rinci",
+    realtimeProgression: "Perkembangan Inventori Real-Time",
+    stage: "TAHAP",
+    stageDraftTitle: "Draf Permintaan",
+    stageDraftDesc: "Penyusunan draf staf gudang",
+    stageApprovalTitle: "Menunggu Persetujuan",
+    stageApprovalDesc: "Antrean evaluasi manajer",
+    stagePoTitle: "PO Diterbitkan",
+    stagePoDesc: "Pemasok memproses pengiriman",
+    stageReceivingTitle: "Bongkar Muat Dok",
+    stageReceivingDesc: "Pemeriksaan fisik barang di dok",
+    stageSettledTitle: "Stok Terekonsiliasi",
+    stageSettledDesc: "Saldo buku bertambah secara atomik",
+    storageTelemetry: "Telemetri Kapasitas Gudang",
+    viewLedger: "Lihat Buku Besar",
+    skusStored: "SKU Tersimpan",
+    totalStoredVolume: "Total Volume",
+    units: "Unit",
+    materialMix: "Komposisi Kategori Inventori",
+    activeStockComposition: "Komposisi Stok Aktual",
+    compositeReserveDays: "Estimasi Ketahanan Cadangan",
+    operatingDays: "Hari",
+    allStockHealthy:
+      "Seluruh stok gudang saat ini berada di atas batas aman pemesanan kembali.",
+    complianceLedger: "Buku Kepatuhan Sistem",
+    auditTrailTitle: "Riwayat Audit Pengadaan & Stok Terkini",
+    fullAuditLog: "Seluruh Log Audit",
 
     masterTitle: "Manajemen Master Data (Produk, Supplier, Gudang)",
     masterSubtitle:
@@ -407,6 +481,44 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     metricVolume: "Inbound Volume (KG)",
     metricSpend: "Procurement Capital (IDR)",
     metricVelocity: "Fulfillment Velocity (Days)",
+    bannerSystemTitle: "Procurement & Inventory Management",
+    roleBadgePrefix: "ROLE:",
+    welcomeUserPrefix: "Welcome to CafeStock,",
+    bannerSubtitle:
+      "Centralized operations console for purchase requests, managerial approvals, vendor purchase orders, warehouse dock receipts, and verified stock ledgers.",
+    reviewPendingCount: (count: number) => `Review ${count} Requests`,
+    activeCatalogDesc: "Active catalog registry",
+    pendingSignoffDesc: "Requires manager sign-off",
+    inTransitDesc: "In-transit & dock pending",
+    underReorderDesc: "Under reorder threshold",
+    interactiveTrendsTitle: "Interactive Operational Trends",
+    hoverTelemetryNotice: "Hover nodes for granular telemetry",
+    realtimeProgression: "Real-Time Inventory Progression",
+    stage: "STAGE",
+    stageDraftTitle: "Draft PRs",
+    stageDraftDesc: "Warehouse staff drafting",
+    stageApprovalTitle: "Awaiting Approval",
+    stageApprovalDesc: "Manager sign-off queue",
+    stagePoTitle: "PO Issued",
+    stagePoDesc: "Supplier dispatched",
+    stageReceivingTitle: "Receiving Bay",
+    stageReceivingDesc: "Dock inspection in progress",
+    stageSettledTitle: "Stock Settled",
+    stageSettledDesc: "Ledger updated atomically",
+    storageTelemetry: "Storage Telemetry",
+    viewLedger: "View Ledger",
+    skusStored: "SKUs Stored",
+    totalStoredVolume: "Total Volume",
+    units: "Units",
+    materialMix: "Material Inventory Mix",
+    activeStockComposition: "Active Stock Composition",
+    compositeReserveDays: "Composite Operating Reserve",
+    operatingDays: "Days",
+    allStockHealthy:
+      "All warehouse items are currently above their reorder safety thresholds.",
+    complianceLedger: "System Compliance Ledger",
+    auditTrailTitle: "Recent Stock & Procurement Audit Trail",
+    fullAuditLog: "Full Audit Log",
 
     masterTitle: "Master Data Management (Products, Suppliers, Warehouses)",
     masterSubtitle:
@@ -573,6 +685,43 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     metricVolume: "入荷総量 (KG)",
     metricSpend: "購買総額 (IDR)",
     metricVelocity: "納入速度 (日数)",
+    bannerSystemTitle: "調達・在庫統合管理システム",
+    roleBadgePrefix: "権限:",
+    welcomeUserPrefix: "CafeStockへようこそ、",
+    bannerSubtitle:
+      "購買申請、承認決裁、発注書、受入検収、および検証済み在庫台帳の一元管理コンソール。",
+    reviewPendingCount: (count: number) => `${count} 件の申請をレビュー`,
+    activeCatalogDesc: "カタログ登録済み有効SKU",
+    pendingSignoffDesc: "マネージャー承認待ち",
+    inTransitDesc: "輸送中・検収待ち",
+    underReorderDesc: "安全在庫基準値を下回る",
+    interactiveTrendsTitle: "運用テレメトリー推移",
+    hoverTelemetryNotice: "各データポイントにカーソルを合わせて詳細を表示",
+    realtimeProgression: "在庫推移のリアルタイム進行状況",
+    stage: "ステージ",
+    stageDraftTitle: "起票中 PR",
+    stageDraftDesc: "倉庫担当者による起票",
+    stageApprovalTitle: "承認待ち",
+    stageApprovalDesc: "マネージャー決裁待ち",
+    stagePoTitle: "発注済み (PO)",
+    stagePoDesc: "仕入先出荷手配中",
+    stageReceivingTitle: "入荷受入ドック",
+    stageReceivingDesc: "現品受入・検収実施中",
+    stageSettledTitle: "在庫確定・台帳反映",
+    stageSettledDesc: "在庫台帳へアトミック加算",
+    storageTelemetry: "倉庫別保管容量",
+    viewLedger: "台帳を見る",
+    skusStored: "保管SKU数",
+    totalStoredVolume: "保管総数量",
+    units: "点",
+    materialMix: "原材料カテゴリー構成",
+    activeStockComposition: "実在庫構成比率",
+    compositeReserveDays: "推定運用可能在庫日数",
+    operatingDays: "日分",
+    allStockHealthy: "すべての品目は現在、最低安全基準を満たしています。",
+    complianceLedger: "システム監査・証跡台帳",
+    auditTrailTitle: "直近の調達・入出庫監査ログ",
+    fullAuditLog: "監査ログ一覧",
 
     masterTitle: "マスターデータ管理（商品・サプライヤー・倉庫）",
     masterSubtitle: "商品、取引先サプライヤー、倉庫拠点の一元管理。",
