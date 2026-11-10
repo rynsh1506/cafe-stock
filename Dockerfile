@@ -26,11 +26,16 @@ COPY --from=builder /app/frontend/build ./frontend/build
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 
+# Create persistent data directory for standalone embedded database mode
+RUN mkdir -p /app/data
+VOLUME /app/data
+
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
 ENV MIGRATIONS_FOLDER=/app/drizzle
 ENV FRONTEND_BUILD_DIR=/app/frontend/build
+ENV DATA_DIR=/app/data/pgdata
 
 EXPOSE 3000
 

@@ -1,3 +1,4 @@
+import { existsSync, mkdirSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
 import {
   drizzle as drizzlePglite,
@@ -15,6 +16,7 @@ export type AppDatabase = PostgresJsDatabase<typeof schema>;
 export interface DatabaseConnection {
   db: AppDatabase;
   mode: "postgres" | "pglite";
+  dataDir?: string;
   pgliteInstance?: PGlite;
   sqlClient?: ReturnType<typeof postgres>;
 }
@@ -26,6 +28,7 @@ export function createDatabaseConnection(
   const usePostgres =
     resolvedUrl.length > 0 &&
     resolvedUrl !== "pglite" &&
+    resolvedUrl !== "embedded" &&
     !resolvedUrl.startsWith("pglite://");
 
   if (usePostgres) {
@@ -42,9 +45,30 @@ export function createDatabaseConnection(
     };
   }
 
-  const dataDir = resolvedUrl.startsWith("pglite://")
-    ? resolvedUrl.slice("pglite://".length)
-    : undefined;
+  let dataDir: string | undefined;
+  const isTest =
+    process.env.NODE_ENV === "test" ||
+    Boolean(process.env.BUN_TEST) ||
+    typeof (globalThis as Record<string, unknown>).describe === "function";
+
+  if (resolvedUrl.startsWith("pglite://")) {
+    dataDir = resolvedUrl.slice("pglite://".length);
+  } else if (
+    resolvedUrl === "pglite" ||
+    resolvedUrl === "embedded" ||
+    resolvedUrl === ""
+  ) {
+    if (!isTest) {
+      dataDir =
+        process.env.DATA_DIR ||
+        (existsSync("/app") ? "/app/data/pgdata" : "./data/pgdata");
+    }
+  }
+
+  if (dataDir) {
+    mkdirSync(dataDir, { recursive: true });
+  }
+
   const pgliteInstance = new PGlite(dataDir);
   const pgliteDb: PgliteDatabase<typeof schema> = drizzlePglite(
     pgliteInstance,
@@ -54,6 +78,7 @@ export function createDatabaseConnection(
   return {
     db: pgliteDb as unknown as AppDatabase,
     mode: "pglite",
+    dataDir,
     pgliteInstance,
   };
 }

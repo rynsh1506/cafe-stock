@@ -5,6 +5,7 @@ import { runMigrations } from "@/db/migrate";
 import { products, suppliers, users, warehouses } from "@/db/schema";
 import { seedDatabase } from "@/db/seed";
 import { verifyPassword } from "@/utils/crypto";
+import { createDatabaseConnection } from "@/utils/drizzle";
 
 /**
  * Unit and integration tests for the PostgreSQL Drizzle ORM schema (`src/db/schema.ts`),
@@ -108,6 +109,15 @@ describe("PostgreSQL Drizzle Schema, Migrations & Seeder", () => {
         duplicateSupplierFailed = true;
       }
       expect(duplicateSupplierFailed).toBe(true);
+    });
+  });
+
+  describe("Standalone Embedded Database Connection", () => {
+    it("initializes an embedded pglite connection with a directory path", () => {
+      const conn = createDatabaseConnection("pglite:///tmp/test-pgdata");
+      expect(conn.mode).toBe("pglite");
+      expect(conn.dataDir).toBe("/tmp/test-pgdata");
+      expect(conn.db).toBeDefined();
     });
   });
 });
