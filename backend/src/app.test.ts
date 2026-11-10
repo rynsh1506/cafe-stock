@@ -108,14 +108,22 @@ describe("Core Elysia Application", () => {
   });
 
   describe("SvelteKit SSR Integration", () => {
-    it("renders the SvelteKit SSR login page at GET /login when frontend build is present", async () => {
+    it("renders the SvelteKit SSR setup wizard page at GET /setup when uninitialized", async () => {
       const response = await app.handle(
-        new Request("http://localhost:3000/login"),
+        new Request("http://localhost:3000/setup"),
       );
       expect(response.status).toBe(200);
 
       const html = await response.text();
       expect(html).toContain("CafeStock");
+    });
+
+    it("redirects unauthenticated routes to /setup when uninitialized", async () => {
+      const response = await app.handle(
+        new Request("http://localhost:3000/login"),
+      );
+      expect(response.status).toBe(303);
+      expect(response.headers.get("Location")).toBe("/setup");
     });
   });
 });
