@@ -230,51 +230,34 @@
         {/each}
       </nav>
 
-      <!-- User Footer Profile -->
-      <div class="border-t border-[#38261E] bg-[#1E130E]/80 p-4">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2.5 overflow-hidden">
-            <div
-              class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#6B4430] bg-[#4A3022] text-xs font-bold text-[#E3B892]"
-            >
-              {data.user.name
-                .split(" ")
-                .map((n: string) => n[0])
-                .slice(0, 2)
-                .join("")}
-            </div>
-            <div class="truncate">
-              <div class="truncate text-xs font-semibold text-white">
-                {data.user.name}
-              </div>
-              <div class="truncate text-[10px] text-[#A69080]">
-                {data.user.role === "APPROVER"
-                  ? dict.roleManager
-                  : dict.roleStaff} &bull; {data.user.email}
-              </div>
-            </div>
-          </div>
-
-          <form method="POST" action="/login?/logout">
-            <button
-              type="submit"
-              class="cursor-pointer rounded-md p-1.5 text-[#9A8474] transition hover:bg-[#341F18] hover:text-[#E57373]"
-              title={dict.logout}
-            >
-              <svg
-                class="h-4 w-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <polyline points="16 17 21 12 16 7" />
-                <line x1="21" y1="12" x2="9" y2="12" />
-              </svg>
-            </button>
-          </form>
+      <!-- Sidebar System Footer -->
+      <div
+        class="flex items-center justify-between border-t border-[#38261E] bg-[#1E130E]/80 px-4 py-3 text-xs text-[#A69080]"
+      >
+        <div class="flex items-center gap-2">
+          <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+          <span class="font-medium text-[#D5C5B5]">CafeStock v3.0.0</span>
         </div>
+        <form method="POST" action="/login?/logout">
+          <button
+            type="submit"
+            class="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold text-[#BFAEA0] transition hover:bg-[#341F18] hover:text-[#E57373]"
+            title={dict.logout}
+          >
+            <svg
+              class="h-3.5 w-3.5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+            <span>{dict.logout}</span>
+          </button>
+        </form>
       </div>
     </aside>
 
@@ -529,6 +512,26 @@
                 .slice(0, 2)
                 .join("")}
             </div>
+
+            <form method="POST" action="/login?/logout" class="ml-0.5">
+              <button
+                type="submit"
+                class="cursor-pointer rounded-lg p-1.5 text-[#8C7665] transition hover:bg-[#F5EDE4] hover:text-[#C62828]"
+                title={dict.logout}
+              >
+                <svg
+                  class="h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+              </button>
+            </form>
           </div>
         </div>
       </header>

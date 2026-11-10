@@ -40,7 +40,7 @@
 </script>
 
 <div class="space-y-6">
-  <!-- Header & Tab Bar -->
+  <!-- Header Title -->
   <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
     <div>
       <h1 class="font-serif text-2xl font-bold tracking-tight text-[#231712]">
@@ -50,59 +50,224 @@
         {dict.masterSubtitle}
       </p>
     </div>
+  </div>
 
-    <div class="flex flex-wrap items-center gap-2.5">
-      <div class="ui-tabs">
-        <button
-          type="button"
-          onclick={() => (activeTab = "products")}
-          class="ui-tab cursor-pointer {activeTab === 'products'
-            ? 'ui-tab-active'
-            : ''}"
+  <!-- KPI Metric Overview Cards -->
+  <div class="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
+    <button
+      type="button"
+      onclick={() => (activeTab = "products")}
+      class="ui-card flex cursor-pointer items-center gap-3.5 p-4 text-left transition hover:border-[#C68B59] hover:shadow-md {activeTab ===
+      'products'
+        ? 'border-[#7A4D33] bg-[#FAF7F2] ring-1 ring-[#7A4D33]/20'
+        : ''}"
+    >
+      <div
+        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#FAF2EA] text-[#7A4D33]"
+      >
+        <svg
+          class="h-5 w-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
         >
-          {dict.productsSection} ({data.products.length})
-        </button>
-        <button
-          type="button"
-          onclick={() => (activeTab = "suppliers")}
-          class="ui-tab cursor-pointer {activeTab === 'suppliers'
-            ? 'ui-tab-active'
-            : ''}"
-        >
-          {dict.suppliersSection} ({data.suppliers.length})
-        </button>
-        <button
-          type="button"
-          onclick={() => (activeTab = "warehouses")}
-          class="ui-tab cursor-pointer {activeTab === 'warehouses'
-            ? 'ui-tab-active'
-            : ''}"
-        >
-          {dict.warehousesSection} ({data.warehouses.length})
-        </button>
-        {#if data.isApprover}
-          <button
-            type="button"
-            onclick={() => (activeTab = "users")}
-            class="ui-tab cursor-pointer {activeTab === 'users'
-              ? 'ui-tab-active'
-              : ''}"
-          >
-            {dict.pendingAccounts} ({data.pendingUsers.length})
-          </button>
-        {/if}
+          <path
+            d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"
+          />
+          <path d="m3.3 7 8.7 5 8.7-5" />
+          <path d="M12 22V12" />
+        </svg>
       </div>
+      <div>
+        <div
+          class="text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
+        >
+          {dict.productsSection}
+        </div>
+        <div class="font-mono text-xl font-extrabold text-[#231712]">
+          {data.products.length}
+          <span class="text-xs font-normal text-[#8C7665]">SKU</span>
+        </div>
+      </div>
+    </button>
 
-      {#if activeTab !== "users"}
+    <button
+      type="button"
+      onclick={() => (activeTab = "suppliers")}
+      class="ui-card flex cursor-pointer items-center gap-3.5 p-4 text-left transition hover:border-[#C68B59] hover:shadow-md {activeTab ===
+      'suppliers'
+        ? 'border-[#7A4D33] bg-[#FAF7F2] ring-1 ring-[#7A4D33]/20'
+        : ''}"
+    >
+      <div
+        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#FAF2EA] text-[#7A4D33]"
+      >
+        <svg
+          class="h-5 w-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      </div>
+      <div>
+        <div
+          class="text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
+        >
+          {dict.suppliersSection}
+        </div>
+        <div class="font-mono text-xl font-extrabold text-[#231712]">
+          {data.suppliers.length}
+          <span class="text-xs font-normal text-[#8C7665]">Mitra</span>
+        </div>
+      </div>
+    </button>
+
+    <button
+      type="button"
+      onclick={() => (activeTab = "warehouses")}
+      class="ui-card flex cursor-pointer items-center gap-3.5 p-4 text-left transition hover:border-[#C68B59] hover:shadow-md {activeTab ===
+      'warehouses'
+        ? 'border-[#7A4D33] bg-[#FAF7F2] ring-1 ring-[#7A4D33]/20'
+        : ''}"
+    >
+      <div
+        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#FAF2EA] text-[#7A4D33]"
+      >
+        <svg
+          class="h-5 w-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+      </div>
+      <div>
+        <div
+          class="text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
+        >
+          {dict.warehousesSection}
+        </div>
+        <div class="font-mono text-xl font-extrabold text-[#231712]">
+          {data.warehouses.length}
+          <span class="text-xs font-normal text-[#8C7665]">Lokasi</span>
+        </div>
+      </div>
+    </button>
+
+    {#if data.isApprover}
+      <button
+        type="button"
+        onclick={() => (activeTab = "users")}
+        class="ui-card flex cursor-pointer items-center gap-3.5 p-4 text-left transition hover:border-[#C68B59] hover:shadow-md {activeTab ===
+        'users'
+          ? 'border-[#7A4D33] bg-[#FAF7F2] ring-1 ring-[#7A4D33]/20'
+          : ''} {data.pendingUsers.length > 0
+          ? 'border-amber-300 bg-amber-50/40'
+          : ''}"
+      >
+        <div
+          class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl {data
+            .pendingUsers.length > 0
+            ? 'bg-amber-100 text-amber-800'
+            : 'bg-[#FAF2EA] text-[#7A4D33]'}"
+        >
+          <svg
+            class="h-5 w-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <line x1="19" y1="8" x2="19" y2="14" />
+            <line x1="22" y1="11" x2="16" y2="11" />
+          </svg>
+        </div>
+        <div>
+          <div
+            class="text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
+          >
+            {dict.pendingAccounts}
+          </div>
+          <div
+            class="font-mono text-xl font-extrabold {data.pendingUsers.length >
+            0
+              ? 'text-amber-900'
+              : 'text-[#231712]'}"
+          >
+            {data.pendingUsers.length}
+            <span class="text-xs font-normal text-[#8C7665]">Antrean</span>
+          </div>
+        </div>
+      </button>
+    {/if}
+  </div>
+
+  <!-- Tab Bar & Action Toolbar -->
+  <div
+    class="flex flex-col justify-between gap-3 border-y border-[#EDE4D8] py-3 sm:flex-row sm:items-center"
+  >
+    <div class="ui-tabs">
+      <button
+        type="button"
+        onclick={() => (activeTab = "products")}
+        class="ui-tab cursor-pointer {activeTab === 'products'
+          ? 'ui-tab-active'
+          : ''}"
+      >
+        {dict.productsSection} ({data.products.length})
+      </button>
+      <button
+        type="button"
+        onclick={() => (activeTab = "suppliers")}
+        class="ui-tab cursor-pointer {activeTab === 'suppliers'
+          ? 'ui-tab-active'
+          : ''}"
+      >
+        {dict.suppliersSection} ({data.suppliers.length})
+      </button>
+      <button
+        type="button"
+        onclick={() => (activeTab = "warehouses")}
+        class="ui-tab cursor-pointer {activeTab === 'warehouses'
+          ? 'ui-tab-active'
+          : ''}"
+      >
+        {dict.warehousesSection} ({data.warehouses.length})
+      </button>
+      {#if data.isApprover}
         <button
           type="button"
-          onclick={() => (showNewDrawer = !showNewDrawer)}
-          class="ui-btn cursor-pointer"
+          onclick={() => (activeTab = "users")}
+          class="ui-tab cursor-pointer {activeTab === 'users'
+            ? 'ui-tab-active'
+            : ''}"
         >
-          {newButtonLabel}
+          {dict.pendingAccounts} ({data.pendingUsers.length})
         </button>
       {/if}
     </div>
+
+    {#if activeTab !== "users"}
+      <button
+        type="button"
+        onclick={() => (showNewDrawer = !showNewDrawer)}
+        class="ui-btn cursor-pointer"
+      >
+        {newButtonLabel}
+      </button>
+    {/if}
   </div>
 
   {#if form?.error}
