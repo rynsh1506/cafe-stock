@@ -12,6 +12,7 @@ export interface AuthUser {
   name: string;
   role: UserRole;
   isActive: boolean;
+  totpEnabled?: boolean;
 }
 
 export interface PaginationMeta {

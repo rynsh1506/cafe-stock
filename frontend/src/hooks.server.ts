@@ -52,14 +52,21 @@ export async function handle({
       setupStatus.ok && setupStatus.data?.data?.isInitialized,
     );
 
-    if (!isInitialized && !isSetupRoute) {
+    if (!isInitialized && !pathname.startsWith("/setup")) {
       return new Response(null, {
         status: 303,
         headers: { Location: "/setup" },
       });
     }
 
-    if (isInitialized && isSetupRoute) {
+    if (isInitialized && pathname === "/setup") {
+      return new Response(null, {
+        status: 303,
+        headers: { Location: "/login" },
+      });
+    }
+
+    if (pathname === "/setup/2fa" && !event.locals.user) {
       return new Response(null, {
         status: 303,
         headers: { Location: "/login" },

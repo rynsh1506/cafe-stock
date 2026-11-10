@@ -145,6 +145,6 @@ export const actions: Actions = {
       maxAge: 30 * 24 * 60 * 60,
     });
 
-    throw redirect(303, "/inventory");
+    throw redirect(303, "/setup/2fa");
   },
 };
