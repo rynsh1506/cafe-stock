@@ -17,6 +17,9 @@ export interface TranslationDictionary {
   groupWarehouse: string;
   groupCompliance: string;
   logout: string;
+  roleStaff: string;
+  roleManager: string;
+  inventoryAndProcurement: string;
 
   // Auth / Login
   loginTitle: string;
@@ -101,6 +104,10 @@ export interface TranslationDictionary {
   complianceLedger: string;
   auditTrailTitle: string;
   fullAuditLog: string;
+  aggregateIntake: string;
+  aggregateSpend: string;
+  averageLeadTime: string;
+  slaTarget: string;
 
   // Master Data
   masterTitle: string;
@@ -116,15 +123,37 @@ export interface TranslationDictionary {
   addWarehouseTitle: string;
   skuLabel: string;
   nameLabel: string;
+  categoryLabel: string;
   unitLabel: string;
   minStockLabel: string;
   codeLabel: string;
   contactEmailLabel: string;
   phoneLabel: string;
   addressLabel: string;
+  warehouseTypeLabel: string;
+  capacityLabel: string;
+  initialPriceLabel: string;
   saveProduct: string;
   saveSupplier: string;
   saveWarehouse: string;
+  thSku: string;
+  thProductName: string;
+  thCategory: string;
+  thUnit: string;
+  thMinThreshold: string;
+  thStatus: string;
+  thActions: string;
+  thSupplierCode: string;
+  thSupplierName: string;
+  thContactEmail: string;
+  thPhone: string;
+  thAddress: string;
+  thWarehouseCode: string;
+  thWarehouseName: string;
+  thWarehouseType: string;
+  thCapacity: string;
+  activeStatus: string;
+  inactiveStatus: string;
 
   // Purchase Requests
   prTitle: string;
@@ -222,6 +251,9 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     groupWarehouse: "Gudang & Stok",
     groupCompliance: "Kepatuhan",
     logout: "Keluar",
+    roleStaff: "Staff Roastery (USER)",
+    roleManager: "Manajer Roastery (APPROVER)",
+    inventoryAndProcurement: "Inventori & Pengadaan",
 
     loginTitle: "Masuk ke CafeStock",
     loginSubtitle:
@@ -311,6 +343,10 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     complianceLedger: "Buku Kepatuhan Sistem",
     auditTrailTitle: "Riwayat Audit Pengadaan & Stok Terkini",
     fullAuditLog: "Seluruh Log Audit",
+    aggregateIntake: "total akumulasi masuk",
+    aggregateSpend: "total belanja pengadaan",
+    averageLeadTime: "rerata waktu pemrosesan",
+    slaTarget: "target SLA 1.5 hari",
 
     masterTitle: "Manajemen Master Data (Produk, Supplier, Gudang)",
     masterSubtitle:
@@ -326,15 +362,37 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     addWarehouseTitle: "Tambah Fasilitas Gudang",
     skuLabel: "Kode SKU",
     nameLabel: "Nama Produk",
+    categoryLabel: "Kategori Produk",
     unitLabel: "Satuan (Unit)",
     minStockLabel: "Batas Min. Stok",
     codeLabel: "Kode Entitas",
     contactEmailLabel: "Email Kontak",
     phoneLabel: "No. Telepon",
     addressLabel: "Alamat Operasional",
+    warehouseTypeLabel: "Tipe Fasilitas Gudang",
+    capacityLabel: "Kapasitas Maksimal (Unit)",
+    initialPriceLabel: "Harga Satuan Estimasi (Rp)",
     saveProduct: "Simpan Produk",
     saveSupplier: "Simpan Supplier",
     saveWarehouse: "Simpan Gudang",
+    thSku: "SKU",
+    thProductName: "Nama Produk",
+    thCategory: "Kategori",
+    thUnit: "Satuan",
+    thMinThreshold: "Ambang Min.",
+    thStatus: "Status",
+    thActions: "Aksi",
+    thSupplierCode: "Kode Pemasok",
+    thSupplierName: "Nama Mitra Supplier",
+    thContactEmail: "Email Kontak",
+    thPhone: "No. Telepon",
+    thAddress: "Alamat Operasional",
+    thWarehouseCode: "Kode Gudang",
+    thWarehouseName: "Nama Fasilitas Gudang",
+    thWarehouseType: "Tipe Fasilitas",
+    thCapacity: "Kapasitas (Unit)",
+    activeStatus: "AKTIF",
+    inactiveStatus: "NONAKTIF",
 
     prTitle: "Purchase Request (Permintaan Pembelian)",
     prSubtitle:
@@ -431,6 +489,9 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     groupWarehouse: "Warehouse & Stock",
     groupCompliance: "Compliance",
     logout: "Sign Out",
+    roleStaff: "Roastery Staff (USER)",
+    roleManager: "Roastery Manager (APPROVER)",
+    inventoryAndProcurement: "Inventory & Procurement",
 
     loginTitle: "Sign In to CafeStock",
     loginSubtitle:
@@ -519,6 +580,10 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     complianceLedger: "System Compliance Ledger",
     auditTrailTitle: "Recent Stock & Procurement Audit Trail",
     fullAuditLog: "Full Audit Log",
+    aggregateIntake: "aggregate intake",
+    aggregateSpend: "aggregate procurement spend",
+    averageLeadTime: "average lead time",
+    slaTarget: "1.5d target SLA",
 
     masterTitle: "Master Data Management (Products, Suppliers, Warehouses)",
     masterSubtitle:
@@ -534,15 +599,37 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     addWarehouseTitle: "Add New Warehouse Facility",
     skuLabel: "SKU Code",
     nameLabel: "Product Name",
+    categoryLabel: "Category",
     unitLabel: "Unit",
     minStockLabel: "Min Threshold",
     codeLabel: "Entity Code",
     contactEmailLabel: "Contact Email",
     phoneLabel: "Phone Number",
     addressLabel: "Operational Address",
+    warehouseTypeLabel: "Facility Type",
+    capacityLabel: "Max Capacity (Units)",
+    initialPriceLabel: "Estimated Unit Price (Rp)",
     saveProduct: "Save Product",
     saveSupplier: "Save Supplier",
     saveWarehouse: "Save Warehouse",
+    thSku: "SKU",
+    thProductName: "Product Name",
+    thCategory: "Category",
+    thUnit: "Unit",
+    thMinThreshold: "Min Threshold",
+    thStatus: "Status",
+    thActions: "Actions",
+    thSupplierCode: "Supplier Code",
+    thSupplierName: "Supplier Name",
+    thContactEmail: "Contact Email",
+    thPhone: "Phone",
+    thAddress: "Address",
+    thWarehouseCode: "Warehouse Code",
+    thWarehouseName: "Facility Name",
+    thWarehouseType: "Facility Type",
+    thCapacity: "Capacity (Units)",
+    activeStatus: "ACTIVE",
+    inactiveStatus: "INACTIVE",
 
     prTitle: "Purchase Requests",
     prSubtitle:
@@ -639,6 +726,9 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     groupWarehouse: "倉庫・在庫",
     groupCompliance: "コンプライアンス",
     logout: "ログアウト",
+    roleStaff: "焙煎所スタッフ (USER)",
+    roleManager: "焙煎所マネージャー (APPROVER)",
+    inventoryAndProcurement: "在庫・調達管理",
 
     loginTitle: "CafeStock ログイン",
     loginSubtitle:
@@ -722,6 +812,10 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     complianceLedger: "システム監査・証跡台帳",
     auditTrailTitle: "直近の調達・入出庫監査ログ",
     fullAuditLog: "監査ログ一覧",
+    aggregateIntake: "累計入庫量",
+    aggregateSpend: "累計調達支出",
+    averageLeadTime: "平均リードタイム",
+    slaTarget: "目標SLA 1.5日",
 
     masterTitle: "マスターデータ管理（商品・サプライヤー・倉庫）",
     masterSubtitle: "商品、取引先サプライヤー、倉庫拠点の一元管理。",
@@ -736,15 +830,37 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     addWarehouseTitle: "新規倉庫拠点の追加",
     skuLabel: "SKUコード",
     nameLabel: "商品名",
+    categoryLabel: "カテゴリー",
     unitLabel: "単位",
     minStockLabel: "最小基準値",
     codeLabel: "コード",
     contactEmailLabel: "連絡先メール",
     phoneLabel: "電話番号",
     addressLabel: "所在地",
+    warehouseTypeLabel: "施設タイプ",
+    capacityLabel: "最大収容能力 (ユニット)",
+    initialPriceLabel: "見積単価 (Rp)",
     saveProduct: "商品を保存",
     saveSupplier: "サプライヤーを保存",
     saveWarehouse: "倉庫を保存",
+    thSku: "SKU",
+    thProductName: "商品名",
+    thCategory: "カテゴリー",
+    thUnit: "単位",
+    thMinThreshold: "最小閾値",
+    thStatus: "ステータス",
+    thActions: "操作",
+    thSupplierCode: "仕入先コード",
+    thSupplierName: "仕入先名",
+    thContactEmail: "連絡先メール",
+    thPhone: "電話番号",
+    thAddress: "所在地",
+    thWarehouseCode: "倉庫コード",
+    thWarehouseName: "倉庫施設名",
+    thWarehouseType: "施設タイプ",
+    thCapacity: "収容能力",
+    activeStatus: "有効",
+    inactiveStatus: "無効",
 
     prTitle: "購買依頼 (Purchase Requests)",
     prSubtitle: "原材料の購買申請と承認ワークフロー。",

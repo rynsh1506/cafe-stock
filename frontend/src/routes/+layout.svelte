@@ -206,28 +206,9 @@
               </span>
             </div>
             <div class="text-[11px] tracking-tight text-[#A69080]">
-              Inventory &amp; Procurement
+              {dict.inventoryAndProcurement}
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Role Banner -->
-      <div class="border-b border-[#332119] bg-[#1C120D] px-4 py-3">
-        <div class="flex items-center gap-2">
-          {#if data.user.role === "APPROVER"}
-            <span
-              class="flex items-center gap-1 rounded border border-[#7B532F] bg-[#4A321E] px-2.5 py-1 text-[11px] font-semibold tracking-wider text-[#F3C592] uppercase"
-            >
-              <span>Manager (Approver)</span>
-            </span>
-          {:else}
-            <span
-              class="flex items-center gap-1 rounded border border-[#4A5568] bg-[#2D3748] px-2.5 py-1 text-[11px] font-semibold tracking-wider text-[#90CDF4] uppercase"
-            >
-              <span>Staff (User)</span>
-            </span>
-          {/if}
         </div>
       </div>
 
@@ -271,8 +252,20 @@
               <div class="truncate text-xs font-semibold text-white">
                 {data.user.name}
               </div>
-              <div class="truncate font-mono text-[10px] text-[#9A8474]">
-                {data.user.email}
+              <div class="mt-0.5 flex items-center gap-1.5 truncate">
+                <span
+                  class="rounded border px-1.5 py-0.5 font-sans text-[9px] font-semibold tracking-wider uppercase {data
+                    .user.role === 'APPROVER'
+                    ? 'border-[#7B532F] bg-[#4A321E] text-[#F3C592]'
+                    : 'border-[#5A3E2C] bg-[#382418] text-[#D8A57A]'}"
+                >
+                  {data.user.role === "APPROVER"
+                    ? dict.roleManager
+                    : dict.roleStaff}
+                </span>
+                <span class="truncate font-mono text-[10px] text-[#9A8474]">
+                  {data.user.email}
+                </span>
               </div>
             </div>
           </div>
@@ -335,7 +328,7 @@
                   CafeStock
                 </div>
                 <div class="text-[10px] text-[#A69080]">
-                  Inventory &amp; Procurement
+                  {dict.inventoryAndProcurement}
                 </div>
               </div>
             </div>
@@ -379,7 +372,9 @@
                   {data.user.name}
                 </div>
                 <div class="font-mono text-[10px] text-[#9A8474]">
-                  {data.user.email} ({data.user.role})
+                  {data.user.email} · {data.user.role === "APPROVER"
+                    ? dict.roleManager
+                    : dict.roleStaff}
                 </div>
               </div>
               <form method="POST" action="/login?/logout">
@@ -508,8 +503,8 @@
               </div>
               <div class="text-[10px] font-semibold text-[#8C7665]">
                 {data.user.role === "APPROVER"
-                  ? "Manager (Approver)"
-                  : "Warehouse Staff (User)"}
+                  ? dict.roleManager
+                  : dict.roleStaff}
               </div>
             </div>
             <div
