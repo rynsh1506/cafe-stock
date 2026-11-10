@@ -20,22 +20,23 @@ import {
 } from "@/modules/auth/service";
 
 export const authModule = new Elysia({ prefix: "/api/auth" })
-  .get("/google", ({ query, set }) => {
+  .get("/google", ({ query, redirect }) => {
     const url = getGoogleAuthUrl();
     if (query?.json === "true") {
       return { data: { url } };
     }
-    set.redirect = url;
+    return redirect(url);
   })
   .get(
     "/google/callback",
-    async ({ query, set }) => {
+    async ({ query, redirect, set }) => {
       const code = query?.code;
       const error = query?.error;
 
       if (error || !code) {
-        set.redirect = `/login?error=${encodeURIComponent(error || "Google authentication was cancelled or failed")}`;
-        return;
+        return redirect(
+          `/login?error=${encodeURIComponent(error || "Google authentication was cancelled or failed")}`,
+        );
       }
 
       try {
@@ -43,22 +44,23 @@ export const authModule = new Elysia({ prefix: "/api/auth" })
         if (result.type === "LOGGED_IN") {
           set.headers["Set-Cookie"] =
             `${SESSION_COOKIE_NAME}=${encodeURIComponent(result.token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800`;
-          set.redirect = "/";
-          return;
+          return redirect("/");
         }
 
         if (result.type === "OTP_REQUIRED") {
-          set.redirect = `/login?status=otp_required&email=${encodeURIComponent(result.email)}&hint=${encodeURIComponent(result.otpCode)}`;
-          return;
+          return redirect(
+            `/login?status=otp_required&email=${encodeURIComponent(result.email)}&hint=${encodeURIComponent(result.otpCode)}`,
+          );
         }
 
         if (result.type === "PENDING_APPROVAL") {
-          set.redirect = `/login?status=pending_approval&email=${encodeURIComponent(result.email)}`;
-          return;
+          return redirect(
+            `/login?status=pending_approval&email=${encodeURIComponent(result.email)}`,
+          );
         }
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        set.redirect = `/login?error=${encodeURIComponent(msg)}`;
+        return redirect(`/login?error=${encodeURIComponent(msg)}`);
       }
     },
     {
