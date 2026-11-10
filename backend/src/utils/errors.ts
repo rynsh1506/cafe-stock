@@ -25,11 +25,18 @@ export class AppError extends Error {
     return new AppError(403, "FORBIDDEN", message);
   }
 
-  static notFound(code: string, message: string): AppError {
+  static notFound(
+    codeOrMessage = "RESOURCE_NOT_FOUND",
+    maybeMessage?: string,
+  ): AppError {
+    const code = maybeMessage ? codeOrMessage : "RESOURCE_NOT_FOUND";
+    const message = maybeMessage ?? codeOrMessage;
     return new AppError(404, code, message);
   }
 
-  static unprocessable(code: string, message: string): AppError {
+  static unprocessable(codeOrMessage: string, maybeMessage?: string): AppError {
+    const code = maybeMessage ? codeOrMessage : "UNPROCESSABLE_ENTITY";
+    const message = maybeMessage ?? codeOrMessage;
     return new AppError(422, code, message);
   }
 }
