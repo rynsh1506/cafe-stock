@@ -24,6 +24,15 @@ export interface TranslationDictionary {
   // Auth / Login
   loginTitle: string;
   loginSubtitle: string;
+  loginHeroBadge: string;
+  loginHeroTitle1: string;
+  loginHeroTitle2: string;
+  loginHeroDesc: string;
+  loginFeature1: string;
+  loginFeature2: string;
+  loginFeature3: string;
+  loginHeroFooter: string;
+  loginDemoCredentials: string;
   emailLabel: string;
   passwordLabel: string;
   signInButton: string;
@@ -251,13 +260,25 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     groupWarehouse: "Gudang & Stok",
     groupCompliance: "Kepatuhan",
     logout: "Keluar",
-    roleStaff: "Staff Roastery (USER)",
-    roleManager: "Manajer Roastery (APPROVER)",
+    roleStaff: "Staff Roastery",
+    roleManager: "Manajer Roastery",
     inventoryAndProcurement: "Inventori & Pengadaan",
 
     loginTitle: "Masuk ke CafeStock",
     loginSubtitle:
       "Kelola pengadaan bahan baku kafe, persetujuan PR, pesanan PO, dan penerimaan barang secara atomik.",
+    loginHeroBadge: "Dari Pengajuan Hingga Inventori Terupdate",
+    loginHeroTitle1: "Stok Terkendali.",
+    loginHeroTitle2: "Kualitas Terjaga.",
+    loginHeroDesc:
+      "Sistem terintegrasi pencatatan siklus pengadaan bahan baku kafe—dari Purchase Request, persetujuan manajer, hingga PO dan Goods Receipt dengan saldo konsisten.",
+    loginFeature1:
+      "Alur persetujuan bertingkat terverifikasi (Staff & Manajer)",
+    loginFeature2: "Pemisahan ketat saldo stok aktif dan buku besar mutasi",
+    loginFeature3:
+      "Pencatatan penerimaan barang atomik dengan jejak audit lengkap",
+    loginHeroFooter: "Group 2 • Sistem Pengadaan & Inventori Kafe © 2026",
+    loginDemoCredentials: "Kredensial seeder default:",
     emailLabel: "Alamat Email",
     passwordLabel: "Kata Sandi",
     signInButton: "Masuk Sekarang",
@@ -489,13 +510,24 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     groupWarehouse: "Warehouse & Stock",
     groupCompliance: "Compliance",
     logout: "Sign Out",
-    roleStaff: "Roastery Staff (USER)",
-    roleManager: "Roastery Manager (APPROVER)",
+    roleStaff: "Roastery Staff",
+    roleManager: "Roastery Manager",
     inventoryAndProcurement: "Inventory & Procurement",
 
     loginTitle: "Sign In to CafeStock",
     loginSubtitle:
       "Manage cafe procurement, PR approvals, supplier POs, and atomic Goods Receipts.",
+    loginHeroBadge: "From Purchase Request to Stock Updated",
+    loginHeroTitle1: "Stock in order.",
+    loginHeroTitle2: "Craft intact.",
+    loginHeroDesc:
+      "A unified system recording the entire cafe procurement cycle—from Purchase Requests and managerial approvals to Purchase Orders and Goods Receipts with reliable stock balances.",
+    loginFeature1: "Multi-tier approval workflow (Staff & Manager)",
+    loginFeature2:
+      "Strict separation of active stock balances and immutable ledger",
+    loginFeature3: "Atomic Goods Receipt settlement with complete audit trail",
+    loginHeroFooter: "Group 2 • Inventory Procurement System © 2026",
+    loginDemoCredentials: "Default seeder credentials:",
     emailLabel: "Email Address",
     passwordLabel: "Password",
     signInButton: "Sign In",
@@ -726,13 +758,23 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     groupWarehouse: "倉庫・在庫",
     groupCompliance: "コンプライアンス",
     logout: "ログアウト",
-    roleStaff: "焙煎所スタッフ (USER)",
-    roleManager: "焙煎所マネージャー (APPROVER)",
+    roleStaff: "焙煎所スタッフ",
+    roleManager: "焙煎所マネージャー",
     inventoryAndProcurement: "在庫・調達管理",
 
     loginTitle: "CafeStock ログイン",
     loginSubtitle:
       "購買依頼、承認ワークフロー、発注、およびアトミックな入荷在庫更新を管理します。",
+    loginHeroBadge: "購買申請から入庫台帳の更新まで",
+    loginHeroTitle1: "在庫の調達を、",
+    loginHeroTitle2: "正確に。",
+    loginHeroDesc:
+      "購買依頼から承認ワークフロー、発注、アトミックな入荷検収まで、カフェの原材料調達を一元管理します。",
+    loginFeature1: "多段階の承認ワークフロー（スタッフ・承認者）",
+    loginFeature2: "実在庫と入出庫台帳の厳格な分離管理",
+    loginFeature3: "アトミックな入荷検収と監査ログの自動記録",
+    loginHeroFooter: "Group 2 • カフェ在庫・調達管理システム © 2026",
+    loginDemoCredentials: "初期シードアカウント:",
     emailLabel: "メールアドレス",
     passwordLabel: "パスワード",
     signInButton: "ログイン",

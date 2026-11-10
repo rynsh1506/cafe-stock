@@ -488,7 +488,7 @@
             />
 
             <!-- X-Axis Label -->
-            {#if computedCoordinates.length <= 10 || index % 5 === 0 || index === computedCoordinates.length - 1 || hoveredPointIndex === index}
+            {#if computedCoordinates.length <= 10 || (computedCoordinates.length <= 35 && (index % 5 === 0 || index === computedCoordinates.length - 1)) || (computedCoordinates.length > 35 && (index % 15 === 0 || index === computedCoordinates.length - 1)) || hoveredPointIndex === index}
               <text
                 x={point.x}
                 y={svgHeight - 10}

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { getDictionary } from "@/lib/i18n";
+  import CustomSelect from "@/lib/components/CustomSelect.svelte";
   import type {
     GoodsReceiptsActionData,
     GoodsReceiptsPageData,
@@ -14,6 +15,7 @@
   } = $props();
   let dict = $derived(getDictionary(data.lang));
   let activePoId = $state("");
+  let selectedOrderItemId = $state("");
   let showNewDrawer = $state(false);
 
   $effect(() => {
@@ -28,6 +30,34 @@
       data.receivableOrders[0] ??
       null,
   );
+
+  let receivableOrderOptions = $derived(
+    data.receivableOrders.map((po) => ({
+      value: po.id,
+      label: `${po.orderNumber} — ${po.supplierName}`,
+    })),
+  );
+
+  let orderItemOptions = $derived(
+    selectedOrder
+      ? selectedOrder.items
+          .filter((i) => i.remainingQuantity > 0)
+          .map((item) => ({
+            value: item.id,
+            label: `${item.productName} (${dict.quantity}: ${item.remainingQuantity} ${item.productUnit})`,
+          }))
+      : [],
+  );
+
+  $effect(() => {
+    if (
+      orderItemOptions.length > 0 &&
+      (!selectedOrderItemId ||
+        !orderItemOptions.some((o) => o.value === selectedOrderItemId))
+    ) {
+      selectedOrderItemId = orderItemOptions[0].value;
+    }
+  });
 </script>
 
 <div class="space-y-6">
@@ -94,19 +124,12 @@
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
               >{dict.purchaseOrder}</label
             >
-            <select
-              id="gr-po"
+            <CustomSelect
               name="purchaseOrderId"
               bind:value={activePoId}
-              required
-              class="ui-select"
-            >
-              {#each data.receivableOrders as po}
-                <option value={po.id}>
-                  {po.orderNumber} — {po.supplierName}
-                </option>
-              {/each}
-            </select>
+              options={receivableOrderOptions}
+              placeholder={dict.purchaseOrder}
+            />
           </div>
 
           <div>
@@ -115,21 +138,12 @@
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
               >{dict.orderLineItem}</label
             >
-            <select
-              id="gr-item"
+            <CustomSelect
               name="purchaseOrderItemId"
-              required
-              class="ui-select"
-            >
-              {#if selectedOrder}
-                {#each selectedOrder.items.filter((i) => i.remainingQuantity > 0) as item}
-                  <option value={item.id}>
-                    {item.productName} ({dict.quantity}: {item.remainingQuantity}
-                    {item.productUnit})
-                  </option>
-                {/each}
-              {/if}
-            </select>
+              bind:value={selectedOrderItemId}
+              options={orderItemOptions}
+              placeholder={dict.orderLineItem}
+            />
           </div>
 
           <div>

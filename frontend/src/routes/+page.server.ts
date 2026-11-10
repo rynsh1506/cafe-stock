@@ -312,10 +312,10 @@ export const load: ServerLoad = async ({
     };
   });
 
-  // 3. Last 90 Days (Daily/3-Day Interval Granularity - 30 nodes spanning 90 days)
-  const last90Days = Array.from({ length: 30 }).map((_, i) => {
+  // 3. Last 90 Days (Daily Granularity - 90 consecutive days)
+  const last90Days = Array.from({ length: 90 }).map((_, i) => {
     const d = new Date(now);
-    d.setDate(d.getDate() - (29 - i) * 3);
+    d.setDate(d.getDate() - (89 - i));
     const dStr = d.toISOString().split("T")[0];
     return {
       date: d,
@@ -430,10 +430,10 @@ export const load: ServerLoad = async ({
   );
 
   const volume90dPoints = last90Days.map((d, idx) =>
-    computeVolumePoint(d, 1.5, idx),
+    computeVolumePoint(d, 0.5, idx),
   );
   const spend90dPoints = last90Days.map((d, idx) =>
-    computeSpendPoint(d, volume90dPoints[idx].value, 1.5),
+    computeSpendPoint(d, volume90dPoints[idx].value, 0.5),
   );
   const velocity90dPoints = last90Days.map((d, idx) =>
     computeVelocityPoint(d, idx),

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { getDictionary } from "@/lib/i18n";
+  import CustomSelect from "@/lib/components/CustomSelect.svelte";
   import type {
     PurchaseOrdersActionData,
     PurchaseOrdersPageData,
@@ -15,6 +16,55 @@
   let dict = $derived(getDictionary(data.lang));
   let showNewDrawer = $state(false);
   let createMode = $state<"fromPr" | "direct">("fromPr");
+
+  let selectedMobileStatus = $state("");
+  $effect(() => {
+    selectedMobileStatus = data.statusFilter || "";
+  });
+  let selectedPrId = $state("");
+  let selectedPrSupplierId = $state("");
+  let selectedDirectSupplierId = $state("");
+  let selectedDirectWarehouseId = $state("");
+  let selectedDirectProductId = $state("");
+
+  let statusFilterOptions = $derived([
+    { value: "", label: dict.all.toUpperCase() },
+    ...["DRAFT", "ORDERED", "PARTIALLY_RECEIVED", "RECEIVED", "CANCELLED"].map(
+      (s) => ({ value: s, label: s }),
+    ),
+  ]);
+
+  let approvedPrOptions = $derived([
+    { value: "", label: `${dict.search}...` },
+    ...data.approvedPrs.map((pr) => ({
+      value: pr.id,
+      label: `${pr.requestNumber} (${pr.warehouseName})`,
+    })),
+  ]);
+
+  let supplierOptions = $derived([
+    { value: "", label: dict.selectSupplier },
+    ...data.suppliers.map((sup) => ({
+      value: sup.id,
+      label: `${sup.code} — ${sup.name}`,
+    })),
+  ]);
+
+  let warehouseOptions = $derived([
+    { value: "", label: dict.selectWarehouse },
+    ...data.warehouses.map((wh) => ({
+      value: wh.id,
+      label: `${wh.code} — ${wh.name}`,
+    })),
+  ]);
+
+  let productOptions = $derived([
+    { value: "", label: dict.selectProduct },
+    ...data.products.map((prod) => ({
+      value: prod.id,
+      label: `${prod.sku} — ${prod.name} (${prod.unit})`,
+    })),
+  ]);
 
   function statusBadgeClass(status: string): string {
     if (status === "RECEIVED") {
@@ -53,24 +103,15 @@
     <div class="flex flex-wrap items-center gap-2.5">
       <!-- Mobile Filter Dropdown -->
       <div class="w-full sm:hidden">
-        <select
-          class="ui-select"
-          onchange={(e) => {
-            const val = e.currentTarget.value;
+        <CustomSelect
+          bind:value={selectedMobileStatus}
+          options={statusFilterOptions}
+          onchange={(val) => {
             window.location.href = val
               ? `/purchase-orders?status=${val}`
               : "/purchase-orders";
           }}
-        >
-          <option value="" selected={!data.statusFilter}>
-            {dict.all.toUpperCase()}
-          </option>
-          {#each ["DRAFT", "ORDERED", "PARTIALLY_RECEIVED", "RECEIVED", "CANCELLED"] as status}
-            <option value={status} selected={data.statusFilter === status}>
-              {status}
-            </option>
-          {/each}
-        </select>
+        />
       </div>
 
       <!-- Desktop Smooth Non-wrapping Tabs -->
@@ -157,19 +198,12 @@
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
               >{dict.approvedPr}</label
             >
-            <select
-              id="po-pr-id"
+            <CustomSelect
               name="purchaseRequestId"
-              required
-              class="ui-select"
-            >
-              <option value="">{dict.search}...</option>
-              {#each data.approvedPrs as pr}
-                <option value={pr.id}>
-                  {pr.requestNumber} ({pr.warehouseName})
-                </option>
-              {/each}
-            </select>
+              bind:value={selectedPrId}
+              options={approvedPrOptions}
+              placeholder={`${dict.search}...`}
+            />
           </div>
           <div>
             <label
@@ -177,17 +211,12 @@
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
               >{dict.supplierPartner}</label
             >
-            <select
-              id="po-pr-supplier"
+            <CustomSelect
               name="supplierId"
-              required
-              class="ui-select"
-            >
-              <option value="">{dict.selectSupplier}</option>
-              {#each data.suppliers as sup}
-                <option value={sup.id}>{sup.code} — {sup.name}</option>
-              {/each}
-            </select>
+              bind:value={selectedPrSupplierId}
+              options={supplierOptions}
+              placeholder={dict.selectSupplier}
+            />
           </div>
           <div>
             <label
@@ -218,17 +247,12 @@
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
               >{dict.supplier}</label
             >
-            <select
-              id="po-direct-supplier"
+            <CustomSelect
               name="supplierId"
-              required
-              class="ui-select"
-            >
-              <option value="">{dict.selectSupplier}</option>
-              {#each data.suppliers as sup}
-                <option value={sup.id}>{sup.name}</option>
-              {/each}
-            </select>
+              bind:value={selectedDirectSupplierId}
+              options={supplierOptions}
+              placeholder={dict.selectSupplier}
+            />
           </div>
           <div>
             <label
@@ -236,17 +260,12 @@
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
               >{dict.warehouse}</label
             >
-            <select
-              id="po-direct-warehouse"
+            <CustomSelect
               name="warehouseId"
-              required
-              class="ui-select"
-            >
-              <option value="">{dict.selectWarehouse}</option>
-              {#each data.warehouses as wh}
-                <option value={wh.id}>{wh.name}</option>
-              {/each}
-            </select>
+              bind:value={selectedDirectWarehouseId}
+              options={warehouseOptions}
+              placeholder={dict.selectWarehouse}
+            />
           </div>
           <div>
             <label
@@ -254,17 +273,12 @@
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
               >{dict.product}</label
             >
-            <select
-              id="po-direct-product"
+            <CustomSelect
               name="productId"
-              required
-              class="ui-select"
-            >
-              <option value="">{dict.selectProduct}</option>
-              {#each data.products as prod}
-                <option value={prod.id}>{prod.name}</option>
-              {/each}
-            </select>
+              bind:value={selectedDirectProductId}
+              options={productOptions}
+              placeholder={dict.selectProduct}
+            />
           </div>
           <div>
             <label

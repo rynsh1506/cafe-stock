@@ -1,10 +1,23 @@
 <script lang="ts">
   import { getDictionary } from "@/lib/i18n";
+  import CustomSelect from "@/lib/components/CustomSelect.svelte";
   import type { InventoryPageData } from "@/routes/inventory/+page.server";
 
   let { data }: { data: InventoryPageData } = $props();
   let dict = $derived(getDictionary(data.lang));
   let activeView = $state<"balances" | "movements">("balances");
+
+  let warehouseOptions = $derived([
+    { value: "", label: dict.allWarehouses },
+    ...data.warehouses.map((wh) => ({
+      value: wh.id,
+      label: `${wh.code} — ${wh.name}`,
+    })),
+  ]);
+  let selectedWarehouse = $state("");
+  $effect(() => {
+    selectedWarehouse = data.warehouseFilter || "";
+  });
 </script>
 
 <div class="space-y-6">
@@ -46,15 +59,13 @@
         action="/inventory"
         class="flex flex-wrap items-center gap-2"
       >
-        <div class="w-48">
-          <select name="warehouseId" class="ui-select">
-            <option value="">{dict.allWarehouses}</option>
-            {#each data.warehouses as wh}
-              <option value={wh.id} selected={data.warehouseFilter === wh.id}>
-                {wh.code} — {wh.name}
-              </option>
-            {/each}
-          </select>
+        <div class="w-56">
+          <CustomSelect
+            name="warehouseId"
+            bind:value={selectedWarehouse}
+            options={warehouseOptions}
+            placeholder={dict.allWarehouses}
+          />
         </div>
 
         <label
