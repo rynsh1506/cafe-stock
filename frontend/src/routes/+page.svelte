@@ -25,6 +25,26 @@
         : dict.metricVelocity,
   );
 
+  let formattedHeadline = $derived.by(() => {
+    if (selectedMetric === "volume") {
+      return `${activeDataset.totalValue.toLocaleString("id-ID")} KG`;
+    }
+    if (selectedMetric === "spend") {
+      return `Rp ${activeDataset.totalValue.toLocaleString("id-ID")}`;
+    }
+    return `${activeDataset.averageValue ?? 1.5} ${dict.operatingDays}`;
+  });
+
+  let formattedDeltaText = $derived.by(() => {
+    if (selectedMetric === "volume") {
+      return `${activeDataset.totalValue.toLocaleString("id-ID")} KG ${dict.aggregateIntake}`;
+    }
+    if (selectedMetric === "spend") {
+      return `Rp ${activeDataset.totalValue.toLocaleString("id-ID")} ${dict.aggregateSpend}`;
+    }
+    return dict.slaTarget;
+  });
+
   // SVG dimensions for responsive zigzag line and area
   const svgWidth = 720;
   const svgHeight = 220;
@@ -368,13 +388,13 @@
     <div class="mt-4 flex flex-wrap items-baseline justify-between gap-3 px-1">
       <div class="flex items-baseline gap-3">
         <span class="font-serif text-2xl font-bold text-[#2E1F16] sm:text-3xl">
-          {activeDataset.headline}
+          {formattedHeadline}
         </span>
         <span
           class="ui-badge border-[#C8E6C9] bg-[#E8F5E9] text-xs font-semibold text-[#2E7D32]"
         >
           <span class="ui-badge-dot bg-[#2E7D32]"></span>
-          <span>{activeDataset.deltaText}</span>
+          <span>{formattedDeltaText}</span>
         </span>
       </div>
       <div class="text-xs text-[#8C7665]">
@@ -468,17 +488,19 @@
             />
 
             <!-- X-Axis Label -->
-            <text
-              x={point.x}
-              y={svgHeight - 10}
-              text-anchor="middle"
-              font-size="11"
-              font-family="system-ui, sans-serif"
-              font-weight={hoveredPointIndex === index ? "700" : "500"}
-              fill={hoveredPointIndex === index ? "#2E1F16" : "#8C7665"}
-            >
-              {point.label}
-            </text>
+            {#if computedCoordinates.length <= 10 || index % 5 === 0 || index === computedCoordinates.length - 1 || hoveredPointIndex === index}
+              <text
+                x={point.x}
+                y={svgHeight - 10}
+                text-anchor="middle"
+                font-size="10"
+                font-family="system-ui, sans-serif"
+                font-weight={hoveredPointIndex === index ? "700" : "500"}
+                fill={hoveredPointIndex === index ? "#2E1F16" : "#8C7665"}
+              >
+                {point.label}
+              </text>
+            {/if}
           </g>
         {/each}
       </svg>

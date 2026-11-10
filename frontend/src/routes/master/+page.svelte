@@ -16,6 +16,13 @@
 
   let activeTab = $state<"products" | "suppliers" | "warehouses">("products");
   let showNewDrawer = $state(false);
+
+  let newButtonLabel = $derived.by(() => {
+    if (showNewDrawer) return dict.closeForm;
+    if (activeTab === "products") return dict.newProduct;
+    if (activeTab === "suppliers") return dict.newSupplier;
+    return dict.newWarehouse;
+  });
 </script>
 
 <div class="space-y-6">
@@ -66,7 +73,7 @@
         onclick={() => (showNewDrawer = !showNewDrawer)}
         class="ui-btn cursor-pointer"
       >
-        {showNewDrawer ? dict.closeForm : dict.newProduct}
+        {newButtonLabel}
       </button>
     </div>
   </div>
@@ -94,7 +101,7 @@
       {#if activeTab === "products"}
         <div class="mb-4 border-b border-[#F0E7DD] pb-3">
           <h2 class="font-serif text-base font-bold text-[#231712]">
-            Add New SKU Product
+            {dict.addProductTitle}
           </h2>
         </div>
         <form
@@ -106,7 +113,7 @@
             <label
               for="prod-sku"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >SKU</label
+              >{dict.thSku}</label
             >
             <input
               id="prod-sku"
@@ -121,7 +128,7 @@
             <label
               for="prod-name"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Product Name</label
+              >{dict.thProductName}</label
             >
             <input
               id="prod-name"
@@ -136,7 +143,7 @@
             <label
               for="prod-cat"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Category</label
+              >{dict.thCategory}</label
             >
             <input
               id="prod-cat"
@@ -151,7 +158,7 @@
             <label
               for="prod-unit"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Unit</label
+              >{dict.thUnit}</label
             >
             <select id="prod-unit" name="unit" class="ui-select">
               <option value="kg">kg</option>
@@ -166,7 +173,7 @@
             <label
               for="prod-min"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Min Stock</label
+              >{dict.thMinThreshold}</label
             >
             <input
               id="prod-min"
@@ -179,13 +186,13 @@
             />
           </div>
           <button type="submit" class="ui-btn w-full cursor-pointer">
-            Save SKU
+            {dict.saveProduct}
           </button>
         </form>
       {:else if activeTab === "suppliers"}
         <div class="mb-4 border-b border-[#F0E7DD] pb-3">
           <h2 class="font-serif text-base font-bold text-[#231712]">
-            Add New Supplier Partner
+            {dict.addSupplierTitle}
           </h2>
         </div>
         <form
@@ -197,7 +204,7 @@
             <label
               for="sup-code"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Supplier Code</label
+              >{dict.thSupplierCode}</label
             >
             <input
               id="sup-code"
@@ -212,7 +219,7 @@
             <label
               for="sup-name"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Supplier Name</label
+              >{dict.thSupplierName}</label
             >
             <input
               id="sup-name"
@@ -227,7 +234,7 @@
             <label
               for="sup-email"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Email</label
+              >{dict.thContactEmail}</label
             >
             <input
               id="sup-email"
@@ -242,7 +249,7 @@
             <label
               for="sup-phone"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Phone</label
+              >{dict.thPhone}</label
             >
             <input
               id="sup-phone"
@@ -257,7 +264,7 @@
             <label
               for="sup-address"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Address</label
+              >{dict.thAddress}</label
             >
             <input
               id="sup-address"
@@ -269,13 +276,13 @@
             />
           </div>
           <button type="submit" class="ui-btn w-full cursor-pointer">
-            Save Supplier
+            {dict.saveSupplier}
           </button>
         </form>
       {:else}
         <div class="mb-4 border-b border-[#F0E7DD] pb-3">
           <h2 class="font-serif text-base font-bold text-[#231712]">
-            Add New Warehouse Facility
+            {dict.addWarehouseTitle}
           </h2>
         </div>
         <form
@@ -287,7 +294,7 @@
             <label
               for="wh-code"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Warehouse Code</label
+              >{dict.thWarehouseCode}</label
             >
             <input
               id="wh-code"
@@ -302,7 +309,7 @@
             <label
               for="wh-name"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Facility Name</label
+              >{dict.thWarehouseName}</label
             >
             <input
               id="wh-name"
@@ -317,7 +324,7 @@
             <label
               for="wh-loc"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Address</label
+              >{dict.thAddress}</label
             >
             <input
               id="wh-loc"
@@ -329,7 +336,7 @@
             />
           </div>
           <button type="submit" class="ui-btn w-full cursor-pointer">
-            Save Warehouse
+            {dict.saveWarehouse}
           </button>
         </form>
       {/if}
@@ -345,12 +352,12 @@
             <tr
               class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
             >
-              <th class="px-5 py-3.5">SKU</th>
-              <th class="px-5 py-3.5">Product Name</th>
-              <th class="px-5 py-3.5">Category</th>
-              <th class="px-5 py-3.5">Unit</th>
-              <th class="px-5 py-3.5 text-right">Min Threshold</th>
-              <th class="px-5 py-3.5 text-right">Status</th>
+              <th class="px-5 py-3.5">{dict.thSku}</th>
+              <th class="px-5 py-3.5">{dict.thProductName}</th>
+              <th class="px-5 py-3.5">{dict.thCategory}</th>
+              <th class="px-5 py-3.5">{dict.thUnit}</th>
+              <th class="px-5 py-3.5 text-right">{dict.thMinThreshold}</th>
+              <th class="px-5 py-3.5 text-right">{dict.thStatus}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-[#F5EDE4]">
@@ -396,7 +403,11 @@
                           ? 'bg-[#1D593B]'
                           : 'bg-[#9E2A20]'}"
                       ></span>
-                      <span>{prod.isActive ? "ACTIVE" : "INACTIVE"}</span>
+                      <span
+                        >{prod.isActive
+                          ? dict.activeStatus
+                          : dict.inactiveStatus}</span
+                      >
                     </button>
                   </form>
                 </td>
@@ -412,11 +423,11 @@
             <tr
               class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
             >
-              <th class="px-5 py-3.5">Code</th>
-              <th class="px-5 py-3.5">Supplier Name</th>
-              <th class="px-5 py-3.5">Email</th>
-              <th class="px-5 py-3.5">Phone</th>
-              <th class="px-5 py-3.5">Address</th>
+              <th class="px-5 py-3.5">{dict.thSupplierCode}</th>
+              <th class="px-5 py-3.5">{dict.thSupplierName}</th>
+              <th class="px-5 py-3.5">{dict.thContactEmail}</th>
+              <th class="px-5 py-3.5">{dict.thPhone}</th>
+              <th class="px-5 py-3.5">{dict.thAddress}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-[#F5EDE4]">
@@ -447,9 +458,9 @@
             <tr
               class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
             >
-              <th class="px-5 py-3.5">Warehouse Code</th>
-              <th class="px-5 py-3.5">Facility Name</th>
-              <th class="px-5 py-3.5">Address</th>
+              <th class="px-5 py-3.5">{dict.thWarehouseCode}</th>
+              <th class="px-5 py-3.5">{dict.thWarehouseName}</th>
+              <th class="px-5 py-3.5">{dict.thAddress}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-[#F5EDE4]">
