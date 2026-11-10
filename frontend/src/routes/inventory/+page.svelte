@@ -123,11 +123,16 @@
                 </td>
                 <td class="px-5 py-3.5 text-center">
                   <span
-                    class="rounded-full border px-2.5 py-0.5 font-mono text-[10px] font-bold {bal.isLowStock
+                    class="ui-badge {bal.isLowStock
                       ? 'border-[#FFCDD2] bg-[#FFEBEE] text-[#C62828]'
                       : 'border-[#B2D3C1] bg-[#E7F2EC] text-[#1D593B]'}"
                   >
-                    {bal.isLowStock ? dict.critical : dict.healthy}
+                    <span
+                      class="ui-badge-dot {bal.isLowStock
+                        ? 'bg-[#C62828]'
+                        : 'bg-[#1D593B]'}"
+                    ></span>
+                    <span>{bal.isLowStock ? dict.critical : dict.healthy}</span>
                   </span>
                 </td>
               </tr>

@@ -59,7 +59,7 @@
           >
             <span>CafeStock</span>
             <span
-              class="rounded-full border border-[#683C25] bg-[#45281A] px-2 py-0.5 font-sans text-[11px] font-semibold tracking-wider text-[#D8A57A] uppercase"
+              class="rounded-md border border-[#683C25] bg-[#45281A] px-2 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-[#D8A57A] uppercase"
             >
               v1.0
             </span>
@@ -74,7 +74,7 @@
     <!-- Middle Hero Slogan & Subtext from Figma -->
     <div class="relative z-10 my-10 space-y-6 md:my-0">
       <div
-        class="inline-flex items-center gap-2 rounded-full border border-[#5A3825] bg-[#3B261C] px-3 py-1 text-xs font-medium text-[#E5B589]"
+        class="inline-flex items-center gap-2 rounded-lg border border-[#5A3825] bg-[#3B261C] px-3 py-1 text-xs font-medium text-[#E5B589]"
       >
         <svg
           class="h-3.5 w-3.5"

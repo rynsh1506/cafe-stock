@@ -28,6 +28,14 @@
     }
     return "border-[#D8D0C0] bg-[#F2EFE9] text-[#5C5346]";
   }
+
+  function statusDotClass(status: string): string {
+    if (status === "RECEIVED") return "bg-[#1D593B]";
+    if (status === "ORDERED") return "bg-[#5A3825]";
+    if (status === "PARTIALLY_RECEIVED") return "bg-[#8A4B14]";
+    if (status === "CANCELLED") return "bg-[#9E2A20]";
+    return "bg-[#5C5346]";
+  }
 </script>
 
 <div class="space-y-6">
@@ -43,7 +51,30 @@
     </div>
 
     <div class="flex flex-wrap items-center gap-2.5">
-      <div class="ui-tabs flex-wrap">
+      <!-- Mobile Filter Dropdown -->
+      <div class="w-full sm:hidden">
+        <select
+          class="ui-select"
+          onchange={(e) => {
+            const val = e.currentTarget.value;
+            window.location.href = val
+              ? `/purchase-orders?status=${val}`
+              : "/purchase-orders";
+          }}
+        >
+          <option value="" selected={!data.statusFilter}>
+            {dict.all.toUpperCase()}
+          </option>
+          {#each ["DRAFT", "ORDERED", "PARTIALLY_RECEIVED", "RECEIVED", "CANCELLED"] as status}
+            <option value={status} selected={data.statusFilter === status}>
+              {status}
+            </option>
+          {/each}
+        </select>
+      </div>
+
+      <!-- Desktop Smooth Non-wrapping Tabs -->
+      <div class="hidden sm:inline-flex ui-tabs overflow-x-auto max-w-full">
         {#each ["", "DRAFT", "ORDERED", "PARTIALLY_RECEIVED", "RECEIVED", "CANCELLED"] as status}
           <a
             href={status
@@ -59,7 +90,7 @@
       <button
         type="button"
         onclick={() => (showNewDrawer = !showNewDrawer)}
-        class="ui-btn cursor-pointer"
+        class="ui-btn cursor-pointer w-full sm:w-auto"
       >
         {showNewDrawer ? dict.closeForm : dict.newPo}
       </button>
@@ -309,12 +340,9 @@
                 {/each}
               </td>
               <td class="px-5 py-4 text-center">
-                <span
-                  class="rounded-full border px-2.5 py-0.5 font-mono text-[10px] font-bold {statusBadgeClass(
-                    po.status,
-                  )}"
-                >
-                  {po.status}
+                <span class="ui-badge {statusBadgeClass(po.status)}">
+                  <span class="ui-badge-dot {statusDotClass(po.status)}"></span>
+                  <span>{po.status}</span>
                 </span>
               </td>
               <td class="px-5 py-4 text-right">
