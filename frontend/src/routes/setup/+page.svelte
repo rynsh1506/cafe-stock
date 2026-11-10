@@ -310,8 +310,10 @@
                 id="appUrl"
                 type="url"
                 name="appUrl"
-                value={form?.appUrl ?? "http://localhost:3000"}
-                placeholder="http://localhost:3000"
+                value={form?.appUrl ??
+                  data?.suggestedAppUrl ??
+                  "http://localhost:3000"}
+                placeholder={data?.suggestedAppUrl ?? "http://localhost:3000"}
                 class="mt-1.5 w-full rounded-xl border border-[#DDD2C4] bg-[#FCFBF9] px-3.5 py-2.5 text-sm text-[#231712] placeholder-[#B5A597] transition focus:border-[#7A4D33] focus:bg-white focus:ring-2 focus:ring-[#7A4D33]/15 focus:outline-none"
               />
             </div>
