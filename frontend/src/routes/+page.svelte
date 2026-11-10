@@ -1,409 +1,29 @@
 <script lang="ts">
   import { getDictionary } from "@/lib/i18n";
-  import type { DashboardPageData } from "@/routes/+page.server";
+  import type {
+    DashboardPageData,
+    MetricKey,
+    RangeKey,
+  } from "@/routes/+page.server";
 
   let { data }: { data: DashboardPageData } = $props();
   let dict = $derived(getDictionary(data.lang));
-
-  type MetricKey = "volume" | "spend" | "velocity";
-  type RangeKey = "7D" | "30D" | "90D";
 
   let selectedMetric = $state<MetricKey>("volume");
   let selectedRange = $state<RangeKey>("7D");
   let hoveredPointIndex = $state<number | null>(null);
 
-  interface ChartSeriesPoint {
-    label: string;
-    sublabel: string;
-    value: number;
-    unit: string;
-    delta: string;
-  }
+  let activeDataset = $derived(
+    data.chartDatasets[selectedMetric][selectedRange],
+  );
 
-  interface MetricDataset {
-    title: string;
-    headline: string;
-    deltaText: string;
-    unit: string;
-    points: ChartSeriesPoint[];
-  }
-
-  const chartDatasets: Record<MetricKey, Record<RangeKey, MetricDataset>> = {
-    volume: {
-      "7D": {
-        title: "Inbound Material Volume (KG)",
-        headline: "148.6 KG",
-        deltaText: "+18.4% vs previous 7 days",
-        unit: "kg",
-        points: [
-          {
-            label: "Mon",
-            sublabel: "Nov 03",
-            value: 14.2,
-            unit: "kg",
-            delta: "+2.1%",
-          },
-          {
-            label: "Tue",
-            sublabel: "Nov 04",
-            value: 24.8,
-            unit: "kg",
-            delta: "+74.6%",
-          },
-          {
-            label: "Wed",
-            sublabel: "Nov 05",
-            value: 11.5,
-            unit: "kg",
-            delta: "-53.6%",
-          },
-          {
-            label: "Thu",
-            sublabel: "Nov 06",
-            value: 31.0,
-            unit: "kg",
-            delta: "+169.5%",
-          },
-          {
-            label: "Fri",
-            sublabel: "Nov 07",
-            value: 18.4,
-            unit: "kg",
-            delta: "-40.6%",
-          },
-          {
-            label: "Sat",
-            sublabel: "Nov 08",
-            value: 36.2,
-            unit: "kg",
-            delta: "+96.7%",
-          },
-          {
-            label: "Sun",
-            sublabel: "Nov 09",
-            value: 12.5,
-            unit: "kg",
-            delta: "-65.4%",
-          },
-        ],
-      },
-      "30D": {
-        title: "Monthly Inbound Volume (KG)",
-        headline: "612.4 KG",
-        deltaText: "+11.2% vs previous month",
-        unit: "kg",
-        points: [
-          {
-            label: "W1",
-            sublabel: "Oct 12-18",
-            value: 115.0,
-            unit: "kg",
-            delta: "-4.2%",
-          },
-          {
-            label: "W2",
-            sublabel: "Oct 19-25",
-            value: 168.4,
-            unit: "kg",
-            delta: "+46.4%",
-          },
-          {
-            label: "W3",
-            sublabel: "Oct 26-Nov 01",
-            value: 132.8,
-            unit: "kg",
-            delta: "-21.1%",
-          },
-          {
-            label: "W4",
-            sublabel: "Nov 02-08",
-            value: 196.2,
-            unit: "kg",
-            delta: "+47.7%",
-          },
-        ],
-      },
-      "90D": {
-        title: "Quarterly Inbound Volume (KG)",
-        headline: "1,840 KG",
-        deltaText: "+24.5% vs previous quarter",
-        unit: "kg",
-        points: [
-          {
-            label: "Aug",
-            sublabel: "Roasting Peak",
-            value: 520,
-            unit: "kg",
-            delta: "+8.3%",
-          },
-          {
-            label: "Sep",
-            sublabel: "Holiday Prep",
-            value: 710,
-            unit: "kg",
-            delta: "+36.5%",
-          },
-          {
-            label: "Oct",
-            sublabel: "Standard Cadence",
-            value: 610,
-            unit: "kg",
-            delta: "-14.1%",
-          },
-        ],
-      },
-    },
-    spend: {
-      "7D": {
-        title: "Procurement Capital Outflow (IDR)",
-        headline: "Rp 74.850.000",
-        deltaText: "-6.2% vs previous 7 days",
-        unit: "Rp",
-        points: [
-          {
-            label: "Mon",
-            sublabel: "Nov 03",
-            value: 6420000,
-            unit: "Rp",
-            delta: "+12.0%",
-          },
-          {
-            label: "Tue",
-            sublabel: "Nov 04",
-            value: 18250000,
-            unit: "Rp",
-            delta: "+197.6%",
-          },
-          {
-            label: "Wed",
-            sublabel: "Nov 05",
-            value: 4310000,
-            unit: "Rp",
-            delta: "-75.2%",
-          },
-          {
-            label: "Thu",
-            sublabel: "Nov 06",
-            value: 26680000,
-            unit: "Rp",
-            delta: "+441.9%",
-          },
-          {
-            label: "Fri",
-            sublabel: "Nov 07",
-            value: 8540000,
-            unit: "Rp",
-            delta: "-67.8%",
-          },
-          {
-            label: "Sat",
-            sublabel: "Nov 08",
-            value: 10650000,
-            unit: "Rp",
-            delta: "+20.3%",
-          },
-          {
-            label: "Sun",
-            sublabel: "Nov 09",
-            value: 0,
-            unit: "Rp",
-            delta: "-100.0%",
-          },
-        ],
-      },
-      "30D": {
-        title: "Monthly Procurement Capital (IDR)",
-        headline: "Rp 328.400.000",
-        deltaText: "+8.9% vs previous month",
-        unit: "Rp",
-        points: [
-          {
-            label: "W1",
-            sublabel: "Bean Contracts",
-            value: 98400000,
-            unit: "Rp",
-            delta: "+14.0%",
-          },
-          {
-            label: "W2",
-            sublabel: "Packaging Run",
-            value: 64200000,
-            unit: "Rp",
-            delta: "-34.3%",
-          },
-          {
-            label: "W3",
-            sublabel: "Dairy & Consumables",
-            value: 78100000,
-            unit: "Rp",
-            delta: "+21.4%",
-          },
-          {
-            label: "W4",
-            sublabel: "Equipment Maint.",
-            value: 87700000,
-            unit: "Rp",
-            delta: "+12.1%",
-          },
-        ],
-      },
-      "90D": {
-        title: "Quarterly Procurement Capital (IDR)",
-        headline: "Rp 984.600.000",
-        deltaText: "+15.8% budget utilization",
-        unit: "Rp",
-        points: [
-          {
-            label: "Aug",
-            sublabel: "Capex & Imports",
-            value: 282000000,
-            unit: "Rp",
-            delta: "+5.0%",
-          },
-          {
-            label: "Sep",
-            sublabel: "Seasonal Stocking",
-            value: 416400000,
-            unit: "Rp",
-            delta: "+45.0%",
-          },
-          {
-            label: "Oct",
-            sublabel: "Rebalancing",
-            value: 286200000,
-            unit: "Rp",
-            delta: "-25.4%",
-          },
-        ],
-      },
-    },
-    velocity: {
-      "7D": {
-        title: "Order Turnaround Velocity (Days)",
-        headline: "1.6 Days",
-        deltaText: "0.4 days faster than target SLA",
-        unit: "days",
-        points: [
-          {
-            label: "Mon",
-            sublabel: "Nov 03",
-            value: 2.1,
-            unit: "days",
-            delta: "+0.2d",
-          },
-          {
-            label: "Tue",
-            sublabel: "Nov 04",
-            value: 1.4,
-            unit: "days",
-            delta: "-0.7d",
-          },
-          {
-            label: "Wed",
-            sublabel: "Nov 05",
-            value: 1.8,
-            unit: "days",
-            delta: "+0.4d",
-          },
-          {
-            label: "Thu",
-            sublabel: "Nov 06",
-            value: 1.2,
-            unit: "days",
-            delta: "-0.6d",
-          },
-          {
-            label: "Fri",
-            sublabel: "Nov 07",
-            value: 2.4,
-            unit: "days",
-            delta: "+1.2d",
-          },
-          {
-            label: "Sat",
-            sublabel: "Nov 08",
-            value: 1.5,
-            unit: "days",
-            delta: "-0.9d",
-          },
-          {
-            label: "Sun",
-            sublabel: "Nov 09",
-            value: 1.0,
-            unit: "days",
-            delta: "-0.5d",
-          },
-        ],
-      },
-      "30D": {
-        title: "Monthly Turnaround Velocity (Days)",
-        headline: "1.7 Days Avg",
-        deltaText: "98.2% on-time supplier fulfillment",
-        unit: "days",
-        points: [
-          {
-            label: "W1",
-            sublabel: "Oct 12-18",
-            value: 1.9,
-            unit: "days",
-            delta: "+0.1d",
-          },
-          {
-            label: "W2",
-            sublabel: "Oct 19-25",
-            value: 1.6,
-            unit: "days",
-            delta: "-0.3d",
-          },
-          {
-            label: "W3",
-            sublabel: "Oct 26-Nov 01",
-            value: 1.8,
-            unit: "days",
-            delta: "+0.2d",
-          },
-          {
-            label: "W4",
-            sublabel: "Nov 02-08",
-            value: 1.5,
-            unit: "days",
-            delta: "-0.3d",
-          },
-        ],
-      },
-      "90D": {
-        title: "Quarterly Turnaround Velocity (Days)",
-        headline: "1.8 Days Avg",
-        deltaText: "+14% SLA compliance improvement",
-        unit: "days",
-        points: [
-          {
-            label: "Aug",
-            sublabel: "Logistics Ramp",
-            value: 2.2,
-            unit: "days",
-            delta: "+0.4d",
-          },
-          {
-            label: "Sep",
-            sublabel: "Dock Optimizations",
-            value: 1.7,
-            unit: "days",
-            delta: "-0.5d",
-          },
-          {
-            label: "Oct",
-            sublabel: "Stabilized Cadence",
-            value: 1.5,
-            unit: "days",
-            delta: "-0.2d",
-          },
-        ],
-      },
-    },
-  };
-
-  let activeDataset = $derived(chartDatasets[selectedMetric][selectedRange]);
+  let activeMetricTitle = $derived(
+    selectedMetric === "volume"
+      ? dict.metricVolume
+      : selectedMetric === "spend"
+        ? dict.metricSpend
+        : dict.metricVelocity,
+  );
 
   // SVG dimensions for responsive zigzag line and area
   const svgWidth = 720;
@@ -461,34 +81,6 @@
     });
   });
 
-  // Roastery materials portfolio distribution
-  const portfolioCategories = [
-    {
-      name: "Single Origin Arabica (Huila & Yirgacheffe)",
-      share: 58,
-      color: "bg-[#5A3825]",
-      stock: "284 KG",
-    },
-    {
-      name: "Specialty Degassing Packaging (1kg & 250g)",
-      share: 22,
-      color: "bg-[#8C5E3C]",
-      stock: "1,420 Pcs",
-    },
-    {
-      name: "Barista Oat & Dairy Concentrates",
-      share: 13,
-      color: "bg-[#C68B59]",
-      stock: "86 L",
-    },
-    {
-      name: "Cleaning & Roaster Descalers",
-      share: 7,
-      color: "bg-[#DFC7B2]",
-      stock: "24 Units",
-    },
-  ];
-
   function formatPointValue(pt: { value: number; unit: string }): string {
     if (pt.unit === "Rp") {
       return `Rp ${pt.value.toLocaleString("id-ID")}`;
@@ -498,7 +90,7 @@
 </script>
 
 <div class="space-y-6">
-  <!-- Top Espresso Banner (Figma Theme) -->
+  <!-- Top Espresso Banner -->
   <div
     class="flex flex-col gap-4 rounded-2xl border border-[#523323] bg-gradient-to-r from-[#2C1E18] to-[#4A2D1D] p-5 text-white shadow-md sm:p-7 md:flex-row md:items-center md:justify-between"
   >
@@ -506,26 +98,25 @@
       <div
         class="mb-1.5 flex items-center justify-between gap-2 text-[11px] font-semibold tracking-wider text-[#D8A57A] uppercase sm:justify-start"
       >
-        <span>Procurement &amp; Inventory Management</span>
+        <span>{dict.bannerSystemTitle}</span>
         <span class="opacity-60">•</span>
         <span
-          class="ui-badge border-[#7A4D33] bg-[#5A3825] text-white font-mono text-[10px]"
+          class="ui-badge border-[#7A4D33] bg-[#5A3825] font-mono text-[10px] text-white"
         >
           <span class="ui-badge-dot bg-[#E5B589]"></span>
-          <span>ROLE: {data.user.role}</span>
+          <span>{dict.roleBadgePrefix} {data.user.role}</span>
         </span>
       </div>
       <h1
         class="font-serif text-xl font-bold tracking-tight text-white sm:text-2xl"
       >
-        Welcome to CafeStock, {data.user.name}
+        {dict.welcomeUserPrefix}
+        {data.user.name}
       </h1>
       <p
         class="mt-1 max-w-2xl text-xs leading-relaxed text-[#D7CBC1] sm:text-sm"
       >
-        Centralized operations console for purchase requests, managerial
-        approvals, vendor purchase orders, warehouse dock receipts, and verified
-        stock ledgers.
+        {dict.bannerSubtitle}
       </p>
     </div>
 
@@ -550,8 +141,8 @@
         </svg>
         <span>
           {data.user.role === "APPROVER"
-            ? `Review ${data.pendingPrCount} Requests`
-            : "+ Create Purchase Request"}
+            ? dict.reviewPendingCount(data.pendingPrCount)
+            : dict.newPr}
         </span>
       </a>
     </div>
@@ -592,7 +183,7 @@
           class="mt-1 flex items-center gap-1.5 truncate text-[10px] font-semibold text-[#2E7D32] sm:text-[11px]"
         >
           <span class="h-1.5 w-1.5 rounded-full bg-[#2E7D32]"></span>
-          <span class="truncate">Active catalog registry</span>
+          <span class="truncate">{dict.activeCatalogDesc}</span>
         </div>
       </div>
     </a>
@@ -624,13 +215,13 @@
         <div
           class="truncate text-lg font-bold text-[#2E1F16] transition group-hover:text-[#B45309] sm:text-2xl"
         >
-          {data.pendingPrCount} Pending
+          {data.pendingPrCount}
         </div>
         <div
           class="mt-1 flex items-center gap-1.5 truncate text-[10px] font-semibold text-[#D97706] sm:text-[11px]"
         >
           <span class="h-1.5 w-1.5 rounded-full bg-[#D97706]"></span>
-          <span class="truncate">Requires manager sign-off</span>
+          <span class="truncate">{dict.pendingSignoffDesc}</span>
         </div>
       </div>
     </a>
@@ -662,13 +253,13 @@
         <div
           class="truncate text-lg font-bold text-[#2E1F16] transition group-hover:text-[#5A3825] sm:text-2xl"
         >
-          {data.activePoCount} Orders
+          {data.activePoCount}
         </div>
         <div
           class="mt-1 flex items-center gap-1.5 truncate text-[10px] font-semibold text-[#5A3825] sm:text-[11px]"
         >
           <span class="h-1.5 w-1.5 rounded-full bg-[#5A3825]"></span>
-          <span class="truncate">In-transit &amp; dock pending</span>
+          <span class="truncate">{dict.inTransitDesc}</span>
         </div>
       </div>
     </a>
@@ -698,13 +289,13 @@
       </div>
       <div class="mt-3">
         <div class="truncate text-lg font-bold text-[#C62828] sm:text-2xl">
-          {data.lowStockCount} Items
+          {data.lowStockCount}
         </div>
         <div
           class="mt-1 flex items-center gap-1.5 truncate text-[10px] font-semibold text-[#C62828] sm:text-[11px]"
         >
           <span class="h-1.5 w-1.5 rounded-full bg-[#C62828]"></span>
-          <span class="truncate">Under reorder threshold</span>
+          <span class="truncate">{dict.underReorderDesc}</span>
         </div>
       </div>
     </a>
@@ -714,7 +305,7 @@
   <div
     class="rounded-2xl border border-[#EDE4D8] bg-white p-5 shadow-xs sm:p-6"
   >
-    <!-- Chart Controls Toolbar (Bisa diatur) -->
+    <!-- Chart Controls Toolbar -->
     <div
       class="flex flex-col justify-between gap-4 border-b border-[#F0E7DD] pb-5 lg:flex-row lg:items-center"
     >
@@ -722,10 +313,10 @@
         <div
           class="text-[10px] font-bold tracking-wider text-[#8C7665] uppercase sm:text-xs"
         >
-          Interactive Operational Trends
+          {dict.interactiveTrendsTitle}
         </div>
         <h2 class="mt-0.5 text-base font-bold text-[#2E1F16] sm:text-lg">
-          {activeDataset.title}
+          {activeMetricTitle}
         </h2>
       </div>
 
@@ -780,14 +371,14 @@
           {activeDataset.headline}
         </span>
         <span
-          class="ui-badge border-[#C8E6C9] bg-[#E8F5E9] text-[#2E7D32] text-xs font-semibold"
+          class="ui-badge border-[#C8E6C9] bg-[#E8F5E9] text-xs font-semibold text-[#2E7D32]"
         >
           <span class="ui-badge-dot bg-[#2E7D32]"></span>
           <span>{activeDataset.deltaText}</span>
         </span>
       </div>
       <div class="text-xs text-[#8C7665]">
-        <span>Hover nodes for granular telemetry</span>
+        <span>{dict.hoverTelemetryNotice}</span>
       </div>
     </div>
 
@@ -909,7 +500,7 @@
             {formatPointValue(hp)}
           </div>
           <div class="text-[9.5px] font-medium text-[#A5D6A7]">
-            {hp.delta} vs cycle avg
+            {hp.delta}
           </div>
         </div>
       {/if}
@@ -930,7 +521,7 @@
           {dict.pipelineTitle}
         </div>
         <h3 class="mt-0.5 text-base font-bold text-[#2E1F16]">
-          Real-Time Inventory Progression
+          {dict.realtimeProgression}
         </h3>
       </div>
       <div class="text-xs text-[#8C7665]">
@@ -946,9 +537,9 @@
         class="group flex flex-col justify-between rounded-xl border border-[#E9DFD3] bg-[#FCFAF7] p-3.5 transition hover:border-[#C68B59] hover:bg-white"
       >
         <div class="flex items-center justify-between text-xs text-[#8C7665]">
-          <span class="font-mono text-[10px] font-bold">STAGE 01</span>
+          <span class="font-mono text-[10px] font-bold">{dict.stage} 01</span>
           <span
-            class="ui-badge border-[#E0D5C7] bg-[#FAF4ED] text-[#7D6B5D] text-[10px]"
+            class="ui-badge border-[#E0D5C7] bg-[#FAF4ED] text-[10px] text-[#7D6B5D]"
           >
             {data.pipelineCounts.draftPr}
           </span>
@@ -957,10 +548,10 @@
           <div
             class="text-xs font-bold text-[#2E1F16] group-hover:text-[#5A3825]"
           >
-            Draft PRs
+            {dict.stageDraftTitle}
           </div>
           <div class="mt-0.5 text-[10px] text-[#8C7665]">
-            Warehouse staff drafting
+            {dict.stageDraftDesc}
           </div>
         </div>
       </a>
@@ -971,17 +562,19 @@
         class="group flex flex-col justify-between rounded-xl border border-[#FFE082] bg-[#FFFDE7] p-3.5 transition hover:border-[#D97706] hover:bg-white"
       >
         <div class="flex items-center justify-between text-xs text-[#D97706]">
-          <span class="font-mono text-[10px] font-bold">STAGE 02</span>
+          <span class="font-mono text-[10px] font-bold">{dict.stage} 02</span>
           <span
-            class="ui-badge border-[#FFE082] bg-[#FFF8E1] text-[#B45309] text-[10px]"
+            class="ui-badge border-[#FFE082] bg-[#FFF8E1] text-[10px] text-[#B45309]"
           >
             {data.pipelineCounts.submittedPr}
           </span>
         </div>
         <div class="mt-3">
-          <div class="text-xs font-bold text-[#B45309]">Awaiting Approval</div>
+          <div class="text-xs font-bold text-[#B45309]">
+            {dict.stageApprovalTitle}
+          </div>
           <div class="mt-0.5 text-[10px] text-[#8C7665]">
-            Manager sign-off queue
+            {dict.stageApprovalDesc}
           </div>
         </div>
       </a>
@@ -992,9 +585,9 @@
         class="group flex flex-col justify-between rounded-xl border border-[#E9DFD3] bg-[#FCFAF7] p-3.5 transition hover:border-[#5A3825] hover:bg-white"
       >
         <div class="flex items-center justify-between text-xs text-[#5A3825]">
-          <span class="font-mono text-[10px] font-bold">STAGE 03</span>
+          <span class="font-mono text-[10px] font-bold">{dict.stage} 03</span>
           <span
-            class="ui-badge border-[#D8C7B8] bg-[#F5EFEB] text-[#5A3825] text-[10px]"
+            class="ui-badge border-[#D8C7B8] bg-[#F5EFEB] text-[10px] text-[#5A3825]"
           >
             {data.pipelineCounts.orderedPo}
           </span>
@@ -1003,10 +596,10 @@
           <div
             class="text-xs font-bold text-[#2E1F16] group-hover:text-[#5A3825]"
           >
-            PO Issued
+            {dict.stagePoTitle}
           </div>
           <div class="mt-0.5 text-[10px] text-[#8C7665]">
-            Supplier dispatched
+            {dict.stagePoDesc}
           </div>
         </div>
       </a>
@@ -1017,9 +610,9 @@
         class="group flex flex-col justify-between rounded-xl border border-[#E9DFD3] bg-[#FCFAF7] p-3.5 transition hover:border-[#C68B59] hover:bg-white"
       >
         <div class="flex items-center justify-between text-xs text-[#C68B59]">
-          <span class="font-mono text-[10px] font-bold">STAGE 04</span>
+          <span class="font-mono text-[10px] font-bold">{dict.stage} 04</span>
           <span
-            class="ui-badge border-[#E2CEBC] bg-[#FAF2EB] text-[#A86F3E] text-[10px]"
+            class="ui-badge border-[#E2CEBC] bg-[#FAF2EB] text-[10px] text-[#A86F3E]"
           >
             {data.pipelineCounts.partialPo}
           </span>
@@ -1028,10 +621,10 @@
           <div
             class="text-xs font-bold text-[#2E1F16] group-hover:text-[#A86F3E]"
           >
-            Receiving Bay
+            {dict.stageReceivingTitle}
           </div>
           <div class="mt-0.5 text-[10px] text-[#8C7665]">
-            Dock inspection in progress
+            {dict.stageReceivingDesc}
           </div>
         </div>
       </a>
@@ -1039,20 +632,22 @@
       <!-- Step 5: Stock Settled -->
       <a
         href="/goods-receipts"
-        class="group flex flex-col justify-between rounded-xl border border-[#C8E6C9] bg-[#F1F8F3] p-3.5 transition hover:border-[#2E7D32] hover:bg-white col-span-2 sm:col-span-1"
+        class="group col-span-2 flex flex-col justify-between rounded-xl border border-[#C8E6C9] bg-[#F1F8F3] p-3.5 transition hover:border-[#2E7D32] hover:bg-white sm:col-span-1"
       >
         <div class="flex items-center justify-between text-xs text-[#2E7D32]">
-          <span class="font-mono text-[10px] font-bold">STAGE 05</span>
+          <span class="font-mono text-[10px] font-bold">{dict.stage} 05</span>
           <span
-            class="ui-badge border-[#C8E6C9] bg-[#E8F5E9] text-[#2E7D32] text-[10px]"
+            class="ui-badge border-[#C8E6C9] bg-[#E8F5E9] text-[10px] text-[#2E7D32]"
           >
             {data.pipelineCounts.receivedPo}
           </span>
         </div>
         <div class="mt-3">
-          <div class="text-xs font-bold text-[#1B5E20]">Stock Settled</div>
+          <div class="text-xs font-bold text-[#1B5E20]">
+            {dict.stageSettledTitle}
+          </div>
           <div class="mt-0.5 text-[10px] text-[#8C7665]">
-            Ledger updated atomically
+            {dict.stageSettledDesc}
           </div>
         </div>
       </a>
@@ -1072,7 +667,7 @@
           <div
             class="text-[10px] font-bold tracking-wider text-[#8C7665] uppercase sm:text-xs"
           >
-            Storage Telemetry
+            {dict.storageTelemetry}
           </div>
           <h3 class="mt-0.5 text-base font-bold text-[#2E1F16]">
             {dict.warehouseDistribution}
@@ -1082,7 +677,7 @@
           href="/inventory"
           class="text-xs font-semibold text-[#5A3825] hover:underline"
         >
-          View Ledger &rarr;
+          {dict.viewLedger} &rarr;
         </a>
       </div>
 
@@ -1101,10 +696,10 @@
               <div class="flex items-center gap-2">
                 {#if wh.lowStockCount > 0}
                   <span
-                    class="ui-badge border-[#FFCDD2] bg-[#FFEBEE] text-[#C62828] text-[10px]"
+                    class="ui-badge border-[#FFCDD2] bg-[#FFEBEE] text-[10px] text-[#C62828]"
                   >
                     <span class="ui-badge-dot bg-[#C62828]"></span>
-                    <span>{wh.lowStockCount} Critical</span>
+                    <span>{wh.lowStockCount} {dict.critical}</span>
                   </span>
                 {/if}
                 <span class="font-mono text-xs font-bold text-[#2E1F16]">
@@ -1131,11 +726,11 @@
             <div
               class="mt-2 flex items-center justify-between text-[11px] text-[#8C7665]"
             >
-              <span>{wh.itemCount} SKUs Stored</span>
+              <span>{wh.itemCount} {dict.skusStored}</span>
               <span
-                >Total Volume: <strong class="text-[#2E1F16]"
-                  >{wh.totalQuantity}</strong
-                > Units</span
+                >{dict.totalStoredVolume}:
+                <strong class="text-[#2E1F16]">{wh.totalQuantity}</strong>
+                {dict.units}</span
               >
             </div>
           </div>
@@ -1143,7 +738,7 @@
       </div>
     </div>
 
-    <!-- Right Card: Roastery Portfolio Composition -->
+    <!-- Right Card: Real Database Category Portfolio Composition -->
     <div
       class="rounded-2xl border border-[#EDE4D8] bg-white p-5 shadow-xs sm:p-6"
     >
@@ -1154,18 +749,20 @@
           <div
             class="text-[10px] font-bold tracking-wider text-[#8C7665] uppercase sm:text-xs"
           >
-            Material Inventory Mix
+            {dict.materialMix}
           </div>
           <h3 class="mt-0.5 text-base font-bold text-[#2E1F16]">
             {dict.roasteryPortfolio}
           </h3>
         </div>
-        <span class="text-xs text-[#8C7665]"> Active Roasting Run </span>
+        <span class="text-xs text-[#8C7665]">
+          {dict.activeStockComposition}
+        </span>
       </div>
 
-      <!-- Segmented Stack Bar -->
-      <div class="h-3 w-full overflow-hidden rounded-full bg-[#EDE4D8] flex">
-        {#each portfolioCategories as cat}
+      <!-- Segmented Stack Bar from real inventory balances -->
+      <div class="flex h-3 w-full overflow-hidden rounded-full bg-[#EDE4D8]">
+        {#each data.portfolioCategories as cat}
           <div
             class="{cat.color} h-full transition-all duration-300"
             style="width: {cat.share}%;"
@@ -1176,16 +773,16 @@
 
       <!-- Category Breakdown List -->
       <div class="mt-4 space-y-3">
-        {#each portfolioCategories as cat}
+        {#each data.portfolioCategories as cat}
           <div class="flex items-center justify-between text-xs">
             <div class="flex items-center gap-2">
-              <span class="h-2.5 w-2.5 rounded-sm {cat.color} shrink-0"></span>
+              <span class="h-2.5 w-2.5 shrink-0 rounded-sm {cat.color}"></span>
               <span class="font-medium text-[#2E1F16]">{cat.name}</span>
             </div>
             <div class="flex items-center gap-3">
               <span class="font-mono text-xs text-[#8C7665]">{cat.stock}</span>
               <span
-                class="font-mono text-xs font-bold text-[#2E1F16] w-10 text-right"
+                class="w-10 text-right font-mono text-xs font-bold text-[#2E1F16]"
                 >{cat.share}%</span
               >
             </div>
@@ -1195,9 +792,9 @@
 
       <div class="mt-5 border-t border-[#F0E7DD] pt-4">
         <div class="flex items-center justify-between text-xs text-[#8C7665]">
-          <span>Composite Green Bean Reserve</span>
+          <span>{dict.compositeReserveDays}</span>
           <span class="font-mono font-bold text-[#2E1F16]"
-            >~18 Operating Days</span
+            >~18 {dict.operatingDays}</span
           >
         </div>
       </div>
@@ -1238,7 +835,7 @@
             </h3>
           </div>
           <span
-            class="ui-badge border-[#FFCDD2] bg-[#FFEBEE] text-[#C62828] text-xs font-bold"
+            class="ui-badge border-[#FFCDD2] bg-[#FFEBEE] text-xs font-bold text-[#C62828]"
           >
             {data.lowStockCount} SKU
           </span>
@@ -1248,8 +845,7 @@
           <div
             class="rounded-xl border border-[#EDE4D8] bg-[#FAF7F2] p-4 text-center text-xs text-[#8C7665]"
           >
-            All warehouse items are currently above their reorder safety
-            thresholds.
+            {dict.allStockHealthy}
           </div>
         {:else}
           <div class="space-y-3">
@@ -1262,7 +858,7 @@
                     {item.productName}
                   </span>
                   <span
-                    class="ui-badge border-[#FFCDD2] bg-[#FFEBEE] text-[#C62828] text-[10px]"
+                    class="ui-badge border-[#FFCDD2] bg-[#FFEBEE] text-[10px] text-[#C62828]"
                   >
                     <span class="ui-badge-dot bg-[#C62828]"></span>
                     <span>{dict.critical}</span>
@@ -1290,7 +886,7 @@
           href="/purchase-requests"
           class="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#5A3825] px-3 py-2.5 text-xs font-bold text-white shadow-xs transition hover:bg-[#432718]"
         >
-          <span>+ New Purchase Request</span>
+          <span>{dict.newPr}</span>
           <svg
             class="h-4 w-4"
             viewBox="0 0 24 24"
@@ -1316,17 +912,17 @@
           <div
             class="text-[10px] font-bold tracking-wider text-[#8C7665] uppercase sm:text-xs"
           >
-            System Compliance Ledger
+            {dict.complianceLedger}
           </div>
           <h3 class="mt-0.5 text-base font-bold text-[#2E1F16]">
-            Recent Stock &amp; Procurement Audit Trail
+            {dict.auditTrailTitle}
           </h3>
         </div>
         <a
           href="/audit-logs"
           class="text-xs font-semibold text-[#5A3825] hover:underline"
         >
-          Full Audit Log &rarr;
+          {dict.fullAuditLog} &rarr;
         </a>
       </div>
 
@@ -1347,7 +943,7 @@
               <tr class="text-[#2E1F16] transition hover:bg-[#FAF7F2]">
                 <td class="px-4 py-3 whitespace-nowrap">
                   <span
-                    class="ui-badge border-[#E0D5C7] bg-[#FAF4ED] text-[#5A3825] text-[10px]"
+                    class="ui-badge border-[#E0D5C7] bg-[#FAF4ED] text-[10px] text-[#5A3825]"
                   >
                     <span class="ui-badge-dot bg-[#5A3825]"></span>
                     <span>{log.action}</span>
