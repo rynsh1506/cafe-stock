@@ -66,6 +66,25 @@ describe("Core Elysia Application", () => {
       expect(payload.data.url).toContain("client_id=");
     });
 
+    it("dynamically resolves Google redirect URI from reverse proxy / Cloudflare headers", async () => {
+      const response = await app.handle(
+        new Request("http://127.0.0.1:3000/api/auth/google?json=true", {
+          headers: {
+            "x-forwarded-proto": "https",
+            "x-forwarded-host": "stock.mycafe.com",
+          },
+        }),
+      );
+      expect(response.status).toBe(200);
+
+      const payload = (await response.json()) as {
+        data: { url: string };
+      };
+      expect(payload.data.url).toContain(
+        "redirect_uri=https%3A%2F%2Fstock.mycafe.com%2Fapi%2Fauth%2Fgoogle%2Fcallback",
+      );
+    });
+
     it("rejects invalid or expired OTP code with 400 Bad Request", async () => {
       const response = await app.handle(
         new Request("http://localhost:3000/api/auth/otp/verify", {

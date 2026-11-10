@@ -27,8 +27,15 @@ import {
 } from "@/modules/auth/service";
 
 export const authModule = new Elysia({ prefix: "/api/auth" })
-  .get("/google", async ({ query, redirect }) => {
-    const url = await getGoogleAuthUrl();
+  .get("/google", async ({ request, query, redirect }) => {
+    const proto =
+      request.headers.get("x-forwarded-proto") ||
+      (request.url.startsWith("https:") ? "https" : "http");
+    const host =
+      request.headers.get("x-forwarded-host") || request.headers.get("host");
+    const requestOrigin = host ? `${proto}://${host}` : undefined;
+
+    const url = await getGoogleAuthUrl(requestOrigin);
     if (query?.json === "true") {
       return { data: { url } };
     }
@@ -36,7 +43,7 @@ export const authModule = new Elysia({ prefix: "/api/auth" })
   })
   .get(
     "/google/callback",
-    async ({ query, redirect, set }) => {
+    async ({ request, query, redirect, set }) => {
       const code = query?.code;
       const error = query?.error;
 
@@ -47,7 +54,15 @@ export const authModule = new Elysia({ prefix: "/api/auth" })
       }
 
       try {
-        const result = await handleGoogleCallback(code);
+        const proto =
+          request.headers.get("x-forwarded-proto") ||
+          (request.url.startsWith("https:") ? "https" : "http");
+        const host =
+          request.headers.get("x-forwarded-host") ||
+          request.headers.get("host");
+        const requestOrigin = host ? `${proto}://${host}` : undefined;
+
+        const result = await handleGoogleCallback(code, requestOrigin);
         if (result.type === "LOGGED_IN") {
           set.headers["Set-Cookie"] =
             `${SESSION_COOKIE_NAME}=${encodeURIComponent(result.token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800`;

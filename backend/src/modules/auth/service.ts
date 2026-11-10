@@ -26,11 +26,41 @@ import {
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 7;
 export const SESSION_COOKIE_NAME = "cafestock_session";
 
-export async function getGoogleAuthUrl(): Promise<string> {
+export async function resolveGoogleRedirectUri(
+  originOverride?: string,
+): Promise<string> {
+  const envUri = process.env.GOOGLE_REDIRECT_URI?.trim();
+  const isEnvLocalhostDefault =
+    !envUri ||
+    envUri === "http://localhost:3000/api/auth/google/callback" ||
+    envUri === "http://127.0.0.1:3000/api/auth/google/callback";
+
+  if (envUri && !isEnvLocalhostDefault) {
+    return envUri;
+  }
+
+  const appUrlSetting = await db
+    .select()
+    .from(systemSettings)
+    .where(eq(systemSettings.key, "app_url"));
+
+  const configuredAppUrl = appUrlSetting[0]?.value?.trim();
+  if (configuredAppUrl) {
+    return `${configuredAppUrl.replace(/\/+$/, "")}/api/auth/google/callback`;
+  }
+
+  if (originOverride?.trim()) {
+    return `${originOverride.trim().replace(/\/+$/, "")}/api/auth/google/callback`;
+  }
+
+  return envUri || "http://localhost:3000/api/auth/google/callback";
+}
+
+export async function getGoogleAuthUrl(
+  originOverride?: string,
+): Promise<string> {
   let clientId = process.env.GOOGLE_CLIENT_ID || "";
-  const redirectUri =
-    process.env.GOOGLE_REDIRECT_URI ||
-    "http://localhost:3000/api/auth/google/callback";
+  const redirectUri = await resolveGoogleRedirectUri(originOverride);
 
   if (!clientId) {
     const setting = await db
@@ -59,12 +89,11 @@ export type GoogleOAuthResult =
 
 export async function handleGoogleCallback(
   code: string,
+  originOverride?: string,
 ): Promise<GoogleOAuthResult> {
   let clientId = process.env.GOOGLE_CLIENT_ID || "";
   let clientSecret = process.env.GOOGLE_CLIENT_SECRET || "";
-  const redirectUri =
-    process.env.GOOGLE_REDIRECT_URI ||
-    "http://localhost:3000/api/auth/google/callback";
+  const redirectUri = await resolveGoogleRedirectUri(originOverride);
 
   if (!clientId || !clientSecret) {
     const idSetting = await db

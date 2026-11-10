@@ -5,6 +5,7 @@ import type { AppLanguage, AuthUser } from "@/lib/types";
 
 export interface SetupPageServerData {
   lang: AppLanguage;
+  suggestedAppUrl: string;
 }
 
 export interface SetupActionData {
@@ -22,14 +23,16 @@ export interface SetupActionData {
 
 export const load: ServerLoad = async ({
   locals,
+  url,
 }): Promise<SetupPageServerData> => {
   return {
     lang: locals.lang,
+    suggestedAppUrl: url.origin,
   };
 };
 
 export const actions: Actions = {
-  default: async ({ request, cookies }) => {
+  default: async ({ request, cookies, url }) => {
     const formData = await request.formData();
     const adminName = String(formData.get("adminName") ?? "").trim();
     const adminEmail = String(formData.get("adminEmail") ?? "").trim();
@@ -101,7 +104,7 @@ export const actions: Actions = {
       adminEmail,
       adminPassword,
       cafeName: cafeName || "CafeStock Roastery",
-      appUrl: appUrl || "http://localhost:3000",
+      appUrl: appUrl || url.origin || "http://localhost:3000",
     };
 
     if (smtpHost) payload.smtpHost = smtpHost;

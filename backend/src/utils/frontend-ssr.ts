@@ -121,9 +121,25 @@ export async function handleFrontendRequest(
     );
   }
 
-  return ssrServer.respond(request, {
+  const proto =
+    request.headers.get("x-forwarded-proto") ||
+    (request.url.startsWith("https:") ? "https" : "http");
+  const host =
+    request.headers.get("x-forwarded-host") || request.headers.get("host");
+
+  let effectiveRequest = request;
+  if (host) {
+    const targetUrl = `${proto}://${host}${url.pathname}${url.search}`;
+    if (targetUrl !== request.url) {
+      effectiveRequest = new Request(targetUrl, request);
+    }
+  }
+
+  return ssrServer.respond(effectiveRequest, {
     getClientAddress: () =>
+      request.headers.get("cf-connecting-ip") ||
       request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      request.headers.get("x-real-ip") ||
       "127.0.0.1",
   });
 }
