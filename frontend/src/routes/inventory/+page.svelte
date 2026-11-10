@@ -15,8 +15,7 @@
         {dict.navInventory}
       </h1>
       <p class="mt-0.5 text-xs text-[#7D6B5D]">
-        Real-time stock balance per warehouse facility and append-only inbound
-        movement ledger.
+        {dict.inventorySubtitle}
       </p>
     </div>
 
@@ -29,7 +28,7 @@
             ? 'ui-tab-active'
             : ''}"
         >
-          Warehouse Balances ({data.balances.length})
+          {dict.balancesTab} ({data.balances.length})
         </button>
         <button
           type="button"
@@ -38,7 +37,7 @@
             ? 'ui-tab-active'
             : ''}"
         >
-          Movement Ledger ({data.movements.length})
+          {dict.movementsTab} ({data.movements.length})
         </button>
       </div>
 
@@ -49,7 +48,7 @@
       >
         <div class="w-48">
           <select name="warehouseId" class="ui-select">
-            <option value="">All Warehouses</option>
+            <option value="">{dict.allWarehouses}</option>
             {#each data.warehouses as wh}
               <option value={wh.id} selected={data.warehouseFilter === wh.id}>
                 {wh.code} — {wh.name}
@@ -68,10 +67,12 @@
             checked={data.lowStockOnly}
             class="h-3.5 w-3.5 accent-[#5A3825]"
           />
-          <span>Low Stock Only</span>
+          <span>{dict.lowStockOnly}</span>
         </label>
 
-        <button type="submit" class="ui-btn cursor-pointer">Filter</button>
+        <button type="submit" class="ui-btn cursor-pointer"
+          >{dict.filter}</button
+        >
       </form>
     </div>
   </div>
@@ -85,12 +86,12 @@
             <tr
               class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
             >
-              <th class="px-5 py-3.5">Warehouse</th>
-              <th class="px-5 py-3.5">SKU</th>
-              <th class="px-5 py-3.5">Product Name</th>
-              <th class="px-5 py-3.5 text-right">Min Threshold</th>
-              <th class="px-5 py-3.5 text-right">Current Stock</th>
-              <th class="px-5 py-3.5 text-center">Health</th>
+              <th class="px-5 py-3.5">{dict.warehouse}</th>
+              <th class="px-5 py-3.5">{dict.skuLabel}</th>
+              <th class="px-5 py-3.5">{dict.nameLabel}</th>
+              <th class="px-5 py-3.5 text-right">{dict.minThreshold}</th>
+              <th class="px-5 py-3.5 text-right">{dict.currentStock}</th>
+              <th class="px-5 py-3.5 text-center">{dict.health}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-[#F5EDE4]">
@@ -126,7 +127,7 @@
                       ? 'border-[#FFCDD2] bg-[#FFEBEE] text-[#C62828]'
                       : 'border-[#B2D3C1] bg-[#E7F2EC] text-[#1D593B]'}"
                   >
-                    {bal.isLowStock ? "CRITICAL" : "HEALTHY"}
+                    {bal.isLowStock ? dict.critical : dict.healthy}
                   </span>
                 </td>
               </tr>
@@ -141,12 +142,12 @@
             <tr
               class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
             >
-              <th class="px-5 py-3.5">Product</th>
-              <th class="px-5 py-3.5">Warehouse</th>
-              <th class="px-5 py-3.5">Movement Type</th>
-              <th class="px-5 py-3.5 text-right">Delta</th>
-              <th class="px-5 py-3.5 text-right">Balance After</th>
-              <th class="px-5 py-3.5 text-right">Timestamp</th>
+              <th class="px-5 py-3.5">{dict.product}</th>
+              <th class="px-5 py-3.5">{dict.warehouse}</th>
+              <th class="px-5 py-3.5">{dict.movementType}</th>
+              <th class="px-5 py-3.5 text-right">{dict.delta}</th>
+              <th class="px-5 py-3.5 text-right">{dict.balanceAfter}</th>
+              <th class="px-5 py-3.5 text-right">{dict.timestamp}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-[#F5EDE4]">

@@ -164,13 +164,36 @@
   <div class="flex flex-1 items-center justify-center p-6 sm:p-10 lg:p-16">
     <div class="w-full max-w-md space-y-8">
       <!-- Header Form -->
-      <div>
-        <h2 class="font-serif text-2xl font-bold text-[#231712] sm:text-3xl">
-          Welcome back.
-        </h2>
-        <p class="mt-1.5 text-xs text-[#7D6B5D] sm:text-sm">
-          {dict.loginSubtitle}
-        </p>
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h2 class="font-serif text-2xl font-bold text-[#231712] sm:text-3xl">
+            {dict.loginTitle}
+          </h2>
+          <p class="mt-1.5 text-xs text-[#7D6B5D] sm:text-sm">
+            {dict.loginSubtitle}
+          </p>
+        </div>
+
+        <!-- Language Switcher (Zero Flags) -->
+        <div
+          class="flex shrink-0 items-center rounded-lg border border-[#EDE4D8] bg-[#FAF7F2] p-0.5 font-mono text-[11px] font-bold"
+        >
+          {#each ["EN", "ID", "JP"] as const as l}
+            <form method="POST" action="?/setLang" class="inline">
+              <input type="hidden" name="lang" value={l} />
+              <input type="hidden" name="redirectTo" value="/login" />
+              <button
+                type="submit"
+                class="cursor-pointer rounded-md px-2 py-0.5 transition {data.lang ===
+                l
+                  ? 'bg-[#5A3825] text-white shadow-xs'
+                  : 'text-[#8C7665] hover:text-[#5A3825]'}"
+              >
+                {l}
+              </button>
+            </form>
+          {/each}
+        </div>
       </div>
 
       {#if form?.error}

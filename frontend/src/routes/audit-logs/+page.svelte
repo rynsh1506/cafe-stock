@@ -14,8 +14,7 @@
         {dict.navAuditLogs}
       </h1>
       <p class="mt-0.5 text-xs text-[#7D6B5D]">
-        Immutable log of transactional status changes, actions, and operator
-        identities.
+        {dict.auditSubtitle}
       </p>
     </div>
 
@@ -26,7 +25,7 @@
     >
       <div class="w-44">
         <select name="entityType" class="ui-select">
-          <option value="">All Entities</option>
+          <option value="">{dict.allEntities}</option>
           {#each ["USER", "PRODUCT", "SUPPLIER", "WAREHOUSE", "PURCHASE_REQUEST", "PURCHASE_ORDER", "GOODS_RECEIPT"] as entity}
             <option value={entity} selected={data.entityType === entity}>
               {entity}
@@ -40,12 +39,12 @@
           type="text"
           name="search"
           value={data.search}
-          placeholder="Search actor or summary..."
+          placeholder={dict.searchActor}
           class="ui-input"
         />
       </div>
 
-      <button type="submit" class="ui-btn cursor-pointer">Filter</button>
+      <button type="submit" class="ui-btn cursor-pointer">{dict.filter}</button>
     </form>
   </div>
 
@@ -57,11 +56,11 @@
           <tr
             class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
           >
-            <th class="px-5 py-3.5">Action</th>
-            <th class="px-5 py-3.5">Module / Entity</th>
-            <th class="px-5 py-3.5">Summary</th>
-            <th class="px-5 py-3.5">Operator</th>
-            <th class="px-5 py-3.5 text-right">Timestamp</th>
+            <th class="px-5 py-3.5">{dict.action}</th>
+            <th class="px-5 py-3.5">{dict.moduleEntity}</th>
+            <th class="px-5 py-3.5">{dict.summary}</th>
+            <th class="px-5 py-3.5">{dict.operator}</th>
+            <th class="px-5 py-3.5 text-right">{dict.timestamp}</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-[#F5EDE4]">

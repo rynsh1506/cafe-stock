@@ -38,8 +38,7 @@
         {dict.navGoodsReceipts}
       </h1>
       <p class="mt-0.5 text-xs text-[#7D6B5D]">
-        Verify physical delivery from suppliers and atomically post inventory
-        balance increments.
+        {dict.grSubtitle}
       </p>
     </div>
 
@@ -48,7 +47,7 @@
       onclick={() => (showNewDrawer = !showNewDrawer)}
       class="ui-btn cursor-pointer"
     >
-      {showNewDrawer ? "Close Form" : "+ Record Goods Receipt"}
+      {showNewDrawer ? dict.closeForm : dict.recordReceipt}
     </button>
   </div>
 
@@ -74,15 +73,14 @@
     <div class="ui-card p-5 sm:p-6">
       <div class="mb-4 border-b border-[#F0E7DD] pb-3">
         <h2 class="font-serif text-base font-bold text-[#231712]">
-          Record Inbound Goods Receipt
+          {dict.recordReceiptTitle}
         </h2>
       </div>
       {#if data.receivableOrders.length === 0}
         <div
           class="rounded-xl border border-[#EDE4D8] bg-[#FAF7F2] p-4 text-xs text-[#8C7665]"
         >
-          No Purchase Orders are currently in ORDERED or PARTIALLY_RECEIVED
-          status.
+          {dict.noReceivableOrders}
         </div>
       {:else}
         <form
@@ -94,7 +92,7 @@
             <label
               for="gr-po"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Purchase Order</label
+              >{dict.purchaseOrder}</label
             >
             <select
               id="gr-po"
@@ -115,7 +113,7 @@
             <label
               for="gr-item"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Order Line Item</label
+              >{dict.orderLineItem}</label
             >
             <select
               id="gr-item"
@@ -126,7 +124,7 @@
               {#if selectedOrder}
                 {#each selectedOrder.items.filter((i) => i.remainingQuantity > 0) as item}
                   <option value={item.id}>
-                    {item.productName} (Remaining: {item.remainingQuantity}
+                    {item.productName} ({dict.quantity}: {item.remainingQuantity}
                     {item.productUnit})
                   </option>
                 {/each}
@@ -138,7 +136,7 @@
             <label
               for="gr-qty"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Quantity Received</label
+              >{dict.quantityReceived}</label
             >
             <input
               id="gr-qty"
@@ -155,19 +153,19 @@
             <label
               for="gr-notes"
               class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-              >Delivery Note / Ref Notes</label
+              >{dict.deliveryNote}</label
             >
             <input
               id="gr-notes"
               type="text"
               name="notes"
-              placeholder="Delivery note reference..."
+              placeholder="..."
               class="ui-input"
             />
           </div>
 
           <button type="submit" class="ui-btn w-full cursor-pointer">
-            Post Goods Receipt
+            {dict.postReceipt}
           </button>
         </form>
       {/if}
@@ -182,12 +180,12 @@
           <tr
             class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
           >
-            <th class="px-5 py-3.5">Receipt ID</th>
-            <th class="px-5 py-3.5">PO Reference</th>
-            <th class="px-5 py-3.5">Warehouse</th>
-            <th class="px-5 py-3.5">Received By</th>
-            <th class="px-5 py-3.5">Items Posted</th>
-            <th class="px-5 py-3.5 text-right">Timestamp</th>
+            <th class="px-5 py-3.5">{dict.receiptId}</th>
+            <th class="px-5 py-3.5">{dict.poReference}</th>
+            <th class="px-5 py-3.5">{dict.warehouse}</th>
+            <th class="px-5 py-3.5">{dict.receivedBy}</th>
+            <th class="px-5 py-3.5">{dict.itemsPosted}</th>
+            <th class="px-5 py-3.5 text-right">{dict.timestamp}</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-[#F5EDE4]">

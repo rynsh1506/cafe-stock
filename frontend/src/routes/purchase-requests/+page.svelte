@@ -37,7 +37,7 @@
         {dict.navPurchaseRequests}
       </h1>
       <p class="mt-0.5 text-xs text-[#7D6B5D]">
-        Draft raw material requirements and managerial approval workflow.
+        {dict.prSubtitle}
       </p>
     </div>
 
@@ -50,7 +50,7 @@
               : "/purchase-requests"}
             class="ui-tab {data.statusFilter === status ? 'ui-tab-active' : ''}"
           >
-            {status || "ALL"}
+            {status || dict.all.toUpperCase()}
           </a>
         {/each}
       </div>
@@ -61,7 +61,7 @@
           onclick={() => (showNewDrawer = !showNewDrawer)}
           class="ui-btn cursor-pointer"
         >
-          {showNewDrawer ? "Close Form" : "+ New Purchase Request"}
+          {showNewDrawer ? dict.closeForm : dict.newPr}
         </button>
       {/if}
     </div>
@@ -89,7 +89,7 @@
     <div class="ui-card p-5 sm:p-6">
       <div class="mb-4 border-b border-[#F0E7DD] pb-3">
         <h2 class="font-serif text-base font-bold text-[#231712]">
-          Create Purchase Request (DRAFT)
+          {dict.createDraftPr}
         </h2>
       </div>
       <form
@@ -101,7 +101,7 @@
           <label
             for="pr-warehouse"
             class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-            >Destination Warehouse</label
+            >{dict.destinationWarehouse}</label
           >
           <select
             id="pr-warehouse"
@@ -109,7 +109,7 @@
             required
             class="ui-select"
           >
-            <option value="">Select Warehouse...</option>
+            <option value="">{dict.selectWarehouse}</option>
             {#each data.warehouses as wh}
               <option value={wh.id}>{wh.code} — {wh.name}</option>
             {/each}
@@ -119,10 +119,10 @@
           <label
             for="pr-product"
             class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-            >Product</label
+            >{dict.product}</label
           >
           <select id="pr-product" name="productId" required class="ui-select">
-            <option value="">Select Product...</option>
+            <option value="">{dict.selectProduct}</option>
             {#each data.products as prod}
               <option value={prod.id}>
                 {prod.sku} — {prod.name} ({prod.unit})
@@ -134,7 +134,7 @@
           <label
             for="pr-quantity"
             class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-            >Quantity</label
+            >{dict.quantity}</label
           >
           <input
             id="pr-quantity"
@@ -150,18 +150,18 @@
           <label
             for="pr-notes"
             class="mb-1.5 block text-[11px] font-bold tracking-wider text-[#5A4537] uppercase"
-            >Notes</label
+            >{dict.notes}</label
           >
           <input
             id="pr-notes"
             type="text"
             name="notes"
-            placeholder="Restock requirement notes..."
+            placeholder="..."
             class="ui-input"
           />
         </div>
         <button type="submit" class="ui-btn w-full cursor-pointer">
-          Save Draft PR
+          {dict.saveDraftPr}
         </button>
       </form>
     </div>
@@ -175,11 +175,11 @@
           <tr
             class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
           >
-            <th class="px-5 py-3.5">Request ID</th>
-            <th class="px-5 py-3.5">Warehouse &amp; Requester</th>
-            <th class="px-5 py-3.5">Requested Items</th>
-            <th class="px-5 py-3.5 text-center">Status</th>
-            <th class="px-5 py-3.5 text-right">Actions</th>
+            <th class="px-5 py-3.5">{dict.requestId}</th>
+            <th class="px-5 py-3.5">{dict.warehouseAndRequester}</th>
+            <th class="px-5 py-3.5">{dict.requestedItems}</th>
+            <th class="px-5 py-3.5 text-center">{dict.status}</th>
+            <th class="px-5 py-3.5 text-right">{dict.actions}</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-[#F5EDE4]">
@@ -198,7 +198,7 @@
                   {pr.warehouseName}
                 </div>
                 <div class="text-[11px] text-[#8C7665]">
-                  By: {pr.requesterName}
+                  {pr.requesterName}
                 </div>
               </td>
               <td class="px-5 py-4">
@@ -233,7 +233,7 @@
                         type="submit"
                         class="ui-btn ui-btn-sm cursor-pointer"
                       >
-                        Submit PR
+                        {dict.submitPr}
                       </button>
                     </form>
                     <form method="POST" action="?/delete">
@@ -242,7 +242,7 @@
                         type="submit"
                         class="ui-btn-outline ui-btn-sm cursor-pointer text-[#C62828]"
                       >
-                        Delete
+                        {dict.delete}
                       </button>
                     </form>
                   {/if}
@@ -253,7 +253,7 @@
                         type="submit"
                         class="ui-btn ui-btn-sm cursor-pointer"
                       >
-                        Approve
+                        {dict.approve}
                       </button>
                     </form>
                     <form method="POST" action="?/reject">
@@ -262,13 +262,13 @@
                         type="submit"
                         class="ui-btn-outline ui-btn-sm cursor-pointer text-[#C62828]"
                       >
-                        Reject
+                        {dict.reject}
                       </button>
                     </form>
                   {/if}
                   {#if pr.status === "APPROVED"}
                     <a href="/purchase-orders" class="ui-btn-outline ui-btn-sm">
-                      Create PO &rarr;
+                      {dict.createPo}
                     </a>
                   {/if}
                 </div>
