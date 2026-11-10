@@ -164,7 +164,7 @@
   {/if}
 {/snippet}
 
-{#if currentPath === "/login" || currentPath === "/setup" || !data.user}
+{#if currentPath === "/login" || currentPath.startsWith("/setup") || !data.user}
   {@render children()}
 {:else}
   <div class="flex h-screen w-full overflow-hidden bg-[#FAF7F2] text-[#2D241E]">
@@ -480,6 +480,34 @@
               </form>
             {/each}
           </div>
+
+          <!-- 2FA Status Pill -->
+          <a
+            href="/setup/2fa"
+            title={data.user.totpEnabled
+              ? "2FA Authenticator Aktif"
+              : "Aktifkan 2FA Authenticator"}
+            class="flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] font-bold shadow-xs transition {data
+              .user.totpEnabled
+              ? 'border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+              : 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100'}"
+          >
+            {#if data.user.totpEnabled}
+              <span class="h-1.5 w-1.5 rounded-full bg-emerald-600"></span>
+              <span>2FA Aktif</span>
+            {:else}
+              <svg
+                class="h-3 w-3 text-amber-700"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
+              </svg>
+              <span>Setup 2FA</span>
+            {/if}
+          </a>
 
           <div class="flex items-center gap-2.5 border-l border-[#EDE4D8] pl-4">
             <div class="text-right">

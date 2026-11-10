@@ -22,6 +22,7 @@ import {
   hashBackupCode,
   verifyTotpCode,
 } from "@/utils/totp";
+import QRCode from "qrcode";
 
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 7;
 export const SESSION_COOKIE_NAME = "cafestock_session";
@@ -579,10 +580,19 @@ export async function setup2Fa(user: AuthenticatedUser) {
   const secret = generateTotpSecret();
   const uri = generateTotpUri(user.email, secret);
   const { plainCodes, hashedCodes } = generateBackupCodes();
+  const qrCodeDataUrl = await QRCode.toDataURL(uri, {
+    width: 280,
+    margin: 2,
+    color: {
+      dark: "#231712",
+      light: "#FFFFFF",
+    },
+  });
 
   return {
     secret,
     uri,
+    qrCodeDataUrl,
     backupCodes: plainCodes,
     hashedCodes,
   };

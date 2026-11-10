@@ -169,7 +169,12 @@ export const authModule = new Elysia({ prefix: "/api/auth" })
     "/2fa/enable",
     async ({ request, body }) => {
       const user = await requireAuthenticatedUser(request);
-      const data = await enable2Fa(user, body.code, body.secret);
+      const data = await enable2Fa(
+        user,
+        body.code,
+        body.secret,
+        body.hashedBackupCodes,
+      );
       return { data };
     },
     {

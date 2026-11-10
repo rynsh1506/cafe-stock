@@ -38,6 +38,7 @@ export const approveUserBodySchema = t.Object({
 export const enable2FaBodySchema = t.Object({
   code: t.String({ minLength: 6, maxLength: 6 }),
   secret: t.String({ minLength: 16 }),
+  hashedBackupCodes: t.Optional(t.Array(t.String())),
 });
 
 export const verify2FaBodySchema = t.Object({

@@ -269,5 +269,127 @@ describe("Core Elysia Application", () => {
       };
       expect(payload.error.code).toBe("INVALID_2FA_REQUEST");
     });
+
+    it("generates QR code data URL and Base32 secrets at GET /api/auth/2fa/setup", async () => {
+      const loginRes = await app.handle(
+        new Request("http://localhost:3000/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: "owner@cafestock.com",
+            password: "Password123!",
+          }),
+        }),
+      );
+      expect(loginRes.status).toBe(200);
+      const loginPayload = (await loginRes.json()) as {
+        data: { token: string };
+      };
+
+      const setupRes = await app.handle(
+        new Request("http://localhost:3000/api/auth/2fa/setup", {
+          headers: {
+            Authorization: `Bearer ${loginPayload.data.token}`,
+          },
+        }),
+      );
+      expect(setupRes.status).toBe(200);
+      const setupPayload = (await setupRes.json()) as {
+        data: {
+          secret: string;
+          uri: string;
+          qrCodeDataUrl: string;
+          backupCodes: string[];
+          hashedCodes: string[];
+        };
+      };
+      expect(setupPayload.data.qrCodeDataUrl).toMatch(
+        /^data:image\/png;base64,/,
+      );
+      expect(setupPayload.data.secret.length).toBeGreaterThanOrEqual(16);
+      expect(setupPayload.data.backupCodes.length).toBe(8);
+      expect(setupPayload.data.hashedCodes.length).toBe(8);
+
+      const validCode = generateTotpCode(setupPayload.data.secret);
+      const enableRes = await app.handle(
+        new Request("http://localhost:3000/api/auth/2fa/enable", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${loginPayload.data.token}`,
+          },
+          body: JSON.stringify({
+            code: validCode,
+            secret: setupPayload.data.secret,
+            hashedBackupCodes: setupPayload.data.hashedCodes,
+          }),
+        }),
+      );
+      expect(enableRes.status).toBe(200);
+      const enablePayload = (await enableRes.json()) as {
+        data: { success: boolean; message: string };
+      };
+      expect(enablePayload.data.success).toBe(true);
+    });
+
+    it("generates QR code data URL and Base32 secrets at GET /api/auth/2fa/setup", async () => {
+      const loginRes = await app.handle(
+        new Request("http://localhost:3000/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: "owner@cafestock.com",
+            password: "Password123!",
+          }),
+        }),
+      );
+      expect(loginRes.status).toBe(200);
+      const loginPayload = (await loginRes.json()) as {
+        data: { token: string };
+      };
+
+      const setupRes = await app.handle(
+        new Request("http://localhost:3000/api/auth/2fa/setup", {
+          headers: {
+            Authorization: `Bearer ${loginPayload.data.token}`,
+          },
+        }),
+      );
+      expect(setupRes.status).toBe(200);
+      const setupPayload = (await setupRes.json()) as {
+        data: {
+          secret: string;
+          uri: string;
+          qrCodeDataUrl: string;
+          backupCodes: string[];
+          hashedCodes: string[];
+        };
+      };
+      expect(setupPayload.data.qrCodeDataUrl).toMatch(/^data:image\/png;base64,/);
+      expect(setupPayload.data.secret.length).toBeGreaterThanOrEqual(16);
+      expect(setupPayload.data.backupCodes.length).toBe(8);
+      expect(setupPayload.data.hashedCodes.length).toBe(8);
+
+      const validCode = generateTotpCode(setupPayload.data.secret);
+      const enableRes = await app.handle(
+        new Request("http://localhost:3000/api/auth/2fa/enable", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${loginPayload.data.token}`,
+          },
+          body: JSON.stringify({
+            code: validCode,
+            secret: setupPayload.data.secret,
+            hashedBackupCodes: setupPayload.data.hashedCodes,
+          }),
+        }),
+      );
+      expect(enableRes.status).toBe(200);
+      const enablePayload = (await enableRes.json()) as {
+        data: { success: boolean; message: string };
+      };
+      expect(enablePayload.data.success).toBe(true);
+    });
   });
 });
