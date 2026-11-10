@@ -27,6 +27,13 @@
     }
     return "border-[#D8D0C0] bg-[#F2EFE9] text-[#5C5346]";
   }
+
+  function statusDotClass(status: string): string {
+    if (status === "APPROVED") return "bg-[#1D593B]";
+    if (status === "SUBMITTED") return "bg-[#8A4B14]";
+    if (status === "REJECTED") return "bg-[#9E2A20]";
+    return "bg-[#5C5346]";
+  }
 </script>
 
 <div class="space-y-6">
@@ -42,7 +49,30 @@
     </div>
 
     <div class="flex flex-wrap items-center gap-2.5">
-      <div class="ui-tabs">
+      <!-- Mobile Filter Dropdown -->
+      <div class="w-full sm:hidden">
+        <select
+          class="ui-select"
+          onchange={(e) => {
+            const val = e.currentTarget.value;
+            window.location.href = val
+              ? `/purchase-requests?status=${val}`
+              : "/purchase-requests";
+          }}
+        >
+          <option value="" selected={!data.statusFilter}>
+            {dict.all.toUpperCase()}
+          </option>
+          {#each ["DRAFT", "SUBMITTED", "APPROVED", "REJECTED"] as status}
+            <option value={status} selected={data.statusFilter === status}>
+              {status}
+            </option>
+          {/each}
+        </select>
+      </div>
+
+      <!-- Desktop Smooth Non-wrapping Tabs -->
+      <div class="hidden sm:inline-flex ui-tabs overflow-x-auto max-w-full">
         {#each ["", "DRAFT", "SUBMITTED", "APPROVED", "REJECTED"] as status}
           <a
             href={status
@@ -59,7 +89,7 @@
         <button
           type="button"
           onclick={() => (showNewDrawer = !showNewDrawer)}
-          class="ui-btn cursor-pointer"
+          class="ui-btn cursor-pointer w-full sm:w-auto"
         >
           {showNewDrawer ? dict.closeForm : dict.newPr}
         </button>
@@ -216,12 +246,9 @@
                 {/if}
               </td>
               <td class="px-5 py-4 text-center">
-                <span
-                  class="rounded-full border px-2.5 py-0.5 font-mono text-[10px] font-bold {statusBadgeClass(
-                    pr.status,
-                  )}"
-                >
-                  {pr.status}
+                <span class="ui-badge {statusBadgeClass(pr.status)}">
+                  <span class="ui-badge-dot {statusDotClass(pr.status)}"></span>
+                  <span>{pr.status}</span>
                 </span>
               </td>
               <td class="px-5 py-4 text-right">

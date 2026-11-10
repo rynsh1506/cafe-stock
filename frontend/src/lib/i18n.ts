@@ -56,6 +56,15 @@ export interface TranslationDictionary {
   attentionSubtitle: string;
   weeklyVolume: string;
   weeklyVolumeSubtitle: string;
+  pipelineTitle: string;
+  pipelineSubtitle: string;
+  warehouseDistribution: string;
+  warehouseDistributionSubtitle: string;
+  roasteryPortfolio: string;
+  roasteryPortfolioSubtitle: string;
+  metricVolume: string;
+  metricSpend: string;
+  metricVelocity: string;
 
   // Master Data
   masterTitle: string;
@@ -216,6 +225,18 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
       "Item dengan saldo mendekati atau di bawah batas minimum.",
     weeklyVolume: "Volume Penerimaan Mingguan",
     weeklyVolumeSubtitle: "Estimasi total pergerakan stok masuk harian.",
+    pipelineTitle: "Alur Proses Pengadaan Terpadu",
+    pipelineSubtitle:
+      "Tahapan dari pengajuan draf hingga verifikasi saldo gudang.",
+    warehouseDistribution: "Distribusi & Kapasitas Gudang",
+    warehouseDistributionSubtitle:
+      "Kapasitas utilisasi ruang penyimpanan dan jumlah SKU aktif.",
+    roasteryPortfolio: "Portofolio Material Roastery",
+    roasteryPortfolioSubtitle:
+      "Estimasi komposisi stok bahan baku utama dan kemasan.",
+    metricVolume: "Volume Masuk (KG)",
+    metricSpend: "Nilai Pembelian ($)",
+    metricVelocity: "Kecepatan Order (Hari)",
 
     masterTitle: "Manajemen Master Data (Produk, Supplier, Gudang)",
     masterSubtitle:
@@ -374,6 +395,18 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     attentionSubtitle: "Items with balances near or below minimum thresholds.",
     weeklyVolume: "Weekly Receipt Volume",
     weeklyVolumeSubtitle: "Estimated aggregate daily stock intake.",
+    pipelineTitle: "Unified Procurement Pipeline",
+    pipelineSubtitle:
+      "Real-time lifecycle stages from draft creation to stock settlement.",
+    warehouseDistribution: "Warehouse Storage & Distribution",
+    warehouseDistributionSubtitle:
+      "Space utilization rates and active SKU density across facilities.",
+    roasteryPortfolio: "Roastery Material Portfolio",
+    roasteryPortfolioSubtitle:
+      "Inventory composition of green coffee, dairy, and degassing packaging.",
+    metricVolume: "Inbound Volume (KG)",
+    metricSpend: "Procurement Capital ($)",
+    metricVelocity: "Fulfillment Velocity (Days)",
 
     masterTitle: "Master Data Management (Products, Suppliers, Warehouses)",
     masterSubtitle:
@@ -531,6 +564,15 @@ export const translations: Record<AppLanguage, TranslationDictionary> = {
     attentionSubtitle: "最小基準値付近または下回っている品目。",
     weeklyVolume: "週間入荷量推移",
     weeklyVolumeSubtitle: "日別推定総入庫量。",
+    pipelineTitle: "調達プロセス・パイプライン",
+    pipelineSubtitle: "購買起票から在庫確定までのリアルタイム推移。",
+    warehouseDistribution: "倉庫別収容状況・在庫分布",
+    warehouseDistributionSubtitle: "各保管拠点の容量使用率および管理SKU数。",
+    roasteryPortfolio: "ロースタリー原材料構成",
+    roasteryPortfolioSubtitle: "生豆・副資材・パッケージの在庫構成比率。",
+    metricVolume: "入荷総量 (KG)",
+    metricSpend: "購買総額 ($)",
+    metricVelocity: "納入速度 (日数)",
 
     masterTitle: "マスターデータ管理（商品・サプライヤー・倉庫）",
     masterSubtitle: "商品、取引先サプライヤー、倉庫拠点の一元管理。",

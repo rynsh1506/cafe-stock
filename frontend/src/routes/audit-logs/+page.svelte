@@ -68,9 +68,10 @@
             <tr class="transition hover:bg-[#FAF7F2]">
               <td class="px-5 py-3.5">
                 <span
-                  class="rounded-full border border-[#E0D5C7] bg-[#FAF4ED] px-2.5 py-0.5 font-mono text-[10px] font-bold text-[#5A3825]"
+                  class="ui-badge border-[#E0D5C7] bg-[#FAF4ED] text-[#5A3825] text-[10px]"
                 >
-                  {log.action}
+                  <span class="ui-badge-dot bg-[#5A3825]"></span>
+                  <span>{log.action}</span>
                 </span>
               </td>
               <td class="px-5 py-3.5 font-mono text-[11px] text-[#6A574A]">

@@ -387,11 +387,16 @@
                     />
                     <button
                       type="submit"
-                      class="cursor-pointer rounded-full border px-2.5 py-0.5 font-mono text-[10px] font-bold transition {prod.isActive
+                      class="cursor-pointer ui-badge transition hover:scale-105 {prod.isActive
                         ? 'border-[#B2D3C1] bg-[#E7F2EC] text-[#1D593B]'
                         : 'border-[#E6B8B3] bg-[#FCEAE8] text-[#9E2A20]'}"
                     >
-                      {prod.isActive ? "ACTIVE" : "INACTIVE"}
+                      <span
+                        class="ui-badge-dot {prod.isActive
+                          ? 'bg-[#1D593B]'
+                          : 'bg-[#9E2A20]'}"
+                      ></span>
+                      <span>{prod.isActive ? "ACTIVE" : "INACTIVE"}</span>
                     </button>
                   </form>
                 </td>
