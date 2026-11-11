@@ -329,7 +329,6 @@ export const load: ServerLoad = async ({
   function computeVolumePoint(
     day: { date: Date; dateStr: string; dayName: string; shortLabel: string },
     windowDays: number,
-    index: number,
   ): ChartSeriesPoint {
     const matchingMovements = allMovements.filter((m) => {
       const mDate = new Date(m.createdAt);
@@ -344,26 +343,18 @@ export const load: ServerLoad = async ({
       0,
     );
 
-    // Baseline catalog operational rhythm anchored on active inventory scale
-    const baseRhythm = Math.max(
-      15,
-      Math.round(totalInventoryUnits * 0.12 + ((index * 7 + 11) % 19) - 8),
-    );
-    const finalVal = realDbVal > 0 ? realDbVal : baseRhythm;
-
     return {
       label: day.dayName,
       sublabel: day.shortLabel,
-      value: finalVal,
+      value: realDbVal,
       unit: "kg",
-      delta: `${finalVal} kg`,
+      delta: `${realDbVal} kg`,
     };
   }
 
   // Calculate spend point
   function computeSpendPoint(
     day: { date: Date; dateStr: string; dayName: string; shortLabel: string },
-    volumeVal: number,
     windowDays: number,
   ): ChartSeriesPoint {
     const matchingOrders = allOrders.filter((po) => {
@@ -382,52 +373,57 @@ export const load: ServerLoad = async ({
       return sum + itemsSum;
     }, 0);
 
-    const baseSpend = Math.round(volumeVal * 195000);
-    const finalSpend = realDbSpend > 0 ? realDbSpend : baseSpend;
-
     return {
       label: day.dayName,
       sublabel: day.shortLabel,
-      value: finalSpend,
+      value: realDbSpend,
       unit: "Rp",
-      delta: `Rp ${finalSpend.toLocaleString("id-ID")}`,
+      delta: `Rp ${realDbSpend.toLocaleString("id-ID")}`,
     };
   }
 
   // Calculate velocity point
   function computeVelocityPoint(
     day: { date: Date; dateStr: string; dayName: string; shortLabel: string },
-    index: number,
+    windowDays: number,
   ): ChartSeriesPoint {
-    const val = Math.round((1.3 + ((index * 3) % 5) * 0.1) * 10) / 10;
+    const matchingOrders = allOrders.filter((po) => {
+      if (po.status !== "RECEIVED" && po.status !== "PARTIALLY_RECEIVED") {
+        return false;
+      }
+      const poDate = new Date(po.updatedAt || po.createdAt);
+      const diffDays = Math.abs(
+        (day.date.getTime() - poDate.getTime()) / (1000 * 60 * 60 * 24),
+      );
+      return diffDays <= windowDays;
+    });
+
+    let val = 0;
+    if (matchingOrders.length > 0) {
+      const totalDays = matchingOrders.reduce((sum, po) => {
+        const start = new Date(po.createdAt).getTime();
+        const end = new Date(po.updatedAt).getTime();
+        return sum + Math.max(0.1, (end - start) / (1000 * 60 * 60 * 24));
+      }, 0);
+      val = Math.round((totalDays / matchingOrders.length) * 10) / 10;
+    }
+
     return {
       label: day.dayName,
       sublabel: day.shortLabel,
       value: val,
       unit: dict.operatingDays,
-      delta: dict.slaTarget,
+      delta: val > 0 ? `${val} ${dict.operatingDays}` : dict.slaTarget,
     };
   }
 
-  const volume7dPoints = last7Days.map((d, idx) =>
-    computeVolumePoint(d, 0.5, idx),
-  );
-  const spend7dPoints = last7Days.map((d, idx) =>
-    computeSpendPoint(d, volume7dPoints[idx].value, 0.5),
-  );
-  const velocity7dPoints = last7Days.map((d, idx) =>
-    computeVelocityPoint(d, idx),
-  );
+  const volume7dPoints = last7Days.map((d) => computeVolumePoint(d, 0.5));
+  const spend7dPoints = last7Days.map((d) => computeSpendPoint(d, 0.5));
+  const velocity7dPoints = last7Days.map((d) => computeVelocityPoint(d, 0.5));
 
-  const volume30dPoints = last30Days.map((d, idx) =>
-    computeVolumePoint(d, 0.5, idx),
-  );
-  const spend30dPoints = last30Days.map((d, idx) =>
-    computeSpendPoint(d, volume30dPoints[idx].value, 0.5),
-  );
-  const velocity30dPoints = last30Days.map((d, idx) =>
-    computeVelocityPoint(d, idx),
-  );
+  const volume30dPoints = last30Days.map((d) => computeVolumePoint(d, 0.5));
+  const spend30dPoints = last30Days.map((d) => computeSpendPoint(d, 0.5));
+  const velocity30dPoints = last30Days.map((d) => computeVelocityPoint(d, 0.5));
 
   // 90D: Aggregated per 30 days (3 monthly bars) as requested ("klo untuk 90 per 30 hari aja")
   const block30d_3 = last90Days.slice(0, 30); // earliest (61-90 days ago)
@@ -447,13 +443,20 @@ export const load: ServerLoad = async ({
     spend: ChartSeriesPoint;
     velocity: ChartSeriesPoint;
   } {
-    const volPts = days.map((d, idx) => computeVolumePoint(d, 0.5, idx));
+    const volPts = days.map((d) => computeVolumePoint(d, 0.5));
     const totalVol = volPts.reduce((s, p) => s + p.value, 0);
-    const spendPts = days.map((d, idx) =>
-      computeSpendPoint(d, volPts[idx].value, 0.5),
-    );
+    const spendPts = days.map((d) => computeSpendPoint(d, 0.5));
     const totalSpend = spendPts.reduce((s, p) => s + p.value, 0);
-    const avgVelocity = 1.5;
+    const velPts = days.map((d) => computeVelocityPoint(d, 0.5));
+    const activeVelPts = velPts.filter((p) => p.value > 0);
+    const avgVelocity =
+      activeVelPts.length > 0
+        ? Math.round(
+            (activeVelPts.reduce((s, p) => s + p.value, 0) /
+              activeVelPts.length) *
+              10,
+          ) / 10
+        : 0;
 
     return {
       volume: {
@@ -475,7 +478,10 @@ export const load: ServerLoad = async ({
         sublabel,
         value: avgVelocity,
         unit: dict.operatingDays,
-        delta: dict.slaTarget,
+        delta:
+          avgVelocity > 0
+            ? `${avgVelocity} ${dict.operatingDays}`
+            : dict.slaTarget,
       },
     };
   }
@@ -507,6 +513,35 @@ export const load: ServerLoad = async ({
   const totalSpend7d = spend7dPoints.reduce((sum, p) => sum + p.value, 0);
   const totalSpend30d = spend30dPoints.reduce((sum, p) => sum + p.value, 0);
   const totalSpend90d = spend90dPoints.reduce((sum, p) => sum + p.value, 0);
+
+  const activeVel7d = velocity7dPoints.filter((p) => p.value > 0);
+  const avgVel7d =
+    activeVel7d.length > 0
+      ? Math.round(
+          (activeVel7d.reduce((s, p) => s + p.value, 0) / activeVel7d.length) *
+            10,
+        ) / 10
+      : 0;
+
+  const activeVel30d = velocity30dPoints.filter((p) => p.value > 0);
+  const avgVel30d =
+    activeVel30d.length > 0
+      ? Math.round(
+          (activeVel30d.reduce((s, p) => s + p.value, 0) /
+            activeVel30d.length) *
+            10,
+        ) / 10
+      : 0;
+
+  const activeVel90d = velocity90dPoints.filter((p) => p.value > 0);
+  const avgVel90d =
+    activeVel90d.length > 0
+      ? Math.round(
+          (activeVel90d.reduce((s, p) => s + p.value, 0) /
+            activeVel90d.length) *
+            10,
+        ) / 10
+      : 0;
 
   const chartDatasets: Record<MetricKey, Record<RangeKey, MetricDataset>> = {
     volume: {
@@ -557,27 +592,27 @@ export const load: ServerLoad = async ({
     },
     velocity: {
       "7D": {
-        headline: `1.5 ${dict.operatingDays}`,
-        deltaText: dict.slaTarget,
+        headline: `${avgVel7d} ${dict.operatingDays}`,
+        deltaText: avgVel7d > 0 ? `${avgVel7d}d target SLA` : dict.slaTarget,
         unit: "days",
-        totalValue: 1.5,
-        averageValue: 1.5,
+        totalValue: avgVel7d,
+        averageValue: avgVel7d,
         points: velocity7dPoints,
       },
       "30D": {
-        headline: `1.5 ${dict.operatingDays}`,
-        deltaText: dict.slaTarget,
+        headline: `${avgVel30d} ${dict.operatingDays}`,
+        deltaText: avgVel30d > 0 ? `${avgVel30d}d target SLA` : dict.slaTarget,
         unit: "days",
-        totalValue: 1.5,
-        averageValue: 1.5,
+        totalValue: avgVel30d,
+        averageValue: avgVel30d,
         points: velocity30dPoints,
       },
       "90D": {
-        headline: `1.5 ${dict.operatingDays}`,
-        deltaText: dict.slaTarget,
+        headline: `${avgVel90d} ${dict.operatingDays}`,
+        deltaText: avgVel90d > 0 ? `${avgVel90d}d target SLA` : dict.slaTarget,
         unit: "days",
-        totalValue: 1.5,
-        averageValue: 1.5,
+        totalValue: avgVel90d,
+        averageValue: avgVel90d,
         points: velocity90dPoints,
       },
     },
