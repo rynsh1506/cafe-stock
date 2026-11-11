@@ -61,12 +61,12 @@
 
   let maxBarValue = $derived.by(() => {
     const vals = activeDataset.points.map((p) => p.value);
-    return Math.max(...vals, 1);
+    return Math.max(...vals, 0);
   });
 
   function getBarHeightPct(val: number): string {
-    if (maxBarValue <= 0) return "6%";
-    const ratio = Math.max(0.06, Math.min(1, val / maxBarValue));
+    if (val <= 0 || maxBarValue <= 0) return "0%";
+    const ratio = Math.max(0.04, Math.min(1, val / maxBarValue));
     return `${Math.round(ratio * 100)}%`;
   }
 
