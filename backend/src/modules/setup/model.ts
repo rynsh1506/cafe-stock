@@ -3,6 +3,7 @@ import { t } from "elysia";
 export const SetupStatusResponseSchema = t.Object({
   isInitialized: t.Boolean(),
   cafeName: t.Optional(t.String()),
+  googleConfigured: t.Boolean(),
 });
 
 export const InitialSetupRequestSchema = t.Object({

@@ -75,12 +75,6 @@ export const authModule = new Elysia({ prefix: "/api/auth" })
           return redirect("/");
         }
 
-        if (result.type === "OTP_REQUIRED") {
-          return redirect(
-            `/login?status=otp_required&email=${encodeURIComponent(result.email)}&hint=${encodeURIComponent(result.otpCode)}`,
-          );
-        }
-
         if (result.type === "PENDING_APPROVAL") {
           return redirect(
             `/login?status=pending_approval&email=${encodeURIComponent(result.email)}`,

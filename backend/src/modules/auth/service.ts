@@ -85,7 +85,6 @@ export async function getGoogleAuthUrl(
 
 export type GoogleOAuthResult =
   | { type: "LOGGED_IN"; token: string; user: AuthenticatedUser }
-  | { type: "OTP_REQUIRED"; email: string; otpCode: string }
   | { type: "PENDING_APPROVAL"; email: string };
 
 export async function handleGoogleCallback(
@@ -235,6 +234,27 @@ export async function handleGoogleCallback(
   // Case 2: Existing user
   if (existingUser) {
     if (existingUser.isActive) {
+      // Auto-link Google OAuth identifier and avatar if not yet set
+      const updates: {
+        googleId?: string;
+        avatarUrl?: string;
+        updatedAt: Date;
+      } = {
+        updatedAt: new Date(),
+      };
+      if (!existingUser.googleId && sub) {
+        updates.googleId = sub;
+      }
+      if (!existingUser.avatarUrl && picture) {
+        updates.avatarUrl = picture;
+      }
+      if (updates.googleId || updates.avatarUrl) {
+        await db
+          .update(users)
+          .set(updates)
+          .where(eq(users.id, existingUser.id));
+      }
+
       const token = generateSessionToken();
       const expiresAt = new Date(Date.now() + SESSION_DURATION_MS);
       await db.insert(sessions).values({
@@ -260,7 +280,7 @@ export async function handleGoogleCallback(
         action: "USER_LOGIN_OAUTH",
         entityType: "USER",
         entityId: existingUser.id,
-        summary: `User ${existingUser.email} signed in via Google OAuth`,
+        summary: `User ${existingUser.email} signed in via Google OAuth (linked account)`,
       });
 
       return {
@@ -303,33 +323,21 @@ export async function handleGoogleCallback(
     })
     .returning();
 
-  // Generate 6-digit OTP code
-  const otpCode = String(Math.floor(100000 + Math.random() * 900000));
-  const otpExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
-
-  await db.insert(otpVerifications).values({
-    email: newUser.email,
-    code: otpCode,
-    expiresAt: otpExpiry,
-    isVerified: false,
-  });
-
   await recordAuditLog({
     actor: {
       id: newUser.id,
       name: newUser.name,
       role: newUser.role,
     },
-    action: "USER_OAUTH_REGISTER_OTP_REQUIRED",
+    action: "USER_OAUTH_REGISTER_PENDING_APPROVAL",
     entityType: "USER",
     entityId: newUser.id,
-    summary: `New account ${newUser.email} created via Google OAuth. OTP generated, awaiting Super Admin confirmation`,
+    summary: `New account ${newUser.email} created via Google OAuth, awaiting Super Admin confirmation`,
   });
 
   return {
-    type: "OTP_REQUIRED",
+    type: "PENDING_APPROVAL",
     email: newUser.email,
-    otpCode,
   };
 }
 
