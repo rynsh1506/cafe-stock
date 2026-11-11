@@ -164,25 +164,27 @@
         <h2 class="font-serif text-base font-bold text-[#231712]">
           {dict.issuePo}
         </h2>
-        <div class="ui-tabs">
-          <button
-            type="button"
-            onclick={() => (createMode = "fromPr")}
-            class="ui-tab cursor-pointer {createMode === 'fromPr'
-              ? 'ui-tab-active'
-              : ''}"
-          >
-            {dict.fromApprovedPr}
-          </button>
-          <button
-            type="button"
-            onclick={() => (createMode = "direct")}
-            class="ui-tab cursor-pointer {createMode === 'direct'
-              ? 'ui-tab-active'
-              : ''}"
-          >
-            {dict.directPo}
-          </button>
+        <div class="overflow-x-auto no-scrollbar py-0.5">
+          <div class="ui-tabs">
+            <button
+              type="button"
+              onclick={() => (createMode = "fromPr")}
+              class="ui-tab cursor-pointer {createMode === 'fromPr'
+                ? 'ui-tab-active'
+                : ''}"
+            >
+              {dict.fromApprovedPr}
+            </button>
+            <button
+              type="button"
+              onclick={() => (createMode = "direct")}
+              class="ui-tab cursor-pointer {createMode === 'direct'
+                ? 'ui-tab-active'
+                : ''}"
+            >
+              {dict.directPo}
+            </button>
+          </div>
         </div>
       </div>
 
