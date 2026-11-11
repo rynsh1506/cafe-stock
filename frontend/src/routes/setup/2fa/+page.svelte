@@ -151,7 +151,7 @@
       <!-- VIEW WHEN 2FA IS NOT YET ENABLED (SETUP WIZARD) -->
       <!-- Alert / Notice Box -->
       <div
-        class="mb-6 rounded-2xl border border-[#D9C4B3] bg-gradient-to-r from-[#FAF2EA] to-[#F5ECE2] p-5 shadow-xs"
+        class="mb-6 rounded-2xl border border-[#D9C4B3] bg-linear-to-r from-[#FAF2EA] to-[#F5ECE2] p-5 shadow-xs"
       >
         <div class="flex items-start gap-3.5">
           <div

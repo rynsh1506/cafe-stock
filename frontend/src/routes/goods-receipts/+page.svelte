@@ -199,7 +199,7 @@
       >
     </div>
     <div class="overflow-x-auto">
-      <table class="w-full min-w-[720px] border-collapse text-left text-xs">
+      <table class="w-full min-w-180 border-collapse text-left text-xs">
         <thead>
           <tr
             class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase whitespace-nowrap"

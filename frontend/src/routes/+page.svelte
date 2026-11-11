@@ -81,7 +81,7 @@
 <div class="space-y-6">
   <!-- Top Espresso Banner -->
   <div
-    class="flex flex-col gap-4 rounded-2xl border border-[#523323] bg-gradient-to-r from-[#2C1E18] to-[#4A2D1D] p-5 text-white shadow-md sm:p-7 md:flex-row md:items-center md:justify-between"
+    class="flex flex-col gap-4 rounded-2xl border border-[#523323] bg-linear-to-r from-[#2C1E18] to-[#4A2D1D] p-5 text-white shadow-md sm:p-7 md:flex-row md:items-center md:justify-between"
   >
     <div>
       <div
@@ -424,10 +424,10 @@
           <div
             class="group relative flex h-full flex-1 flex-col items-center justify-end cursor-pointer outline-none focus:outline-none select-none touch-manipulation {selectedRange ===
             '90D'
-              ? 'max-w-[120px]'
+              ? 'max-w-30'
               : selectedRange === '7D'
-                ? 'max-w-[56px]'
-                : 'min-w-0 max-w-[28px]'}"
+                ? 'max-w-14'
+                : 'min-w-0 max-w-7'}"
             role="button"
             tabindex="0"
             aria-label="{item.label}: {formatPointValue(item)}"
@@ -469,8 +469,8 @@
               <div
                 style="height: {getBarHeightPct(item.value)};"
                 class="w-full rounded-t-sm sm:rounded-t-lg transition-all duration-300 {isHovered
-                  ? 'bg-gradient-to-t from-[#3E2315] to-[#5A3825] shadow-md'
-                  : 'bg-gradient-to-t from-[#B37948] to-[#C68B59] hover:from-[#9B6437] hover:to-[#B37948]'}"
+                  ? 'bg-linear-to-t from-[#3E2315] to-[#5A3825] shadow-md'
+                  : 'bg-linear-to-t from-[#B37948] to-[#C68B59] hover:from-[#9B6437] hover:to-[#B37948]'}"
               ></div>
             </div>
 
@@ -934,7 +934,7 @@
       </div>
 
       <div class="-mx-5 overflow-x-auto sm:mx-0">
-        <table class="w-full min-w-[650px] border-collapse text-left text-xs">
+        <table class="w-full min-w-162.5 border-collapse text-left text-xs">
           <thead>
             <tr
               class="border-b border-[#EDE4D8] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase whitespace-nowrap"

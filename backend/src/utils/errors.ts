@@ -20,9 +20,12 @@ export class AppError extends Error {
   }
 
   static forbidden(
-    message = "You do not have permission to perform this action",
+    codeOrMessage = "FORBIDDEN",
+    maybeMessage?: string,
   ): AppError {
-    return new AppError(403, "FORBIDDEN", message);
+    const code = maybeMessage ? codeOrMessage : "FORBIDDEN";
+    const message = maybeMessage ?? codeOrMessage;
+    return new AppError(403, code, message);
   }
 
   static notFound(
