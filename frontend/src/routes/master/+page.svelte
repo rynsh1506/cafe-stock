@@ -305,9 +305,12 @@
           {dict.usersManagementSection} ({data.allUsers.length})
           {#if data.pendingUsers.length > 0}
             <span
-              class="ml-1.5 rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-bold text-amber-800"
+              class="ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-extrabold tracking-wide {activeTab ===
+              'users'
+                ? 'bg-[#FAF7F2] text-[#5A3825] shadow-xs'
+                : 'border border-amber-300 bg-amber-100 text-amber-900'}"
             >
-              {data.pendingUsers.length} antrean
+              {data.pendingUsers.length} Pending
             </span>
           {/if}
         </button>
@@ -774,13 +777,6 @@
               <span
                 >Antrean Menunggu Persetujuan ({data.pendingUsers.length})</span
               >
-              {#if data.pendingUsers.length > 0}
-                <span
-                  class="rounded-full bg-amber-400 px-1.5 py-0.2 text-[10px] font-extrabold text-amber-950"
-                >
-                  {data.pendingUsers.length}
-                </span>
-              {/if}
             </button>
           </div>
           <span class="text-[11px] text-[#8C7665]">

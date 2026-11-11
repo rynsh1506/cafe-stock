@@ -9,6 +9,7 @@ export interface LoginPageServerData {
   email?: string;
   hint?: string;
   error?: string;
+  googleConfigured?: boolean;
 }
 
 export interface LoginActionData {
@@ -18,16 +19,33 @@ export interface LoginActionData {
   success?: boolean;
 }
 
-export const load: ServerLoad = ({ locals, url }): LoginPageServerData => {
+export const load: ServerLoad = async ({
+  locals,
+  url,
+}): Promise<LoginPageServerData> => {
   if (locals.user) {
     throw redirect(303, "/");
   }
+
+  let googleConfigured = false;
+  try {
+    const statusRes = await callBackendApi<{
+      data: { isInitialized: boolean; googleConfigured: boolean };
+    }>("/api/setup/status");
+    if (statusRes.ok && statusRes.data?.data) {
+      googleConfigured = Boolean(statusRes.data.data.googleConfigured);
+    }
+  } catch {
+    googleConfigured = false;
+  }
+
   return {
     lang: locals.lang,
     status: url.searchParams.get("status") ?? undefined,
     email: url.searchParams.get("email") ?? undefined,
     hint: url.searchParams.get("hint") ?? undefined,
     error: url.searchParams.get("error") ?? undefined,
+    googleConfigured,
   };
 };
 

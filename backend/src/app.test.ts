@@ -115,9 +115,10 @@ describe("Core Elysia Application", () => {
       expect(response.status).toBe(200);
 
       const payload = (await response.json()) as {
-        data: { isInitialized: boolean };
+        data: { isInitialized: boolean; googleConfigured: boolean };
       };
       expect(typeof payload.data.isInitialized).toBe("boolean");
+      expect(typeof payload.data.googleConfigured).toBe("boolean");
     });
 
     it("rejects invalid setup payload with validation error", async () => {

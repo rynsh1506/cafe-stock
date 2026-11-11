@@ -25,33 +25,39 @@ export interface SystemSettingsSummary {
 export async function checkSetupStatus(): Promise<{
   isInitialized: boolean;
   cafeName?: string;
+  googleConfigured: boolean;
 }> {
-  const initSetting = await db
-    .select()
-    .from(systemSettings)
-    .where(eq(systemSettings.key, "is_initialized"));
-
-  if (initSetting.length > 0 && initSetting[0].value === "true") {
-    const cafeNameSetting = await db
-      .select()
-      .from(systemSettings)
-      .where(eq(systemSettings.key, "cafe_name"));
-    return {
-      isInitialized: true,
-      cafeName: cafeNameSetting[0]?.value,
-    };
+  const rows = await db.select().from(systemSettings);
+  const map = new Map<string, string>();
+  for (const r of rows) {
+    map.set(r.key, r.value);
   }
 
-  const approvers = await db
-    .select({ id: users.id })
-    .from(users)
-    .where(eq(users.role, "APPROVER"));
-
-  if (approvers.length > 0) {
-    return { isInitialized: true };
+  const isInitializedSetting = map.get("is_initialized") === "true";
+  let isInitialized = isInitializedSetting;
+  if (!isInitialized) {
+    const approvers = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.role, "APPROVER"));
+    if (approvers.length > 0) {
+      isInitialized = true;
+    }
   }
 
-  return { isInitialized: false };
+  const googleClientId =
+    map.get("google_client_id") || process.env.GOOGLE_CLIENT_ID || "";
+  const googleClientSecret =
+    map.get("google_client_secret") || process.env.GOOGLE_CLIENT_SECRET || "";
+  const googleConfigured = Boolean(
+    googleClientId.trim() && googleClientSecret.trim(),
+  );
+
+  return {
+    isInitialized,
+    cafeName: map.get("cafe_name") || "CafeStock Roastery",
+    googleConfigured,
+  };
 }
 
 export async function executeInitialSetup(input: InitialSetupInput) {
@@ -189,21 +195,28 @@ export async function getSystemSettings(
     map.set(r.key, r.value);
   }
 
-  const smtpHost = map.get("smtp_host") || "";
-  const smtpPortStr = map.get("smtp_port") || "587";
-  const smtpUser = map.get("smtp_user") || "";
-  const smtpFrom = map.get("smtp_from") || "";
-  const smtpPassword = map.get("smtp_password") || "";
+  const smtpHost = map.get("smtp_host") || process.env.SMTP_HOST || "";
+  const smtpPortStr = map.get("smtp_port") || process.env.SMTP_PORT || "587";
+  const smtpUser = map.get("smtp_user") || process.env.SMTP_USER || "";
+  const smtpFrom = map.get("smtp_from") || process.env.SMTP_FROM || "";
+  const smtpPassword =
+    map.get("smtp_password") ||
+    process.env.SMTP_PASS ||
+    process.env.SMTP_PASSWORD ||
+    "";
 
-  const googleClientId = map.get("google_client_id") || "";
-  const googleClientSecret = map.get("google_client_secret") || "";
+  const googleClientId =
+    map.get("google_client_id") || process.env.GOOGLE_CLIENT_ID || "";
+  const googleClientSecret =
+    map.get("google_client_secret") || process.env.GOOGLE_CLIENT_SECRET || "";
 
   const isSmtpConfigured = Boolean(smtpHost && smtpUser);
   const isGoogleOAuthConfigured = Boolean(googleClientId && googleClientSecret);
 
   return {
     cafeName: map.get("cafe_name") || "CafeStock Roastery",
-    appUrl: map.get("app_url") || "http://localhost:3000",
+    appUrl:
+      map.get("app_url") || process.env.APP_URL || "http://localhost:3000",
     smtpHost,
     smtpPort: Number(smtpPortStr) || 587,
     smtpUser,
