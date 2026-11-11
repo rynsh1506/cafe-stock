@@ -1,6 +1,6 @@
-import { and, count, desc, eq, ilike, or, type SQL } from "drizzle-orm";
+import { and, count, desc, eq, ilike, or, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db/index";
-import { suppliers } from "@/db/schema";
+import { purchaseOrders, suppliers } from "@/db/schema";
 import type { AuthenticatedUser } from "@/modules/auth/model";
 import type {
   CreateSupplierInput,
@@ -191,4 +191,42 @@ export async function updateSupplier(
   });
 
   return updated;
+}
+
+export async function deleteSupplier(
+  id: string,
+  actor: AuthenticatedUser,
+): Promise<{ success: boolean; id: string }> {
+  if (actor.role !== "APPROVER") {
+    throw AppError.forbidden(
+      "FORBIDDEN",
+      "Only approvers can delete suppliers",
+    );
+  }
+
+  const current = await getSupplierById(id);
+
+  const [po] = await db
+    .select({ total: count() })
+    .from(purchaseOrders)
+    .where(eq(purchaseOrders.supplierId, id));
+
+  if (po && po.total > 0) {
+    throw AppError.badRequest(
+      "SUPPLIER_IN_USE",
+      `Cannot delete supplier '${current.name}' because it has ${po.total} associated purchase orders`,
+    );
+  }
+
+  await db.delete(suppliers).where(eq(suppliers.id, id));
+
+  await recordAuditLog({
+    actor,
+    action: "SUPPLIER_DELETED",
+    entityType: "SUPPLIER",
+    entityId: id,
+    summary: `Deleted supplier ${current.code} - ${current.name}`,
+  });
+
+  return { success: true, id };
 }

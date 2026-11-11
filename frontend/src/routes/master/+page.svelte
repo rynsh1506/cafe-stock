@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getDictionary } from "@/lib/i18n";
   import CustomSelect from "@/lib/components/CustomSelect.svelte";
+  import Pagination from "@/lib/components/Pagination.svelte";
   import type {
     MasterActionData,
     MasterPageData,
@@ -626,7 +627,7 @@
         >
       </div>
       <div class="overflow-x-auto">
-        <table class="w-full min-w-[680px] border-collapse text-left text-xs">
+        <table class="w-full min-w-[720px] border-collapse text-left text-xs">
           <thead>
             <tr
               class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase whitespace-nowrap"
@@ -636,65 +637,111 @@
               <th class="px-5 py-3.5">{dict.thCategory}</th>
               <th class="px-5 py-3.5">{dict.thUnit}</th>
               <th class="px-5 py-3.5 text-right">{dict.thMinThreshold}</th>
-              <th class="px-5 py-3.5 text-right">{dict.thStatus}</th>
+              <th class="px-5 py-3.5 text-center">{dict.thStatus}</th>
+              {#if data.isApprover}
+                <th class="px-5 py-3.5 text-right">{dict.actions}</th>
+              {/if}
             </tr>
           </thead>
           <tbody class="divide-y divide-[#F5EDE4] whitespace-nowrap">
-            {#each data.products as prod}
-              <tr class="transition hover:bg-[#FAF7F2]">
+            {#if data.products.length === 0}
+              <tr>
                 <td
-                  class="px-5 py-3.5 font-mono text-xs font-bold text-[#5A3825]"
+                  colspan={data.isApprover ? 7 : 6}
+                  class="py-12 text-center text-xs text-[#8C7665]"
                 >
-                  {prod.sku}
-                </td>
-                <td class="px-5 py-3.5 font-semibold text-[#2E1F16]">
-                  {prod.name}
-                </td>
-                <td class="px-5 py-3.5 text-[#6A574A]">{prod.category}</td>
-                <td class="px-5 py-3.5 font-mono text-[#6A574A]">
-                  {prod.unit}
-                </td>
-                <td
-                  class="px-5 py-3.5 text-right font-mono font-semibold text-[#2E1F16] tabular-nums"
-                >
-                  {prod.minStock}
-                </td>
-                <td class="px-5 py-3.5 text-right">
-                  <form
-                    method="POST"
-                    action="?/toggleProduct"
-                    class="inline-block"
-                  >
-                    <input type="hidden" name="id" value={prod.id} />
-                    <input
-                      type="hidden"
-                      name="isActive"
-                      value={String(prod.isActive)}
-                    />
-                    <button
-                      type="submit"
-                      class="cursor-pointer ui-badge transition hover:scale-105 {prod.isActive
-                        ? 'border-[#B2D3C1] bg-[#E7F2EC] text-[#1D593B]'
-                        : 'border-[#E6B8B3] bg-[#FCEAE8] text-[#9E2A20]'}"
-                    >
-                      <span
-                        class="ui-badge-dot {prod.isActive
-                          ? 'bg-[#1D593B]'
-                          : 'bg-[#9E2A20]'}"
-                      ></span>
-                      <span
-                        >{prod.isActive
-                          ? dict.activeStatus
-                          : dict.inactiveStatus}</span
-                      >
-                    </button>
-                  </form>
+                  <p class="font-serif text-sm font-bold text-[#2E1F16]">
+                    Belum ada data produk
+                  </p>
+                  <p class="mt-1 text-[#A8988B]">
+                    Klik "+ New Product" di atas untuk menambahkan produk
+                    pertama ke dalam katalog.
+                  </p>
                 </td>
               </tr>
-            {/each}
+            {:else}
+              {#each data.products as prod}
+                <tr class="transition hover:bg-[#FAF7F2]">
+                  <td
+                    class="px-5 py-3.5 font-mono text-xs font-bold text-[#5A3825]"
+                  >
+                    {prod.sku}
+                  </td>
+                  <td class="px-5 py-3.5 font-semibold text-[#2E1F16]">
+                    {prod.name}
+                  </td>
+                  <td class="px-5 py-3.5 text-[#6A574A]">{prod.category}</td>
+                  <td class="px-5 py-3.5 font-mono text-[#6A574A]">
+                    {prod.unit}
+                  </td>
+                  <td
+                    class="px-5 py-3.5 text-right font-mono font-semibold text-[#2E1F16] tabular-nums"
+                  >
+                    {prod.minStock}
+                  </td>
+                  <td class="px-5 py-3.5 text-center">
+                    <form
+                      method="POST"
+                      action="?/toggleProduct"
+                      class="inline-block"
+                    >
+                      <input type="hidden" name="id" value={prod.id} />
+                      <input
+                        type="hidden"
+                        name="isActive"
+                        value={String(prod.isActive)}
+                      />
+                      <button
+                        type="submit"
+                        class="cursor-pointer ui-badge transition hover:scale-105 {prod.isActive
+                          ? 'border-[#B2D3C1] bg-[#E7F2EC] text-[#1D593B]'
+                          : 'border-[#E6B8B3] bg-[#FCEAE8] text-[#9E2A20]'}"
+                      >
+                        <span
+                          class="ui-badge-dot {prod.isActive
+                            ? 'bg-[#1D593B]'
+                            : 'bg-[#9E2A20]'}"
+                        ></span>
+                        <span
+                          >{prod.isActive
+                            ? dict.activeStatus
+                            : dict.inactiveStatus}</span
+                        >
+                      </button>
+                    </form>
+                  </td>
+                  {#if data.isApprover}
+                    <td class="px-5 py-3.5 text-right">
+                      <button
+                        type="button"
+                        onclick={() =>
+                          openConfirm({
+                            title: `Hapus Produk ${prod.sku}`,
+                            message: `Apakah Anda yakin ingin menghapus produk '${prod.name}' (${prod.sku}) secara permanen?`,
+                            confirmLabel: "Ya, Hapus Produk",
+                            isDanger: true,
+                            action: "?/deleteProduct",
+                            fields: { id: prod.id },
+                          })}
+                        class="cursor-pointer rounded-lg border border-[#F5C2C7] bg-[#FFF5F5] px-2.5 py-1 text-[11px] font-semibold text-[#C62828] transition hover:bg-[#FFEBEB] active:scale-95"
+                      >
+                        Hapus
+                      </button>
+                    </td>
+                  {/if}
+                </tr>
+              {/each}
+            {/if}
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        page={data.productsPagination.page}
+        limit={data.productsPagination.limit}
+        total={data.productsPagination.total}
+        totalPages={data.productsPagination.totalPages}
+      />
     {:else if activeTab === "suppliers"}
       <div
         class="flex items-center justify-between border-b border-[#EDE4D8] bg-[#FAF7F2] px-4 py-1.5 text-[11px] font-medium text-[#8C7665] sm:hidden"
@@ -702,11 +749,11 @@
         <span>← Geser tabel untuk kolom lengkap →</span>
         <span
           class="rounded bg-[#EFE7DE] px-1.5 py-0.5 font-mono text-[10px] text-[#5A3825]"
-          >5 Kolom</span
+          >{data.isApprover ? "6 Kolom" : "5 Kolom"}</span
         >
       </div>
       <div class="overflow-x-auto">
-        <table class="w-full min-w-[650px] border-collapse text-left text-xs">
+        <table class="w-full min-w-[700px] border-collapse text-left text-xs">
           <thead>
             <tr
               class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase whitespace-nowrap"
@@ -716,29 +763,75 @@
               <th class="px-5 py-3.5">{dict.thContactEmail}</th>
               <th class="px-5 py-3.5">{dict.thPhone}</th>
               <th class="px-5 py-3.5">{dict.thAddress}</th>
+              {#if data.isApprover}
+                <th class="px-5 py-3.5 text-right">{dict.actions}</th>
+              {/if}
             </tr>
           </thead>
           <tbody class="divide-y divide-[#F5EDE4] whitespace-nowrap">
-            {#each data.suppliers as sup}
-              <tr class="transition hover:bg-[#FAF7F2]">
+            {#if data.suppliers.length === 0}
+              <tr>
                 <td
-                  class="px-5 py-3.5 font-mono text-xs font-bold text-[#5A3825]"
+                  colspan={data.isApprover ? 6 : 5}
+                  class="py-12 text-center text-xs text-[#8C7665]"
                 >
-                  {sup.code}
+                  <p class="font-serif text-sm font-bold text-[#2E1F16]">
+                    Belum ada data pemasok
+                  </p>
+                  <p class="mt-1 text-[#A8988B]">
+                    Klik "+ New Supplier" di atas untuk mendaftarkan mitra
+                    pemasok baru.
+                  </p>
                 </td>
-                <td class="px-5 py-3.5 font-semibold text-[#2E1F16]">
-                  {sup.name}
-                </td>
-                <td class="px-5 py-3.5 text-[#6A574A]">{sup.contactEmail}</td>
-                <td class="px-5 py-3.5 font-mono text-[#6A574A]">
-                  {sup.phone}
-                </td>
-                <td class="px-5 py-3.5 text-[#6A574A]">{sup.address}</td>
               </tr>
-            {/each}
+            {:else}
+              {#each data.suppliers as sup}
+                <tr class="transition hover:bg-[#FAF7F2]">
+                  <td
+                    class="px-5 py-3.5 font-mono text-xs font-bold text-[#5A3825]"
+                  >
+                    {sup.code}
+                  </td>
+                  <td class="px-5 py-3.5 font-semibold text-[#2E1F16]">
+                    {sup.name}
+                  </td>
+                  <td class="px-5 py-3.5 text-[#6A574A]">{sup.contactEmail}</td>
+                  <td class="px-5 py-3.5 font-mono text-[#6A574A]">
+                    {sup.phone}
+                  </td>
+                  <td class="px-5 py-3.5 text-[#6A574A]">{sup.address}</td>
+                  {#if data.isApprover}
+                    <td class="px-5 py-3.5 text-right">
+                      <button
+                        type="button"
+                        onclick={() =>
+                          openConfirm({
+                            title: `Hapus Pemasok ${sup.code}`,
+                            message: `Apakah Anda yakin ingin menghapus mitra pemasok '${sup.name}' (${sup.code}) secara permanen?`,
+                            confirmLabel: "Ya, Hapus Pemasok",
+                            isDanger: true,
+                            action: "?/deleteSupplier",
+                            fields: { id: sup.id },
+                          })}
+                        class="cursor-pointer rounded-lg border border-[#F5C2C7] bg-[#FFF5F5] px-2.5 py-1 text-[11px] font-semibold text-[#C62828] transition hover:bg-[#FFEBEB] active:scale-95"
+                      >
+                        Hapus
+                      </button>
+                    </td>
+                  {/if}
+                </tr>
+              {/each}
+            {/if}
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        page={data.suppliersPagination.page}
+        limit={data.suppliersPagination.limit}
+        total={data.suppliersPagination.total}
+        totalPages={data.suppliersPagination.totalPages}
+      />
     {:else if activeTab === "warehouses"}
       <div
         class="flex items-center justify-between border-b border-[#EDE4D8] bg-[#FAF7F2] px-4 py-1.5 text-[11px] font-medium text-[#8C7665] sm:hidden"
@@ -746,11 +839,11 @@
         <span>← Geser tabel untuk kolom lengkap →</span>
         <span
           class="rounded bg-[#EFE7DE] px-1.5 py-0.5 font-mono text-[10px] text-[#5A3825]"
-          >3 Kolom</span
+          >{data.isApprover ? "4 Kolom" : "3 Kolom"}</span
         >
       </div>
       <div class="overflow-x-auto">
-        <table class="w-full min-w-[550px] border-collapse text-left text-xs">
+        <table class="w-full min-w-[600px] border-collapse text-left text-xs">
           <thead>
             <tr
               class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase whitespace-nowrap"
@@ -758,25 +851,71 @@
               <th class="px-5 py-3.5">{dict.thWarehouseCode}</th>
               <th class="px-5 py-3.5">{dict.thWarehouseName}</th>
               <th class="px-5 py-3.5">{dict.thAddress}</th>
+              {#if data.isApprover}
+                <th class="px-5 py-3.5 text-right">{dict.actions}</th>
+              {/if}
             </tr>
           </thead>
           <tbody class="divide-y divide-[#F5EDE4] whitespace-nowrap">
-            {#each data.warehouses as wh}
-              <tr class="transition hover:bg-[#FAF7F2]">
+            {#if data.warehouses.length === 0}
+              <tr>
                 <td
-                  class="px-5 py-3.5 font-mono text-xs font-bold text-[#5A3825]"
+                  colspan={data.isApprover ? 4 : 3}
+                  class="py-12 text-center text-xs text-[#8C7665]"
                 >
-                  {wh.code}
+                  <p class="font-serif text-sm font-bold text-[#2E1F16]">
+                    Belum ada data fasilitas gudang
+                  </p>
+                  <p class="mt-1 text-[#A8988B]">
+                    Klik "+ New Warehouse" di atas untuk menambahkan lokasi
+                    gudang atau cabang roastery.
+                  </p>
                 </td>
-                <td class="px-5 py-3.5 font-semibold text-[#2E1F16]">
-                  {wh.name}
-                </td>
-                <td class="px-5 py-3.5 text-[#6A574A]">{wh.address}</td>
               </tr>
-            {/each}
+            {:else}
+              {#each data.warehouses as wh}
+                <tr class="transition hover:bg-[#FAF7F2]">
+                  <td
+                    class="px-5 py-3.5 font-mono text-xs font-bold text-[#5A3825]"
+                  >
+                    {wh.code}
+                  </td>
+                  <td class="px-5 py-3.5 font-semibold text-[#2E1F16]">
+                    {wh.name}
+                  </td>
+                  <td class="px-5 py-3.5 text-[#6A574A]">{wh.address}</td>
+                  {#if data.isApprover}
+                    <td class="px-5 py-3.5 text-right">
+                      <button
+                        type="button"
+                        onclick={() =>
+                          openConfirm({
+                            title: `Hapus Gudang ${wh.code}`,
+                            message: `Apakah Anda yakin ingin menghapus fasilitas gudang '${wh.name}' (${wh.code}) secara permanen?`,
+                            confirmLabel: "Ya, Hapus Gudang",
+                            isDanger: true,
+                            action: "?/deleteWarehouse",
+                            fields: { id: wh.id },
+                          })}
+                        class="cursor-pointer rounded-lg border border-[#F5C2C7] bg-[#FFF5F5] px-2.5 py-1 text-[11px] font-semibold text-[#C62828] transition hover:bg-[#FFEBEB] active:scale-95"
+                      >
+                        Hapus
+                      </button>
+                    </td>
+                  {/if}
+                </tr>
+              {/each}
+            {/if}
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        page={data.warehousesPagination.page}
+        limit={data.warehousesPagination.limit}
+        total={data.warehousesPagination.total}
+        totalPages={data.warehousesPagination.totalPages}
+      />
     {:else if activeTab === "users"}
       <!-- User Management & Access Control Tab -->
       <div class="space-y-4">
@@ -1494,6 +1633,41 @@
                   OAuth.
                 </p>
               </div>
+            </div>
+          </div>
+
+          <!-- Danger Zone: Reset Master Data -->
+          <div
+            class="rounded-2xl border border-red-200 bg-red-50/40 p-5 sm:p-6 space-y-3"
+          >
+            <div
+              class="flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+            >
+              <div>
+                <h4 class="font-serif text-sm font-bold text-red-900">
+                  Zona Bahaya: Kosongkan & Reset Seluruh Master Data
+                </h4>
+                <p class="mt-0.5 text-xs text-red-700/80">
+                  Menghapus semua produk, pemasok, gudang, saldo stok, dan
+                  transaksi demo. Akun login Anda tetap aman.
+                </p>
+              </div>
+              <button
+                type="button"
+                onclick={() =>
+                  openConfirm({
+                    title: "Kosongkan Seluruh Master Data?",
+                    message:
+                      "Tindakan ini akan menghapus semua produk, pemasok, gudang, dan riwayat transaksi dari database. Akun pengguna tidak akan terpengaruh. Tindakan ini tidak dapat dibatalkan.",
+                    confirmLabel: "Ya, Kosongkan Master Data",
+                    isDanger: true,
+                    action: "?/resetMasterData",
+                    fields: {},
+                  })}
+                class="cursor-pointer shrink-0 rounded-xl border border-red-300 bg-red-600 px-4 py-2.5 text-xs font-bold text-white shadow-xs transition hover:bg-red-700 active:scale-95"
+              >
+                Kosongkan Master Data
+              </button>
             </div>
           </div>
         </div>

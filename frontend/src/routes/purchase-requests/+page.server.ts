@@ -16,6 +16,12 @@ export interface PurchaseRequestsPageData {
   purchaseRequests: PurchaseRequest[];
   warehouses: Warehouse[];
   products: Product[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export interface PurchaseRequestsActionData {
@@ -32,9 +38,15 @@ export const load: ServerLoad = async ({
   }
 
   const statusFilter = url.searchParams.get("status")?.trim() ?? "";
-  const prUrl = statusFilter
-    ? `/api/purchase-requests?limit=50&status=${encodeURIComponent(statusFilter)}`
-    : "/api/purchase-requests?limit=50";
+  const page = Math.max(1, Number(url.searchParams.get("page") ?? 1));
+  const limit = Math.max(1, Number(url.searchParams.get("limit") ?? 15));
+
+  const queryParams = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
+  if (statusFilter) queryParams.set("status", statusFilter);
+  const prUrl = `/api/purchase-requests?${queryParams.toString()}`;
 
   const [prsRes, warehousesRes, productsRes] = await Promise.all([
     callBackendApi<PaginatedResponse<PurchaseRequest>>(prUrl, {
@@ -57,6 +69,12 @@ export const load: ServerLoad = async ({
     purchaseRequests: prsRes.data?.data ?? [],
     warehouses: warehousesRes.data?.data ?? [],
     products: productsRes.data?.data ?? [],
+    pagination: prsRes.data?.meta ?? {
+      page,
+      limit,
+      total: prsRes.data?.data?.length ?? 0,
+      totalPages: 1,
+    },
   };
 };
 

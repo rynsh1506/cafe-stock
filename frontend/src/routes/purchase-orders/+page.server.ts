@@ -18,6 +18,12 @@ export interface PurchaseOrdersPageData {
   suppliers: Supplier[];
   warehouses: Warehouse[];
   products: Product[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export interface PurchaseOrdersActionData {
@@ -34,9 +40,15 @@ export const load: ServerLoad = async ({
   }
 
   const statusFilter = url.searchParams.get("status")?.trim() ?? "";
-  const poUrl = statusFilter
-    ? `/api/purchase-orders?limit=50&status=${encodeURIComponent(statusFilter)}`
-    : "/api/purchase-orders?limit=50";
+  const page = Math.max(1, Number(url.searchParams.get("page") ?? 1));
+  const limit = Math.max(1, Number(url.searchParams.get("limit") ?? 15));
+
+  const queryParams = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
+  if (statusFilter) queryParams.set("status", statusFilter);
+  const poUrl = `/api/purchase-orders?${queryParams.toString()}`;
 
   const [posRes, approvedPrsRes, suppliersRes, warehousesRes, productsRes] =
     await Promise.all([
@@ -69,6 +81,12 @@ export const load: ServerLoad = async ({
     suppliers: suppliersRes.data?.data ?? [],
     warehouses: warehousesRes.data?.data ?? [],
     products: productsRes.data?.data ?? [],
+    pagination: posRes.data?.meta ?? {
+      page,
+      limit,
+      total: posRes.data?.data?.length ?? 0,
+      totalPages: 1,
+    },
   };
 };
 

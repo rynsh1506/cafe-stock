@@ -12,6 +12,12 @@ export interface GoodsReceiptsPageData {
   selectedPoId: string;
   receivableOrders: PurchaseOrder[];
   goodsReceipts: GoodsReceipt[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export interface GoodsReceiptsActionData {
@@ -28,10 +34,12 @@ export const load: ServerLoad = async ({
   }
 
   const selectedPoId = url.searchParams.get("poId")?.trim() ?? "";
+  const page = Math.max(1, Number(url.searchParams.get("page") ?? 1));
+  const limit = Math.max(1, Number(url.searchParams.get("limit") ?? 15));
 
   const [grRes, orderedPosRes, partialPosRes] = await Promise.all([
     callBackendApi<PaginatedResponse<GoodsReceipt>>(
-      "/api/goods-receipts?limit=50",
+      `/api/goods-receipts?page=${page}&limit=${limit}`,
       { token: locals.token },
     ),
     callBackendApi<PaginatedResponse<PurchaseOrder>>(
@@ -54,6 +62,12 @@ export const load: ServerLoad = async ({
     selectedPoId: selectedPoId || (receivableOrders[0]?.id ?? ""),
     receivableOrders,
     goodsReceipts: grRes.data?.data ?? [],
+    pagination: grRes.data?.meta ?? {
+      page,
+      limit,
+      total: grRes.data?.data?.length ?? 0,
+      totalPages: 1,
+    },
   };
 };
 

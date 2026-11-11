@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getDictionary } from "@/lib/i18n";
   import CustomSelect from "@/lib/components/CustomSelect.svelte";
+  import Pagination from "@/lib/components/Pagination.svelte";
   import type { AuditLogsPageData } from "@/routes/audit-logs/+page.server";
 
   let { data }: { data: AuditLogsPageData } = $props();
@@ -125,5 +126,13 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Table Pagination -->
+    <Pagination
+      page={data.pagination.page}
+      limit={data.pagination.limit}
+      total={data.pagination.total}
+      totalPages={data.pagination.totalPages}
+    />
   </div>
 </div>

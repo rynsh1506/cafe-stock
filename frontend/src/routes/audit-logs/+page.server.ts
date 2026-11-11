@@ -7,6 +7,12 @@ export interface AuditLogsPageData {
   entityType: string;
   search: string;
   logs: AuditLog[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export const load: ServerLoad = async ({
@@ -19,8 +25,13 @@ export const load: ServerLoad = async ({
 
   const entityType = url.searchParams.get("entityType")?.trim() ?? "";
   const search = url.searchParams.get("search")?.trim() ?? "";
+  const page = Math.max(1, Number(url.searchParams.get("page") ?? 1));
+  const limit = Math.max(1, Number(url.searchParams.get("limit") ?? 20));
 
-  const params = new URLSearchParams({ limit: "50" });
+  const params = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
   if (entityType) params.set("entityType", entityType);
   if (search) params.set("search", search);
 
@@ -34,5 +45,11 @@ export const load: ServerLoad = async ({
     entityType,
     search,
     logs: res.data?.data ?? [],
+    pagination: res.data?.meta ?? {
+      page,
+      limit,
+      total: res.data?.data?.length ?? 0,
+      totalPages: 1,
+    },
   };
 };

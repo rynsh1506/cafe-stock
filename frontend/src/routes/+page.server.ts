@@ -429,15 +429,76 @@ export const load: ServerLoad = async ({
     computeVelocityPoint(d, idx),
   );
 
-  const volume90dPoints = last90Days.map((d, idx) =>
-    computeVolumePoint(d, 0.5, idx),
+  // 90D: Aggregated per 30 days (3 monthly bars) as requested ("klo untuk 90 per 30 hari aja")
+  const block30d_3 = last90Days.slice(0, 30); // earliest (61-90 days ago)
+  const block30d_2 = last90Days.slice(30, 60); // middle (31-60 days ago)
+  const block30d_1 = last90Days.slice(60, 90); // latest (last 30 days)
+
+  function formatMonthYear(d: Date): string {
+    return d.toLocaleDateString("id-ID", { month: "short", year: "2-digit" });
+  }
+
+  function aggregate30dBlock(
+    days: typeof last90Days,
+    name: string,
+    sublabel: string,
+  ): {
+    volume: ChartSeriesPoint;
+    spend: ChartSeriesPoint;
+    velocity: ChartSeriesPoint;
+  } {
+    const volPts = days.map((d, idx) => computeVolumePoint(d, 0.5, idx));
+    const totalVol = volPts.reduce((s, p) => s + p.value, 0);
+    const spendPts = days.map((d, idx) =>
+      computeSpendPoint(d, volPts[idx].value, 0.5),
+    );
+    const totalSpend = spendPts.reduce((s, p) => s + p.value, 0);
+    const avgVelocity = 1.5;
+
+    return {
+      volume: {
+        label: name,
+        sublabel,
+        value: totalVol,
+        unit: "kg",
+        delta: `${totalVol.toLocaleString("id-ID")} kg`,
+      },
+      spend: {
+        label: name,
+        sublabel,
+        value: totalSpend,
+        unit: "Rp",
+        delta: `Rp ${totalSpend.toLocaleString("id-ID")}`,
+      },
+      velocity: {
+        label: name,
+        sublabel,
+        value: avgVelocity,
+        unit: dict.operatingDays,
+        delta: dict.slaTarget,
+      },
+    };
+  }
+
+  const b3 = aggregate30dBlock(
+    block30d_3,
+    formatMonthYear(block30d_3[15].date),
+    "Hari 61–90",
   );
-  const spend90dPoints = last90Days.map((d, idx) =>
-    computeSpendPoint(d, volume90dPoints[idx].value, 0.5),
+  const b2 = aggregate30dBlock(
+    block30d_2,
+    formatMonthYear(block30d_2[15].date),
+    "Hari 31–60",
   );
-  const velocity90dPoints = last90Days.map((d, idx) =>
-    computeVelocityPoint(d, idx),
+  const b1 = aggregate30dBlock(
+    block30d_1,
+    formatMonthYear(block30d_1[15].date),
+    "30 Hari Terakhir",
   );
+
+  const volume90dPoints = [b3.volume, b2.volume, b1.volume];
+  const spend90dPoints = [b3.spend, b2.spend, b1.spend];
+  const velocity90dPoints = [b3.velocity, b2.velocity, b1.velocity];
 
   const totalVolume7d = volume7dPoints.reduce((sum, p) => sum + p.value, 0);
   const totalVolume30d = volume30dPoints.reduce((sum, p) => sum + p.value, 0);

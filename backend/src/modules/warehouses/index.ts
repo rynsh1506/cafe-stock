@@ -6,6 +6,7 @@ import {
 } from "@/modules/warehouses/model";
 import {
   createWarehouse,
+  deleteWarehouse,
   getWarehouseById,
   listWarehouses,
   updateWarehouse,
@@ -48,4 +49,9 @@ export const warehousesModule = new Elysia({ prefix: "/api/warehouses" })
     {
       body: updateWarehouseBodySchema,
     },
-  );
+  )
+  .delete("/:id", async ({ request, params }) => {
+    const actor = await requireAuthenticatedUser(request);
+    const result = await deleteWarehouse(params.id, actor);
+    return { data: result };
+  });

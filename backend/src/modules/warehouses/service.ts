@@ -1,6 +1,6 @@
-import { and, count, desc, eq, ilike, or, type SQL } from "drizzle-orm";
+import { and, count, desc, eq, ilike, or, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db/index";
-import { warehouses } from "@/db/schema";
+import { inventoryBalances, warehouses } from "@/db/schema";
 import type { AuthenticatedUser } from "@/modules/auth/model";
 import type {
   CreateWarehouseInput,
@@ -184,4 +184,49 @@ export async function updateWarehouse(
   });
 
   return updated;
+}
+
+export async function deleteWarehouse(
+  id: string,
+  actor: AuthenticatedUser,
+): Promise<{ success: boolean; id: string }> {
+  if (actor.role !== "APPROVER") {
+    throw AppError.forbidden(
+      "FORBIDDEN",
+      "Only approvers can delete warehouses",
+    );
+  }
+
+  const current = await getWarehouseById(id);
+
+  const [balance] = await db
+    .select({
+      total: sql<number>`coalesce(sum(${inventoryBalances.quantity}), 0)::int`,
+    })
+    .from(inventoryBalances)
+    .where(eq(inventoryBalances.warehouseId, id));
+
+  if (balance && balance.total > 0) {
+    throw AppError.badRequest(
+      "WAREHOUSE_IN_USE",
+      `Cannot delete warehouse '${current.name}' because it still contains ${balance.total} inventory units`,
+    );
+  }
+
+  await db.transaction(async (tx) => {
+    await tx
+      .delete(inventoryBalances)
+      .where(eq(inventoryBalances.warehouseId, id));
+    await tx.delete(warehouses).where(eq(warehouses.id, id));
+  });
+
+  await recordAuditLog({
+    actor,
+    action: "WAREHOUSE_DELETED",
+    entityType: "WAREHOUSE",
+    entityId: id,
+    summary: `Deleted warehouse ${current.code} - ${current.name}`,
+  });
+
+  return { success: true, id };
 }
