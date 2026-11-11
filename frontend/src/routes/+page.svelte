@@ -25,7 +25,14 @@
         : dict.metricVelocity,
   );
 
+  let hoveredPoint = $derived(
+    hoveredPointIndex !== null ? activeDataset.points[hoveredPointIndex] : null,
+  );
+
   let formattedHeadline = $derived.by(() => {
+    if (hoveredPoint) {
+      return formatPointValue(hoveredPoint);
+    }
     if (selectedMetric === "volume") {
       return `${activeDataset.totalValue.toLocaleString("id-ID")} KG`;
     }
@@ -36,6 +43,13 @@
   });
 
   let formattedDeltaText = $derived.by(() => {
+    if (hoveredPoint) {
+      const sub =
+        hoveredPoint.sublabel && hoveredPoint.sublabel !== hoveredPoint.label
+          ? ` (${hoveredPoint.sublabel})`
+          : "";
+      return `${hoveredPoint.label}${sub}`;
+    }
     if (selectedMetric === "volume") {
       return `${activeDataset.totalValue.toLocaleString("id-ID")} KG ${dict.aggregateIntake}`;
     }
@@ -355,28 +369,40 @@
       class="mt-4 flex flex-col gap-2.5 sm:flex-row sm:items-baseline sm:justify-between px-1"
     >
       <div class="flex flex-col sm:flex-row sm:items-baseline gap-1.5 sm:gap-3">
-        <span class="font-serif text-2xl font-bold text-[#2E1F16] sm:text-3xl">
+        <span
+          class="font-serif text-2xl font-bold text-[#2E1F16] sm:text-3xl transition-all"
+        >
           {formattedHeadline}
         </span>
         <div class="flex items-center">
           <span
-            class="ui-badge border-[#C8E6C9] bg-[#E8F5E9] text-xs font-semibold text-[#2E7D32]"
+            class="ui-badge text-xs font-semibold transition-all {hoveredPoint
+              ? 'border-[#7A4D33] bg-[#3E2315] text-[#F3E5D8]'
+              : 'border-[#C8E6C9] bg-[#E8F5E9] text-[#2E7D32]'}"
           >
-            <span class="ui-badge-dot bg-[#2E7D32]"></span>
+            <span
+              class="ui-badge-dot {hoveredPoint
+                ? 'bg-[#E5B589]'
+                : 'bg-[#2E7D32]'}"
+            ></span>
             <span>{formattedDeltaText}</span>
           </span>
         </div>
       </div>
       <div class="text-[11px] text-[#8C7665]">
-        <span>{dict.hoverTelemetryNotice}</span>
+        <span>
+          {hoveredPoint
+            ? "Batang terpilih / Granular telemetry active"
+            : dict.hoverTelemetryNotice}
+        </span>
       </div>
     </div>
 
     <!-- Responsive Roastery Bar Chart (Grafik Batang) -->
-    <div class="relative mt-5 w-full">
+    <div class="relative mt-5 w-full overflow-visible">
       <!-- Background Horizontal Grid Guides -->
       <div
-        class="pointer-events-none absolute inset-x-0 top-6 bottom-7 flex flex-col justify-between opacity-50"
+        class="pointer-events-none absolute inset-x-0 top-14 bottom-8 flex flex-col justify-between opacity-40"
       >
         <div class="border-b border-dashed border-[#EDE4D8]"></div>
         <div class="border-b border-dashed border-[#EDE4D8]"></div>
@@ -384,19 +410,24 @@
         <div class="border-b border-[#EDE4D8]"></div>
       </div>
 
-      <!-- Bars Container -->
+      <!-- Bars Container (Zero horizontal scrollbar, full mobile fit) -->
       <div
-        class="relative flex h-52 sm:h-60 items-end justify-between gap-1.5 sm:gap-3 px-2 pt-8 pb-1 overflow-x-auto no-scrollbar"
+        class="relative flex h-56 sm:h-64 items-end justify-between {selectedRange ===
+        '30D'
+          ? 'gap-0.5 sm:gap-1.5 md:gap-2'
+          : selectedRange === '7D'
+            ? 'gap-2 sm:gap-4 md:gap-6 max-w-2xl mx-auto'
+            : 'gap-4 sm:gap-8 md:gap-12 max-w-xl mx-auto'} px-1 sm:px-2 pt-16 pb-1 overflow-visible select-none"
       >
         {#each activeDataset.points as item, index}
           {@const isHovered = hoveredPointIndex === index}
           <div
-            class="group relative flex h-full flex-1 flex-col items-center justify-end cursor-pointer {selectedRange ===
+            class="group relative flex h-full flex-1 flex-col items-center justify-end cursor-pointer outline-none focus:outline-none select-none touch-manipulation {selectedRange ===
             '90D'
-              ? 'max-w-[100px]'
+              ? 'max-w-[120px]'
               : selectedRange === '7D'
                 ? 'max-w-[56px]'
-                : 'min-w-[8px] sm:min-w-[14px] max-w-[24px]'}"
+                : 'min-w-0 max-w-[28px]'}"
             role="button"
             tabindex="0"
             aria-label="{item.label}: {formatPointValue(item)}"
@@ -405,14 +436,25 @@
             onfocus={() => (hoveredPointIndex = index)}
             onblur={() => (hoveredPointIndex = null)}
           >
-            <!-- Floating Granular Tooltip on Hover -->
+            <!-- Floating Granular Tooltip on Hover (Guaranteed Unclipped with Edge Clamping) -->
             {#if isHovered}
               <div
-                class="pointer-events-none absolute -top-12 z-30 flex -translate-x-1/2 flex-col items-center rounded-xl border border-[#3D2517] bg-[#231712] px-3 py-1.5 text-white shadow-xl whitespace-nowrap animate-in fade-in zoom-in-95 duration-150"
-                style="left: 50%;"
+                class="pointer-events-none absolute -top-12 z-30 flex flex-col items-center rounded-xl border border-[#3D2517] bg-[#231712] px-2.5 py-1 text-white shadow-xl whitespace-nowrap animate-in fade-in zoom-in-95 duration-100 {index <=
+                1
+                  ? 'left-0 translate-x-0'
+                  : index >= activeDataset.points.length - 2
+                    ? 'right-0 translate-x-0 left-auto'
+                    : 'left-1/2 -translate-x-1/2'}"
+                style={index <= 1
+                  ? ""
+                  : index >= activeDataset.points.length - 2
+                    ? ""
+                    : "left: 50%;"}
               >
                 <div class="text-[10px] font-semibold text-[#D8A57A]">
-                  {item.label} ({item.sublabel})
+                  {item.label}{#if item.sublabel && item.sublabel !== item.label}&nbsp;<span
+                      class="opacity-75">({item.sublabel})</span
+                    >{/if}
                 </div>
                 <div class="font-mono text-xs font-bold text-white">
                   {formatPointValue(item)}
@@ -422,28 +464,46 @@
 
             <!-- Bar Track & Solid Bar Fill -->
             <div
-              class="relative flex h-full w-full items-end overflow-hidden rounded-t-lg sm:rounded-t-xl bg-[#F0E7DD] transition-all"
+              class="relative flex h-full w-full items-end overflow-hidden rounded-t-sm sm:rounded-t-lg bg-[#F0E7DD] transition-all"
             >
               <div
                 style="height: {getBarHeightPct(item.value)};"
-                class="w-full rounded-t-lg sm:rounded-t-xl transition-all duration-300 {isHovered
+                class="w-full rounded-t-sm sm:rounded-t-lg transition-all duration-300 {isHovered
                   ? 'bg-gradient-to-t from-[#3E2315] to-[#5A3825] shadow-md'
                   : 'bg-gradient-to-t from-[#B37948] to-[#C68B59] hover:from-[#9B6437] hover:to-[#B37948]'}"
               ></div>
             </div>
 
-            <!-- X-Axis Label -->
-            <div class="mt-2 text-center">
-              {#if selectedRange === "90D" || selectedRange === "7D" || activeDataset.points.length <= 10 || index % 5 === 0 || index === activeDataset.points.length - 1 || isHovered}
+            <!-- X-Axis Label (Strict Spacing, Zero Text Collision) -->
+            <div
+              class="mt-2 text-center select-none pointer-events-none w-full"
+            >
+              {#if selectedRange === "90D" || selectedRange === "7D"}
                 <span
-                  class="font-mono text-[10px] sm:text-xs font-semibold whitespace-nowrap {isHovered
+                  class="block font-mono text-[10px] sm:text-xs font-semibold whitespace-nowrap truncate {isHovered
+                    ? 'font-bold text-[#5A3825]'
+                    : 'text-[#8A7566]'}"
+                >
+                  {item.label}
+                </span>
+              {:else if activeDataset.points.length <= 10}
+                <span
+                  class="block font-mono text-[10px] sm:text-xs font-semibold whitespace-nowrap truncate {isHovered
+                    ? 'font-bold text-[#5A3825]'
+                    : 'text-[#8A7566]'}"
+                >
+                  {item.label}
+                </span>
+              {:else if index === 0 || index === 7 || index === 14 || index === 21 || index === activeDataset.points.length - 1}
+                <span
+                  class="block font-mono text-[9px] sm:text-[11px] font-semibold whitespace-nowrap {isHovered
                     ? 'font-bold text-[#5A3825]'
                     : 'text-[#8A7566]'}"
                 >
                   {item.label}
                 </span>
               {:else}
-                <span class="inline-block h-3.5 text-transparent select-none"
+                <span class="inline-block h-3 text-transparent select-none"
                   >.</span
                 >
               {/if}
