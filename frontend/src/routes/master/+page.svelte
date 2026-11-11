@@ -1245,6 +1245,7 @@
 
                         <!-- Suspend / Activate Action -->
                         {#if u.id !== data.currentUserId}
+                          <!-- Safe Status Toggle (Suspend / Aktifkan) -->
                           <button
                             type="button"
                             onclick={() =>
@@ -1270,26 +1271,6 @@
                               : 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'}"
                           >
                             {u.isActive ? "Suspend" : "Aktifkan"}
-                          </button>
-
-                          <!-- Force Delete Action -->
-                          <button
-                            type="button"
-                            onclick={() =>
-                              openConfirm({
-                                title: "Konfirmasi Hapus Paksa Akun",
-                                message: `Apakah Anda yakin ingin menghapus paksa akun ${u.name} (${u.email}) dari sistem?`,
-                                warning:
-                                  "Peringatan: Seluruh data akun ini akan dimusnahkan secara permanen dari database. Tindakan ini tidak dapat dibatalkan!",
-                                action: "?/deleteUser",
-                                isDanger: true,
-                                confirmLabel: "Hapus Permanen",
-                                fields: { id: u.id },
-                              })}
-                            class="cursor-pointer rounded-lg border border-[#F5C2C7] bg-[#FFF5F5] px-2 py-1 text-[11px] font-bold text-[#C62828] transition hover:bg-[#FFEBEE]"
-                            title="Hapus akun secara permanen"
-                          >
-                            Hapus
                           </button>
                         {/if}
                       </div>

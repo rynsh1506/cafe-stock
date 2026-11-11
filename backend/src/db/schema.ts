@@ -287,7 +287,9 @@ export const inventoryMovements = pgTable("inventory_movements", {
 
 export const auditLogs = pgTable("audit_logs", {
   id: uuid("id").primaryKey().defaultRandom(),
-  actorId: uuid("actor_id").references(() => users.id),
+  actorId: uuid("actor_id").references(() => users.id, {
+    onDelete: "set null",
+  }),
   actorName: text("actor_name").notNull(),
   actorRole: text("actor_role").notNull(),
   action: text("action").notNull(),

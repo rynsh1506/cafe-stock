@@ -1,6 +1,12 @@
 import { and, desc, eq, gt } from "drizzle-orm";
 import { db } from "@/db/index";
-import { otpVerifications, sessions, systemSettings, users } from "@/db/schema";
+import {
+  auditLogs,
+  otpVerifications,
+  sessions,
+  systemSettings,
+  users,
+} from "@/db/schema";
 import type {
   AuthenticatedUser,
   LoginInput,
@@ -634,8 +640,14 @@ export async function deleteUser(
     }
   }
 
-  await db.delete(sessions).where(eq(sessions.userId, targetUserId));
-  await db.delete(users).where(eq(users.id, targetUserId));
+  await db.transaction(async (tx) => {
+    await tx.delete(sessions).where(eq(sessions.userId, targetUserId));
+    await tx
+      .update(auditLogs)
+      .set({ actorId: null })
+      .where(eq(auditLogs.actorId, targetUserId));
+    await tx.delete(users).where(eq(users.id, targetUserId));
+  });
 
   await recordAuditLog({
     actor: { id: admin.id, name: admin.name, role: admin.role },
@@ -665,7 +677,14 @@ export async function rejectPendingUser(
     throw AppError.notFound("USER_NOT_FOUND", "User not found");
   }
 
-  await db.delete(users).where(eq(users.id, targetUserId));
+  await db.transaction(async (tx) => {
+    await tx.delete(sessions).where(eq(sessions.userId, targetUserId));
+    await tx
+      .update(auditLogs)
+      .set({ actorId: null })
+      .where(eq(auditLogs.actorId, targetUserId));
+    await tx.delete(users).where(eq(users.id, targetUserId));
+  });
 
   await recordAuditLog({
     actor: { id: admin.id, name: admin.name, role: admin.role },
