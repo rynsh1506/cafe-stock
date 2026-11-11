@@ -627,7 +627,7 @@
         >
       </div>
       <div class="overflow-x-auto">
-        <table class="w-full min-w-[720px] border-collapse text-left text-xs">
+        <table class="w-full min-w-180 border-collapse text-left text-xs">
           <thead>
             <tr
               class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase whitespace-nowrap"
@@ -753,7 +753,7 @@
         >
       </div>
       <div class="overflow-x-auto">
-        <table class="w-full min-w-[700px] border-collapse text-left text-xs">
+        <table class="w-full min-w-175 border-collapse text-left text-xs">
           <thead>
             <tr
               class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase whitespace-nowrap"
@@ -843,7 +843,7 @@
         >
       </div>
       <div class="overflow-x-auto">
-        <table class="w-full min-w-[600px] border-collapse text-left text-xs">
+        <table class="w-full min-w-150 border-collapse text-left text-xs">
           <thead>
             <tr
               class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase whitespace-nowrap"
@@ -993,7 +993,7 @@
                 >
               </div>
               <table
-                class="w-full min-w-[750px] border-collapse text-left text-xs"
+                class="w-full min-w-187.5 border-collapse text-left text-xs"
               >
                 <thead>
                   <tr
@@ -1112,9 +1112,7 @@
           </div>
           <!-- All Registered Users Table -->
           <div class="overflow-x-auto">
-            <table
-              class="w-full min-w-[850px] border-collapse text-left text-xs"
-            >
+            <table class="w-full min-w-212.5 border-collapse text-left text-xs">
               <thead>
                 <tr
                   class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase whitespace-nowrap"

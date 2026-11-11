@@ -82,7 +82,7 @@
   <!-- Roastery Espresso Dropdown Menu -->
   {#if isOpen}
     <div
-      class="absolute top-full left-0 z-50 mt-1.5 max-h-72 w-full min-w-full overflow-y-auto rounded-xl border border-[#EDE4D8] bg-white p-1 shadow-xl transition-all [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      class="absolute top-full left-0 z-50 mt-1.5 max-h-72 w-full min-w-full overflow-y-auto rounded-xl border border-[#EDE4D8] bg-white p-1 shadow-xl transition-all scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
     >
       {#each options as opt}
         {@const isSelected = opt.value === value}
