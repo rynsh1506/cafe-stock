@@ -238,20 +238,20 @@
             <path d="M16 3.13a4 4 0 0 1 0 7.75" />
           </svg>
         </div>
-        <div>
+        <div class="min-w-0 flex-1">
           <div
-            class="text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
+            class="text-[10px] font-bold tracking-wider text-[#8C7665] uppercase truncate"
           >
             {dict.usersManagementSection}
           </div>
-          <div class="flex items-center gap-2">
+          <div class="flex flex-wrap items-baseline gap-1.5 mt-0.5">
             <span class="font-mono text-xl font-extrabold text-[#231712]">
               {data.allUsers.length}
             </span>
             <span class="text-xs font-normal text-[#8C7665]">Akun</span>
             {#if data.pendingUsers.length > 0}
               <span
-                class="rounded-full bg-amber-200/80 px-2 py-0.5 text-[10px] font-extrabold text-amber-900 shadow-2xs"
+                class="rounded-full bg-amber-200/90 px-2 py-0.5 text-[10px] font-extrabold text-amber-950 shadow-2xs whitespace-nowrap"
               >
                 +{data.pendingUsers.length} Antrean
               </span>
@@ -266,83 +266,85 @@
   <div
     class="flex flex-col justify-between gap-3 border-y border-[#EDE4D8] py-3 sm:flex-row sm:items-center"
   >
-    <div class="ui-tabs">
-      <button
-        type="button"
-        onclick={() => (activeTab = "products")}
-        class="ui-tab cursor-pointer {activeTab === 'products'
-          ? 'ui-tab-active'
-          : ''}"
-      >
-        {dict.productsSection} ({data.products.length})
-      </button>
-      <button
-        type="button"
-        onclick={() => (activeTab = "suppliers")}
-        class="ui-tab cursor-pointer {activeTab === 'suppliers'
-          ? 'ui-tab-active'
-          : ''}"
-      >
-        {dict.suppliersSection} ({data.suppliers.length})
-      </button>
-      <button
-        type="button"
-        onclick={() => (activeTab = "warehouses")}
-        class="ui-tab cursor-pointer {activeTab === 'warehouses'
-          ? 'ui-tab-active'
-          : ''}"
-      >
-        {dict.warehousesSection} ({data.warehouses.length})
-      </button>
-      {#if data.isApprover}
+    <div class="w-full sm:w-auto overflow-x-auto no-scrollbar py-0.5">
+      <div class="ui-tabs">
         <button
           type="button"
-          onclick={() => (activeTab = "users")}
-          class="ui-tab cursor-pointer {activeTab === 'users'
+          onclick={() => (activeTab = "products")}
+          class="ui-tab cursor-pointer {activeTab === 'products'
             ? 'ui-tab-active'
             : ''}"
         >
-          {dict.usersManagementSection} ({data.allUsers.length})
-          {#if data.pendingUsers.length > 0}
-            <span
-              class="ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-extrabold tracking-wide {activeTab ===
-              'users'
-                ? 'bg-[#FAF7F2] text-[#5A3825] shadow-xs'
-                : 'border border-amber-300 bg-amber-100 text-amber-900'}"
-            >
-              {data.pendingUsers.length} Pending
-            </span>
-          {/if}
+          {dict.productsSection} ({data.products.length})
         </button>
         <button
           type="button"
-          onclick={() => (activeTab = "settings")}
-          class="ui-tab cursor-pointer {activeTab === 'settings'
+          onclick={() => (activeTab = "suppliers")}
+          class="ui-tab cursor-pointer {activeTab === 'suppliers'
             ? 'ui-tab-active'
             : ''}"
         >
-          <svg
-            class="-mt-0.5 mr-1 inline h-3.5 w-3.5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
+          {dict.suppliersSection} ({data.suppliers.length})
+        </button>
+        <button
+          type="button"
+          onclick={() => (activeTab = "warehouses")}
+          class="ui-tab cursor-pointer {activeTab === 'warehouses'
+            ? 'ui-tab-active'
+            : ''}"
+        >
+          {dict.warehousesSection} ({data.warehouses.length})
+        </button>
+        {#if data.isApprover}
+          <button
+            type="button"
+            onclick={() => (activeTab = "users")}
+            class="ui-tab cursor-pointer {activeTab === 'users'
+              ? 'ui-tab-active'
+              : ''}"
           >
-            <circle cx="12" cy="12" r="3" />
-            <path
-              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
-            />
-          </svg>
-          {dict.systemSettingsSection}
-        </button>
-      {/if}
+            {dict.usersManagementSection} ({data.allUsers.length})
+            {#if data.pendingUsers.length > 0}
+              <span
+                class="ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-extrabold tracking-wide {activeTab ===
+                'users'
+                  ? 'bg-[#FAF7F2] text-[#5A3825] shadow-xs'
+                  : 'border border-amber-300 bg-amber-100 text-amber-900'}"
+              >
+                {data.pendingUsers.length} Pending
+              </span>
+            {/if}
+          </button>
+          <button
+            type="button"
+            onclick={() => (activeTab = "settings")}
+            class="ui-tab cursor-pointer {activeTab === 'settings'
+              ? 'ui-tab-active'
+              : ''}"
+          >
+            <svg
+              class="-mt-0.5 mr-1 inline h-3.5 w-3.5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+              />
+            </svg>
+            {dict.systemSettingsSection}
+          </button>
+        {/if}
+      </div>
     </div>
 
     {#if activeTab !== "users" && activeTab !== "settings"}
       <button
         type="button"
         onclick={() => (showNewDrawer = !showNewDrawer)}
-        class="ui-btn cursor-pointer"
+        class="ui-btn cursor-pointer w-full sm:w-auto shrink-0"
       >
         {newButtonLabel}
       </button>
@@ -614,11 +616,20 @@
   <!-- Table Card -->
   <div class="ui-card overflow-hidden">
     {#if activeTab === "products"}
+      <div
+        class="flex items-center justify-between border-b border-[#EDE4D8] bg-[#FAF7F2] px-4 py-1.5 text-[11px] font-medium text-[#8C7665] sm:hidden"
+      >
+        <span>← Geser tabel untuk kolom lengkap →</span>
+        <span
+          class="rounded bg-[#EFE7DE] px-1.5 py-0.5 font-mono text-[10px] text-[#5A3825]"
+          >6 Kolom</span
+        >
+      </div>
       <div class="overflow-x-auto">
-        <table class="w-full border-collapse text-left text-xs">
+        <table class="w-full min-w-[680px] border-collapse text-left text-xs">
           <thead>
             <tr
-              class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
+              class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase whitespace-nowrap"
             >
               <th class="px-5 py-3.5">{dict.thSku}</th>
               <th class="px-5 py-3.5">{dict.thProductName}</th>
@@ -628,7 +639,7 @@
               <th class="px-5 py-3.5 text-right">{dict.thStatus}</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-[#F5EDE4]">
+          <tbody class="divide-y divide-[#F5EDE4] whitespace-nowrap">
             {#each data.products as prod}
               <tr class="transition hover:bg-[#FAF7F2]">
                 <td
@@ -685,11 +696,20 @@
         </table>
       </div>
     {:else if activeTab === "suppliers"}
+      <div
+        class="flex items-center justify-between border-b border-[#EDE4D8] bg-[#FAF7F2] px-4 py-1.5 text-[11px] font-medium text-[#8C7665] sm:hidden"
+      >
+        <span>← Geser tabel untuk kolom lengkap →</span>
+        <span
+          class="rounded bg-[#EFE7DE] px-1.5 py-0.5 font-mono text-[10px] text-[#5A3825]"
+          >5 Kolom</span
+        >
+      </div>
       <div class="overflow-x-auto">
-        <table class="w-full border-collapse text-left text-xs">
+        <table class="w-full min-w-[650px] border-collapse text-left text-xs">
           <thead>
             <tr
-              class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
+              class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase whitespace-nowrap"
             >
               <th class="px-5 py-3.5">{dict.thSupplierCode}</th>
               <th class="px-5 py-3.5">{dict.thSupplierName}</th>
@@ -698,7 +718,7 @@
               <th class="px-5 py-3.5">{dict.thAddress}</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-[#F5EDE4]">
+          <tbody class="divide-y divide-[#F5EDE4] whitespace-nowrap">
             {#each data.suppliers as sup}
               <tr class="transition hover:bg-[#FAF7F2]">
                 <td
@@ -720,18 +740,27 @@
         </table>
       </div>
     {:else if activeTab === "warehouses"}
+      <div
+        class="flex items-center justify-between border-b border-[#EDE4D8] bg-[#FAF7F2] px-4 py-1.5 text-[11px] font-medium text-[#8C7665] sm:hidden"
+      >
+        <span>← Geser tabel untuk kolom lengkap →</span>
+        <span
+          class="rounded bg-[#EFE7DE] px-1.5 py-0.5 font-mono text-[10px] text-[#5A3825]"
+          >3 Kolom</span
+        >
+      </div>
       <div class="overflow-x-auto">
-        <table class="w-full border-collapse text-left text-xs">
+        <table class="w-full min-w-[550px] border-collapse text-left text-xs">
           <thead>
             <tr
-              class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
+              class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase whitespace-nowrap"
             >
               <th class="px-5 py-3.5">{dict.thWarehouseCode}</th>
               <th class="px-5 py-3.5">{dict.thWarehouseName}</th>
               <th class="px-5 py-3.5">{dict.thAddress}</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-[#F5EDE4]">
+          <tbody class="divide-y divide-[#F5EDE4] whitespace-nowrap">
             {#each data.warehouses as wh}
               <tr class="transition hover:bg-[#FAF7F2]">
                 <td
@@ -753,13 +782,15 @@
       <div class="space-y-4">
         <!-- Subtab Filter Bar -->
         <div
-          class="flex items-center justify-between border-b border-[#EDE4D8] bg-[#FAF7F2] px-5 py-3"
+          class="flex flex-col gap-2.5 border-b border-[#EDE4D8] bg-[#FAF7F2] px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5"
         >
-          <div class="flex items-center gap-2">
+          <div
+            class="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5"
+          >
             <button
               type="button"
               onclick={() => (activeUserSubtab = "all")}
-              class="cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold transition {activeUserSubtab ===
+              class="cursor-pointer whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold shrink-0 transition {activeUserSubtab ===
               'all'
                 ? 'bg-[#5A3825] text-white shadow-xs'
                 : 'text-[#7A6453] hover:bg-[#EFE7DE]'}"
@@ -769,7 +800,7 @@
             <button
               type="button"
               onclick={() => (activeUserSubtab = "pending")}
-              class="flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition {activeUserSubtab ===
+              class="flex cursor-pointer whitespace-nowrap items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold shrink-0 transition {activeUserSubtab ===
               'pending'
                 ? 'bg-[#5A3825] text-white shadow-xs'
                 : 'text-[#7A6453] hover:bg-[#EFE7DE]'}"
@@ -813,10 +844,21 @@
                 </p>
               </div>
             {:else}
-              <table class="w-full border-collapse text-left text-xs">
+              <div
+                class="flex items-center justify-between border-b border-[#EDE4D8] bg-[#FAF7F2] px-4 py-1.5 text-[11px] font-medium text-[#8C7665] sm:hidden"
+              >
+                <span>← Geser tabel untuk penetapan peran & persetujuan →</span>
+                <span
+                  class="rounded bg-[#EFE7DE] px-1.5 py-0.5 font-mono text-[10px] text-[#5A3825]"
+                  >5 Kolom</span
+                >
+              </div>
+              <table
+                class="w-full min-w-[750px] border-collapse text-left text-xs"
+              >
                 <thead>
                   <tr
-                    class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
+                    class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase whitespace-nowrap"
                   >
                     <th class="px-5 py-3.5">Nama & Profil</th>
                     <th class="px-5 py-3.5">{dict.emailLabel}</th>
@@ -825,7 +867,7 @@
                     <th class="px-5 py-3.5 text-right">{dict.actions}</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-[#F5EDE4]">
+                <tbody class="divide-y divide-[#F5EDE4] whitespace-nowrap">
                   {#each data.pendingUsers as u}
                     <tr class="transition hover:bg-[#FAF7F2]">
                       <td class="px-5 py-3.5">
@@ -920,12 +962,23 @@
             {/if}
           </div>
         {:else}
+          <div
+            class="flex items-center justify-between border-b border-[#EDE4D8] bg-[#FAF7F2] px-4 py-1.5 text-[11px] font-medium text-[#8C7665] sm:hidden"
+          >
+            <span>← Geser tabel untuk informasi akun lengkap →</span>
+            <span
+              class="rounded bg-[#EFE7DE] px-1.5 py-0.5 font-mono text-[10px] text-[#5A3825]"
+              >7 Kolom</span
+            >
+          </div>
           <!-- All Registered Users Table -->
           <div class="overflow-x-auto">
-            <table class="w-full border-collapse text-left text-xs">
+            <table
+              class="w-full min-w-[850px] border-collapse text-left text-xs"
+            >
               <thead>
                 <tr
-                  class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
+                  class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase whitespace-nowrap"
                 >
                   <th class="px-5 py-3.5">Nama & Profil</th>
                   <th class="px-5 py-3.5">{dict.emailLabel}</th>
@@ -936,7 +989,7 @@
                   <th class="px-5 py-3.5 text-right">{dict.actions}</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-[#F5EDE4]">
+              <tbody class="divide-y divide-[#F5EDE4] whitespace-nowrap">
                 {#each data.allUsers as u}
                   <tr class="transition hover:bg-[#FAF7F2]">
                     <td class="px-5 py-3.5">

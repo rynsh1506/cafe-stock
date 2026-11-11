@@ -188,11 +188,20 @@
 
   <!-- Goods Receipts Table Card -->
   <div class="ui-card overflow-hidden">
+    <div
+      class="flex items-center justify-between border-b border-[#EDE4D8] bg-[#FAF7F2] px-4 py-1.5 text-[11px] font-medium text-[#8C7665] sm:hidden"
+    >
+      <span>← Geser tabel untuk riwayat penerimaan →</span>
+      <span
+        class="rounded bg-[#EFE7DE] px-1.5 py-0.5 font-mono text-[10px] text-[#5A3825]"
+        >6 Kolom</span
+      >
+    </div>
     <div class="overflow-x-auto">
-      <table class="w-full border-collapse text-left text-xs">
+      <table class="w-full min-w-[720px] border-collapse text-left text-xs">
         <thead>
           <tr
-            class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
+            class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase whitespace-nowrap"
           >
             <th class="px-5 py-3.5">{dict.receiptId}</th>
             <th class="px-5 py-3.5">{dict.poReference}</th>
@@ -202,7 +211,7 @@
             <th class="px-5 py-3.5 text-right">{dict.timestamp}</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-[#F5EDE4]">
+        <tbody class="divide-y divide-[#F5EDE4] whitespace-nowrap">
           {#each data.goodsReceipts as gr}
             <tr class="transition hover:bg-[#FAF7F2]">
               <td class="px-5 py-4 font-mono text-xs font-bold text-[#5A3825]">

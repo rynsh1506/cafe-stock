@@ -203,6 +203,24 @@ select.ui-input:focus,
   border: 1px solid #e2d7ca;
   padding: 3px;
   border-radius: 12px;
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ui-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 .ui-tab {
@@ -213,6 +231,7 @@ select.ui-input:focus,
   border-radius: 9px;
   cursor: pointer;
   white-space: nowrap;
+  flex-shrink: 0;
   transition:
     color 0.15s ease,
     background-color 0.15s ease,

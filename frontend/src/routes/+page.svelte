@@ -341,45 +341,53 @@
       </div>
 
       <!-- Metric & Range Switchers -->
-      <div class="flex flex-wrap items-center gap-3">
+      <div
+        class="flex w-full flex-col gap-3 sm:flex-row sm:items-center lg:w-auto"
+      >
         <!-- Metric Selector -->
-        <div class="ui-tabs">
-          <button
-            type="button"
-            onclick={() => (selectedMetric = "volume")}
-            class="ui-tab {selectedMetric === 'volume' ? 'ui-tab-active' : ''}"
-          >
-            {dict.metricVolume}
-          </button>
-          <button
-            type="button"
-            onclick={() => (selectedMetric = "spend")}
-            class="ui-tab {selectedMetric === 'spend' ? 'ui-tab-active' : ''}"
-          >
-            {dict.metricSpend}
-          </button>
-          <button
-            type="button"
-            onclick={() => (selectedMetric = "velocity")}
-            class="ui-tab {selectedMetric === 'velocity'
-              ? 'ui-tab-active'
-              : ''}"
-          >
-            {dict.metricVelocity}
-          </button>
+        <div class="w-full overflow-x-auto py-0.5 no-scrollbar sm:w-auto">
+          <div class="ui-tabs">
+            <button
+              type="button"
+              onclick={() => (selectedMetric = "volume")}
+              class="ui-tab {selectedMetric === 'volume'
+                ? 'ui-tab-active'
+                : ''}"
+            >
+              {dict.metricVolume}
+            </button>
+            <button
+              type="button"
+              onclick={() => (selectedMetric = "spend")}
+              class="ui-tab {selectedMetric === 'spend' ? 'ui-tab-active' : ''}"
+            >
+              {dict.metricSpend}
+            </button>
+            <button
+              type="button"
+              onclick={() => (selectedMetric = "velocity")}
+              class="ui-tab {selectedMetric === 'velocity'
+                ? 'ui-tab-active'
+                : ''}"
+            >
+              {dict.metricVelocity}
+            </button>
+          </div>
         </div>
 
         <!-- Range Selector -->
-        <div class="ui-tabs">
-          {#each ["7D", "30D", "90D"] as const as r}
-            <button
-              type="button"
-              onclick={() => (selectedRange = r)}
-              class="ui-tab {selectedRange === r ? 'ui-tab-active' : ''}"
-            >
-              {r}
-            </button>
-          {/each}
+        <div class="w-full overflow-x-auto py-0.5 no-scrollbar sm:w-auto">
+          <div class="ui-tabs">
+            {#each ["7D", "30D", "90D"] as const as r}
+              <button
+                type="button"
+                onclick={() => (selectedRange = r)}
+                class="ui-tab {selectedRange === r ? 'ui-tab-active' : ''}"
+              >
+                {r}
+              </button>
+            {/each}
+          </div>
         </div>
       </div>
     </div>
@@ -949,10 +957,10 @@
       </div>
 
       <div class="-mx-5 overflow-x-auto sm:mx-0">
-        <table class="w-full border-collapse text-left text-xs">
+        <table class="w-full min-w-[650px] border-collapse text-left text-xs">
           <thead>
             <tr
-              class="border-b border-[#EDE4D8] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
+              class="border-b border-[#EDE4D8] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase whitespace-nowrap"
             >
               <th class="px-4 py-3">{dict.action} / {dict.moduleEntity}</th>
               <th class="px-4 py-3">{dict.summary}</th>
@@ -960,7 +968,7 @@
               <th class="px-4 py-3 text-right">{dict.timestamp}</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-[#F5EDE4]">
+          <tbody class="divide-y divide-[#F5EDE4] whitespace-nowrap">
             {#each data.recentAudits as log}
               <tr class="text-[#2E1F16] transition hover:bg-[#FAF7F2]">
                 <td class="px-4 py-3 whitespace-nowrap">

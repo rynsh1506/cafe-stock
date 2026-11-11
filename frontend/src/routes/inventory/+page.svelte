@@ -206,9 +206,9 @@
     <form
       method="GET"
       action="/inventory"
-      class="flex flex-wrap items-center gap-2"
+      class="flex flex-col sm:flex-row sm:items-center gap-2.5 w-full sm:w-auto"
     >
-      <div class="w-56">
+      <div class="w-full sm:w-56">
         <CustomSelect
           name="warehouseId"
           bind:value={selectedWarehouse}
@@ -217,31 +217,44 @@
         />
       </div>
 
-      <label
-        class="ui-btn-outline flex cursor-pointer items-center gap-1.5 text-xs"
-      >
-        <input
-          type="checkbox"
-          name="lowStock"
-          value="true"
-          checked={data.lowStockOnly}
-          class="h-3.5 w-3.5 accent-[#5A3825]"
-        />
-        <span>{dict.lowStockOnly}</span>
-      </label>
+      <div class="flex items-center gap-2">
+        <label
+          class="ui-btn-outline flex flex-1 sm:flex-initial cursor-pointer items-center justify-center gap-1.5 text-xs"
+        >
+          <input
+            type="checkbox"
+            name="lowStock"
+            value="true"
+            checked={data.lowStockOnly}
+            class="h-3.5 w-3.5 accent-[#5A3825]"
+          />
+          <span>{dict.lowStockOnly}</span>
+        </label>
 
-      <button type="submit" class="ui-btn cursor-pointer">{dict.filter}</button>
+        <button type="submit" class="ui-btn cursor-pointer px-4"
+          >{dict.filter}</button
+        >
+      </div>
     </form>
   </div>
 
   <!-- Table Card -->
   <div class="ui-card overflow-hidden">
     {#if activeView === "balances"}
+      <div
+        class="flex items-center justify-between border-b border-[#EDE4D8] bg-[#FAF7F2] px-4 py-2 text-[11px] font-medium text-[#8C7665] sm:hidden"
+      >
+        <span>← Geser tabel untuk stok & status kesehatan →</span>
+        <span
+          class="rounded bg-[#EFE7DE] px-1.5 py-0.5 font-mono text-[10px] text-[#5A3825]"
+          >6 Kolom</span
+        >
+      </div>
       <div class="overflow-x-auto">
-        <table class="w-full border-collapse text-left text-xs">
+        <table class="w-full min-w-[700px] border-collapse text-left text-xs">
           <thead>
             <tr
-              class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
+              class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase whitespace-nowrap"
             >
               <th class="px-5 py-3.5">{dict.warehouse}</th>
               <th class="px-5 py-3.5">{dict.skuLabel}</th>
@@ -251,7 +264,7 @@
               <th class="px-5 py-3.5 text-center">{dict.health}</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-[#F5EDE4]">
+          <tbody class="divide-y divide-[#F5EDE4] whitespace-nowrap">
             {#each data.balances as bal}
               <tr class="transition hover:bg-[#FAF7F2]">
                 <td class="px-5 py-3.5">
@@ -298,11 +311,20 @@
         </table>
       </div>
     {:else}
+      <div
+        class="flex items-center justify-between border-b border-[#EDE4D8] bg-[#FAF7F2] px-4 py-2 text-[11px] font-medium text-[#8C7665] sm:hidden"
+      >
+        <span>← Geser tabel untuk riwayat mutasi stok →</span>
+        <span
+          class="rounded bg-[#EFE7DE] px-1.5 py-0.5 font-mono text-[10px] text-[#5A3825]"
+          >6 Kolom</span
+        >
+      </div>
       <div class="overflow-x-auto">
-        <table class="w-full border-collapse text-left text-xs">
+        <table class="w-full min-w-[700px] border-collapse text-left text-xs">
           <thead>
             <tr
-              class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase"
+              class="border-b border-[#EDE4D8] bg-[#FAF7F2] text-[10px] font-bold tracking-wider text-[#8C7665] uppercase whitespace-nowrap"
             >
               <th class="px-5 py-3.5">{dict.product}</th>
               <th class="px-5 py-3.5">{dict.warehouse}</th>
@@ -312,7 +334,7 @@
               <th class="px-5 py-3.5 text-right">{dict.timestamp}</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-[#F5EDE4]">
+          <tbody class="divide-y divide-[#F5EDE4] whitespace-nowrap">
             {#each data.movements as mov}
               <tr class="transition hover:bg-[#FAF7F2]">
                 <td class="px-5 py-3.5 font-semibold text-[#2E1F16]">
