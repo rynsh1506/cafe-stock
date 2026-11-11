@@ -42,9 +42,9 @@
     <form
       method="GET"
       action="/audit-logs"
-      class="flex flex-wrap items-center gap-2"
+      class="flex flex-col sm:flex-row sm:items-center gap-2.5 w-full sm:w-auto"
     >
-      <div class="w-48">
+      <div class="w-full sm:w-48">
         <CustomSelect
           name="entityType"
           bind:value={selectedEntity}
@@ -53,17 +53,18 @@
         />
       </div>
 
-      <div class="w-52">
+      <div class="flex items-center gap-2 w-full sm:w-auto">
         <input
           type="text"
           name="search"
           value={data.search}
           placeholder={dict.searchActor}
-          class="ui-input"
+          class="ui-input flex-1 sm:w-56"
         />
+        <button type="submit" class="ui-btn cursor-pointer px-4 shrink-0"
+          >{dict.filter}</button
+        >
       </div>
-
-      <button type="submit" class="ui-btn cursor-pointer">{dict.filter}</button>
     </form>
   </div>
 

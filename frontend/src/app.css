@@ -201,17 +201,11 @@ select.ui-input:focus,
   align-items: center;
   background-color: #f1eae0;
   border: 1px solid #e2d7ca;
-  padding: 3px;
+  padding: 4px;
   border-radius: 12px;
-  max-width: 100%;
-  overflow-x: auto;
+  gap: 3px;
+  flex-shrink: 0;
   white-space: nowrap;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-.ui-tabs::-webkit-scrollbar {
-  display: none;
 }
 
 .no-scrollbar {
@@ -224,7 +218,7 @@ select.ui-input:focus,
 }
 
 .ui-tab {
-  padding: 6px 14px;
+  padding: 6px 12px;
   font-size: 12px;
   font-weight: 600;
   color: #7d6b5d;

@@ -182,25 +182,27 @@
   <div
     class="flex flex-col justify-between gap-3 border-y border-[#EDE4D8] py-3 sm:flex-row sm:items-center"
   >
-    <div class="ui-tabs">
-      <button
-        type="button"
-        onclick={() => (activeView = "balances")}
-        class="ui-tab cursor-pointer {activeView === 'balances'
-          ? 'ui-tab-active'
-          : ''}"
-      >
-        {dict.balancesTab} ({data.balances.length})
-      </button>
-      <button
-        type="button"
-        onclick={() => (activeView = "movements")}
-        class="ui-tab cursor-pointer {activeView === 'movements'
-          ? 'ui-tab-active'
-          : ''}"
-      >
-        {dict.movementsTab} ({data.movements.length})
-      </button>
+    <div class="w-full sm:w-auto overflow-x-auto no-scrollbar py-0.5">
+      <div class="ui-tabs">
+        <button
+          type="button"
+          onclick={() => (activeView = "balances")}
+          class="ui-tab cursor-pointer {activeView === 'balances'
+            ? 'ui-tab-active'
+            : ''}"
+        >
+          {dict.balancesTab} ({data.balances.length})
+        </button>
+        <button
+          type="button"
+          onclick={() => (activeView = "movements")}
+          class="ui-tab cursor-pointer {activeView === 'movements'
+            ? 'ui-tab-active'
+            : ''}"
+        >
+          {dict.movementsTab} ({data.movements.length})
+        </button>
+      </div>
     </div>
 
     <form

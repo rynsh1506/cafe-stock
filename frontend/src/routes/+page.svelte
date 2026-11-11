@@ -345,7 +345,7 @@
         class="flex w-full flex-col gap-3 sm:flex-row sm:items-center lg:w-auto"
       >
         <!-- Metric Selector -->
-        <div class="w-full overflow-x-auto py-0.5 no-scrollbar sm:w-auto">
+        <div class="w-full overflow-x-auto py-1 px-0.5 no-scrollbar sm:w-auto">
           <div class="ui-tabs">
             <button
               type="button"
@@ -354,14 +354,16 @@
                 ? 'ui-tab-active'
                 : ''}"
             >
-              {dict.metricVolume}
+              <span class="sm:hidden">Volume (KG)</span>
+              <span class="hidden sm:inline">{dict.metricVolume}</span>
             </button>
             <button
               type="button"
               onclick={() => (selectedMetric = "spend")}
               class="ui-tab {selectedMetric === 'spend' ? 'ui-tab-active' : ''}"
             >
-              {dict.metricSpend}
+              <span class="sm:hidden">Belanja (Rp)</span>
+              <span class="hidden sm:inline">{dict.metricSpend}</span>
             </button>
             <button
               type="button"
@@ -370,13 +372,14 @@
                 ? 'ui-tab-active'
                 : ''}"
             >
-              {dict.metricVelocity}
+              <span class="sm:hidden">Kecepatan (Hari)</span>
+              <span class="hidden sm:inline">{dict.metricVelocity}</span>
             </button>
           </div>
         </div>
 
         <!-- Range Selector -->
-        <div class="w-full overflow-x-auto py-0.5 no-scrollbar sm:w-auto">
+        <div class="w-full overflow-x-auto py-1 px-0.5 no-scrollbar sm:w-auto">
           <div class="ui-tabs">
             {#each ["7D", "30D", "90D"] as const as r}
               <button
@@ -393,19 +396,23 @@
     </div>
 
     <!-- Chart Headline Stats Bar -->
-    <div class="mt-4 flex flex-wrap items-baseline justify-between gap-3 px-1">
-      <div class="flex items-baseline gap-3">
+    <div
+      class="mt-4 flex flex-col gap-2.5 sm:flex-row sm:items-baseline sm:justify-between px-1"
+    >
+      <div class="flex flex-col sm:flex-row sm:items-baseline gap-1.5 sm:gap-3">
         <span class="font-serif text-2xl font-bold text-[#2E1F16] sm:text-3xl">
           {formattedHeadline}
         </span>
-        <span
-          class="ui-badge border-[#C8E6C9] bg-[#E8F5E9] text-xs font-semibold text-[#2E7D32]"
-        >
-          <span class="ui-badge-dot bg-[#2E7D32]"></span>
-          <span>{formattedDeltaText}</span>
-        </span>
+        <div class="flex items-center">
+          <span
+            class="ui-badge border-[#C8E6C9] bg-[#E8F5E9] text-xs font-semibold text-[#2E7D32]"
+          >
+            <span class="ui-badge-dot bg-[#2E7D32]"></span>
+            <span>{formattedDeltaText}</span>
+          </span>
+        </div>
       </div>
-      <div class="text-xs text-[#8C7665]">
+      <div class="text-[11px] text-[#8C7665]">
         <span>{dict.hoverTelemetryNotice}</span>
       </div>
     </div>
