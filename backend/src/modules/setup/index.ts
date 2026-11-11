@@ -5,6 +5,7 @@ import {
   checkSetupStatus,
   executeInitialSetup,
   getSystemSettings,
+  resetAllMasterData,
   updateSystemSettings,
 } from "./service";
 
@@ -47,6 +48,20 @@ export const setupModule = new Elysia({ prefix: "/api/setup" })
       body: UpdateSystemSettingsSchema,
       detail: {
         summary: "Update System Configuration and Integrations (SMTP & OAuth)",
+        tags: ["Setup"],
+      },
+    },
+  )
+  .post(
+    "/reset-master-data",
+    async ({ request }) => {
+      const user = await requireApproverUser(request);
+      const result = await resetAllMasterData(user);
+      return { data: result };
+    },
+    {
+      detail: {
+        summary: "Reset and Wipe All Master Data & Related Records",
         tags: ["Setup"],
       },
     },

@@ -45,67 +45,22 @@
     return dict.slaTarget;
   });
 
-  // SVG dimensions for responsive zigzag line and area
-  const svgWidth = 720;
-  const svgHeight = 220;
-  const padLeft = 45;
-  const padRight = 35;
-  const padTop = 30;
-  const padBottom = 35;
-
-  let computedCoordinates = $derived.by(() => {
-    const pts = activeDataset.points;
-    const count = pts.length;
-    if (count <= 1) return [];
-
-    const rawVals = pts.map((p) => p.value);
-    const minVal = 0;
-    const maxVal = Math.max(...rawVals) * 1.18 || 1;
-    const valRange = maxVal - minVal;
-
-    const usableWidth = svgWidth - padLeft - padRight;
-    const usableHeight = svgHeight - padTop - padBottom;
-
-    return pts.map((pt, idx) => {
-      const x = padLeft + (idx / (count - 1)) * usableWidth;
-      const normY = (pt.value - minVal) / valRange;
-      const y = svgHeight - padBottom - normY * usableHeight;
-      return {
-        ...pt,
-        x: Math.round(x * 10) / 10,
-        y: Math.round(y * 10) / 10,
-      };
-    });
+  let maxBarValue = $derived.by(() => {
+    const vals = activeDataset.points.map((p) => p.value);
+    return Math.max(...vals, 1);
   });
 
-  let polylinePoints = $derived(
-    computedCoordinates.map((c) => `${c.x},${c.y}`).join(" "),
-  );
-
-  let polygonPoints = $derived.by(() => {
-    if (computedCoordinates.length === 0) return "";
-    const bottomY = svgHeight - padBottom;
-    const firstX = computedCoordinates[0].x;
-    const lastX = computedCoordinates[computedCoordinates.length - 1].x;
-    const lineCoords = computedCoordinates
-      .map((c) => `${c.x},${c.y}`)
-      .join(" ");
-    return `${firstX},${bottomY} ${lineCoords} ${lastX},${bottomY}`;
-  });
-
-  let gridLines = $derived.by(() => {
-    const usableHeight = svgHeight - padTop - padBottom;
-    return [0, 0.33, 0.66, 1].map((ratio) => {
-      const y = svgHeight - padBottom - ratio * usableHeight;
-      return Math.round(y);
-    });
-  });
+  function getBarHeightPct(val: number): string {
+    if (maxBarValue <= 0) return "6%";
+    const ratio = Math.max(0.06, Math.min(1, val / maxBarValue));
+    return `${Math.round(ratio * 100)}%`;
+  }
 
   function formatPointValue(pt: { value: number; unit: string }): string {
     if (pt.unit === "Rp") {
       return `Rp ${pt.value.toLocaleString("id-ID")}`;
     }
-    return `${pt.value} ${pt.unit}`;
+    return `${pt.value.toLocaleString("id-ID")} ${pt.unit}`;
   }
 </script>
 
@@ -417,130 +372,85 @@
       </div>
     </div>
 
-    <!-- Responsive SVG Zigzag Chart -->
-    <div class="relative mt-4 w-full overflow-hidden">
-      <svg
-        viewBox="0 0 {svgWidth} {svgHeight}"
-        class="h-56 w-full select-none sm:h-64"
+    <!-- Responsive Roastery Bar Chart (Grafik Batang) -->
+    <div class="relative mt-5 w-full">
+      <!-- Background Horizontal Grid Guides -->
+      <div
+        class="pointer-events-none absolute inset-x-0 top-6 bottom-7 flex flex-col justify-between opacity-50"
       >
-        <defs>
-          <linearGradient
-            id="espressoZigzagGradient"
-            x1="0%"
-            y1="0%"
-            x2="0%"
-            y2="100%"
-          >
-            <stop offset="0%" stop-color="#5A3825" stop-opacity="0.32" />
-            <stop offset="85%" stop-color="#C68B59" stop-opacity="0.06" />
-            <stop offset="100%" stop-color="#C68B59" stop-opacity="0.0" />
-          </linearGradient>
-        </defs>
+        <div class="border-b border-dashed border-[#EDE4D8]"></div>
+        <div class="border-b border-dashed border-[#EDE4D8]"></div>
+        <div class="border-b border-dashed border-[#EDE4D8]"></div>
+        <div class="border-b border-[#EDE4D8]"></div>
+      </div>
 
-        <!-- Horizontal Reference Gridlines -->
-        {#each gridLines as yPos}
-          <line
-            x1={padLeft}
-            y1={yPos}
-            x2={svgWidth - padRight}
-            y2={yPos}
-            stroke="#EDE4D8"
-            stroke-width="1"
-            stroke-dasharray="4 4"
-          />
-        {/each}
-
-        <!-- Translucent Zigzag Area Fill -->
-        {#if polygonPoints}
-          <polygon points={polygonPoints} fill="url(#espressoZigzagGradient)" />
-        {/if}
-
-        <!-- Zigzag Trend Polyline Stroke -->
-        {#if polylinePoints}
-          <polyline
-            points={polylinePoints}
-            fill="none"
-            stroke="#5A3825"
-            stroke-width="3"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        {/if}
-
-        <!-- Interactive Data Nodes & Tooltip Rings -->
-        {#each computedCoordinates as point, index}
-          <!-- Node Click/Hover Target Area -->
-          <g
-            class="cursor-pointer"
+      <!-- Bars Container -->
+      <div
+        class="relative flex h-52 sm:h-60 items-end justify-between gap-1.5 sm:gap-3 px-2 pt-8 pb-1 overflow-x-auto no-scrollbar"
+      >
+        {#each activeDataset.points as item, index}
+          {@const isHovered = hoveredPointIndex === index}
+          <div
+            class="group relative flex h-full flex-1 flex-col items-center justify-end cursor-pointer {selectedRange ===
+            '90D'
+              ? 'max-w-[100px]'
+              : selectedRange === '7D'
+                ? 'max-w-[56px]'
+                : 'min-w-[8px] sm:min-w-[14px] max-w-[24px]'}"
             role="button"
             tabindex="0"
-            aria-label="{point.label}: {formatPointValue(point)}"
+            aria-label="{item.label}: {formatPointValue(item)}"
             onmouseenter={() => (hoveredPointIndex = index)}
             onmouseleave={() => (hoveredPointIndex = null)}
             onfocus={() => (hoveredPointIndex = index)}
             onblur={() => (hoveredPointIndex = null)}
           >
-            <!-- Outer Glow when Hovered -->
-            {#if hoveredPointIndex === index}
-              <circle
-                cx={point.x}
-                cy={point.y}
-                r="10"
-                fill="#C68B59"
-                fill-opacity="0.25"
-              />
+            <!-- Floating Granular Tooltip on Hover -->
+            {#if isHovered}
+              <div
+                class="pointer-events-none absolute -top-12 z-30 flex -translate-x-1/2 flex-col items-center rounded-xl border border-[#3D2517] bg-[#231712] px-3 py-1.5 text-white shadow-xl whitespace-nowrap animate-in fade-in zoom-in-95 duration-150"
+                style="left: 50%;"
+              >
+                <div class="text-[10px] font-semibold text-[#D8A57A]">
+                  {item.label} ({item.sublabel})
+                </div>
+                <div class="font-mono text-xs font-bold text-white">
+                  {formatPointValue(item)}
+                </div>
+              </div>
             {/if}
 
-            <!-- Core Node Circle -->
-            <circle
-              cx={point.x}
-              cy={point.y}
-              r={hoveredPointIndex === index ? 5.5 : 4}
-              fill="#ffffff"
-              stroke="#5A3825"
-              stroke-width="2.5"
-              class="transition-all duration-150"
-            />
+            <!-- Bar Track & Solid Bar Fill -->
+            <div
+              class="relative flex h-full w-full items-end overflow-hidden rounded-t-lg sm:rounded-t-xl bg-[#F0E7DD] transition-all"
+            >
+              <div
+                style="height: {getBarHeightPct(item.value)};"
+                class="w-full rounded-t-lg sm:rounded-t-xl transition-all duration-300 {isHovered
+                  ? 'bg-gradient-to-t from-[#3E2315] to-[#5A3825] shadow-md'
+                  : 'bg-gradient-to-t from-[#B37948] to-[#C68B59] hover:from-[#9B6437] hover:to-[#B37948]'}"
+              ></div>
+            </div>
 
             <!-- X-Axis Label -->
-            {#if computedCoordinates.length <= 10 || (computedCoordinates.length <= 35 && (index % 5 === 0 || index === computedCoordinates.length - 1)) || (computedCoordinates.length > 35 && (index % 15 === 0 || index === computedCoordinates.length - 1)) || hoveredPointIndex === index}
-              <text
-                x={point.x}
-                y={svgHeight - 10}
-                text-anchor="middle"
-                font-size="10"
-                font-family="system-ui, sans-serif"
-                font-weight={hoveredPointIndex === index ? "700" : "500"}
-                fill={hoveredPointIndex === index ? "#2E1F16" : "#8C7665"}
-              >
-                {point.label}
-              </text>
-            {/if}
-          </g>
+            <div class="mt-2 text-center">
+              {#if selectedRange === "90D" || selectedRange === "7D" || activeDataset.points.length <= 10 || index % 5 === 0 || index === activeDataset.points.length - 1 || isHovered}
+                <span
+                  class="font-mono text-[10px] sm:text-xs font-semibold whitespace-nowrap {isHovered
+                    ? 'font-bold text-[#5A3825]'
+                    : 'text-[#8A7566]'}"
+                >
+                  {item.label}
+                </span>
+              {:else}
+                <span class="inline-block h-3.5 text-transparent select-none"
+                  >.</span
+                >
+              {/if}
+            </div>
+          </div>
         {/each}
-      </svg>
-
-      <!-- Floating Tooltip Box when a node is hovered -->
-      {#if hoveredPointIndex !== null && computedCoordinates[hoveredPointIndex]}
-        {@const hp = computedCoordinates[hoveredPointIndex]}
-        <div
-          class="pointer-events-none absolute z-20 flex -translate-x-1/2 flex-col items-center rounded-xl border border-[#3D2517] bg-[#231712] px-3.5 py-2 text-white shadow-xl transition-all"
-          style="left: {(hp.x / svgWidth) * 100}%; top: {Math.max(
-            8,
-            (hp.y / svgHeight) * 100 - 32,
-          )}%;"
-        >
-          <div class="text-[10px] font-semibold text-[#D8A57A]">
-            {hp.label} ({hp.sublabel})
-          </div>
-          <div class="font-mono text-sm font-bold text-white">
-            {formatPointValue(hp)}
-          </div>
-          <div class="text-[9.5px] font-medium text-[#A5D6A7]">
-            {hp.delta}
-          </div>
-        </div>
-      {/if}
+      </div>
     </div>
   </div>
 

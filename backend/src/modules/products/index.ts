@@ -6,6 +6,7 @@ import {
 } from "@/modules/products/model";
 import {
   createProduct,
+  deleteProduct,
   getProductById,
   listProducts,
   updateProduct,
@@ -49,4 +50,9 @@ export const productsModule = new Elysia({ prefix: "/api/products" })
     {
       body: updateProductBodySchema,
     },
-  );
+  )
+  .delete("/:id", async ({ request, params }) => {
+    const actor = await requireAuthenticatedUser(request);
+    const result = await deleteProduct(params.id, actor);
+    return { data: result };
+  });

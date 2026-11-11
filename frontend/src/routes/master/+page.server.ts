@@ -55,6 +55,24 @@ export interface MasterPageData {
   systemSettings: SystemSettingsData | null;
   currentUserId: string;
   isApprover: boolean;
+  productsPagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  suppliersPagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  warehousesPagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export interface MasterActionData {
@@ -71,9 +89,15 @@ export const load: ServerLoad = async ({
   }
 
   const search = url.searchParams.get("search")?.trim() ?? "";
-  const querySuffix = search
-    ? `?limit=50&search=${encodeURIComponent(search)}`
-    : "?limit=50";
+  const page = Math.max(1, Number(url.searchParams.get("page") ?? 1));
+  const limit = Math.max(1, Number(url.searchParams.get("limit") ?? 10));
+
+  const queryParams = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
+  if (search) queryParams.set("search", search);
+  const querySuffix = `?${queryParams.toString()}`;
 
   const isApprover = locals.user.role === "APPROVER";
 
@@ -131,6 +155,24 @@ export const load: ServerLoad = async ({
     systemSettings: settingsRes.data?.data ?? null,
     currentUserId: locals.user.id,
     isApprover,
+    productsPagination: productsRes.data?.meta ?? {
+      page,
+      limit,
+      total: productsRes.data?.data?.length ?? 0,
+      totalPages: 1,
+    },
+    suppliersPagination: suppliersRes.data?.meta ?? {
+      page,
+      limit,
+      total: suppliersRes.data?.data?.length ?? 0,
+      totalPages: 1,
+    },
+    warehousesPagination: warehousesRes.data?.meta ?? {
+      page,
+      limit,
+      total: warehousesRes.data?.data?.length ?? 0,
+      totalPages: 1,
+    },
   };
 };
 
@@ -320,6 +362,60 @@ export const actions: Actions = {
       return fail(res.status, { error: res.errorMessage });
     }
     return { success: "Akun pengguna berhasil dihapus secara permanen" };
+  },
+
+  deleteProduct: async ({ request, locals }) => {
+    if (!locals.token) throw redirect(303, "/login");
+    const formData = await request.formData();
+    const id = String(formData.get("id") ?? "");
+    const res = await callBackendApi(`/api/products/${id}`, {
+      method: "DELETE",
+      token: locals.token,
+    });
+    if (!res.ok) {
+      return fail(res.status, { error: res.errorMessage });
+    }
+    return { success: "Produk berhasil dihapus dari master data" };
+  },
+
+  deleteSupplier: async ({ request, locals }) => {
+    if (!locals.token) throw redirect(303, "/login");
+    const formData = await request.formData();
+    const id = String(formData.get("id") ?? "");
+    const res = await callBackendApi(`/api/suppliers/${id}`, {
+      method: "DELETE",
+      token: locals.token,
+    });
+    if (!res.ok) {
+      return fail(res.status, { error: res.errorMessage });
+    }
+    return { success: "Pemasok berhasil dihapus dari master data" };
+  },
+
+  deleteWarehouse: async ({ request, locals }) => {
+    if (!locals.token) throw redirect(303, "/login");
+    const formData = await request.formData();
+    const id = String(formData.get("id") ?? "");
+    const res = await callBackendApi(`/api/warehouses/${id}`, {
+      method: "DELETE",
+      token: locals.token,
+    });
+    if (!res.ok) {
+      return fail(res.status, { error: res.errorMessage });
+    }
+    return { success: "Gudang fasilitas berhasil dihapus dari master data" };
+  },
+
+  resetMasterData: async ({ locals }) => {
+    if (!locals.token) throw redirect(303, "/login");
+    const res = await callBackendApi("/api/setup/reset-master-data", {
+      method: "POST",
+      token: locals.token,
+    });
+    if (!res.ok) {
+      return fail(res.status, { error: res.errorMessage });
+    }
+    return { success: "Seluruh master data berhasil dikosongkan dan di-reset" };
   },
 
   updateSettings: async ({ request, locals }) => {

@@ -6,6 +6,7 @@ import {
 } from "@/modules/suppliers/model";
 import {
   createSupplier,
+  deleteSupplier,
   getSupplierById,
   listSuppliers,
   updateSupplier,
@@ -48,4 +49,9 @@ export const suppliersModule = new Elysia({ prefix: "/api/suppliers" })
     {
       body: updateSupplierBodySchema,
     },
-  );
+  )
+  .delete("/:id", async ({ request, params }) => {
+    const actor = await requireAuthenticatedUser(request);
+    const result = await deleteSupplier(params.id, actor);
+    return { data: result };
+  });

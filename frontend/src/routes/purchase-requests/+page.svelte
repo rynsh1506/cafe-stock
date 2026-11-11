@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getDictionary } from "@/lib/i18n";
   import CustomSelect from "@/lib/components/CustomSelect.svelte";
+  import Pagination from "@/lib/components/Pagination.svelte";
   import type {
     PurchaseRequestsActionData,
     PurchaseRequestsPageData,
@@ -330,5 +331,12 @@
         </tbody>
       </table>
     </div>
+
+    <Pagination
+      page={data.pagination.page}
+      limit={data.pagination.limit}
+      total={data.pagination.total}
+      totalPages={data.pagination.totalPages}
+    />
   </div>
 </div>

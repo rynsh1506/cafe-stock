@@ -15,6 +15,18 @@ export interface InventoryPageData {
   warehouses: Warehouse[];
   balances: InventoryBalance[];
   movements: InventoryMovement[];
+  balancesPagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  movementsPagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export const load: ServerLoad = async ({
@@ -27,12 +39,20 @@ export const load: ServerLoad = async ({
 
   const warehouseFilter = url.searchParams.get("warehouseId")?.trim() ?? "";
   const lowStockOnly = url.searchParams.get("lowStock") === "true";
+  const page = Math.max(1, Number(url.searchParams.get("page") ?? 1));
+  const limit = Math.max(1, Number(url.searchParams.get("limit") ?? 20));
 
-  const params = new URLSearchParams({ limit: "50" });
+  const params = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
   if (warehouseFilter) params.set("warehouseId", warehouseFilter);
   if (lowStockOnly) params.set("lowStock", "true");
 
-  const movParams = new URLSearchParams({ limit: "50" });
+  const movParams = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
   if (warehouseFilter) movParams.set("warehouseId", warehouseFilter);
 
   const [warehousesRes, balancesRes, movementsRes] = await Promise.all([
@@ -56,5 +76,17 @@ export const load: ServerLoad = async ({
     warehouses: warehousesRes.data?.data ?? [],
     balances: balancesRes.data?.data ?? [],
     movements: movementsRes.data?.data ?? [],
+    balancesPagination: balancesRes.data?.meta ?? {
+      page,
+      limit,
+      total: balancesRes.data?.data?.length ?? 0,
+      totalPages: 1,
+    },
+    movementsPagination: movementsRes.data?.meta ?? {
+      page,
+      limit,
+      total: movementsRes.data?.data?.length ?? 0,
+      totalPages: 1,
+    },
   };
 };

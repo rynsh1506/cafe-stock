@@ -1,6 +1,6 @@
-import { and, count, desc, eq, ilike, or, type SQL } from "drizzle-orm";
+import { and, count, desc, eq, ilike, or, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db/index";
-import { products } from "@/db/schema";
+import { inventoryBalances, products } from "@/db/schema";
 import type { AuthenticatedUser } from "@/modules/auth/model";
 import type {
   CreateProductInput,
@@ -190,4 +190,46 @@ export async function updateProduct(
   });
 
   return updated;
+}
+
+export async function deleteProduct(
+  id: string,
+  actor: AuthenticatedUser,
+): Promise<{ success: boolean; id: string }> {
+  if (actor.role !== "APPROVER") {
+    throw AppError.forbidden("FORBIDDEN", "Only approvers can delete products");
+  }
+
+  const current = await getProductById(id);
+
+  const [balance] = await db
+    .select({
+      total: sql<number>`coalesce(sum(${inventoryBalances.quantity}), 0)::int`,
+    })
+    .from(inventoryBalances)
+    .where(eq(inventoryBalances.productId, id));
+
+  if (balance && balance.total > 0) {
+    throw AppError.badRequest(
+      "PRODUCT_IN_USE",
+      `Cannot delete product '${current.sku}' because it still has ${balance.total} units in stock`,
+    );
+  }
+
+  await db.transaction(async (tx) => {
+    await tx
+      .delete(inventoryBalances)
+      .where(eq(inventoryBalances.productId, id));
+    await tx.delete(products).where(eq(products.id, id));
+  });
+
+  await recordAuditLog({
+    actor,
+    action: "PRODUCT_DELETED",
+    entityType: "PRODUCT",
+    entityId: id,
+    summary: `Deleted product ${current.sku} - ${current.name}`,
+  });
+
+  return { success: true, id };
 }

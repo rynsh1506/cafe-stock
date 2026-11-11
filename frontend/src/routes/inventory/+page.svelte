@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getDictionary } from "@/lib/i18n";
   import CustomSelect from "@/lib/components/CustomSelect.svelte";
+  import Pagination from "@/lib/components/Pagination.svelte";
   import type { InventoryPageData } from "@/routes/inventory/+page.server";
 
   let { data }: { data: InventoryPageData } = $props();
@@ -312,6 +313,13 @@
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        page={data.balancesPagination.page}
+        limit={data.balancesPagination.limit}
+        total={data.balancesPagination.total}
+        totalPages={data.balancesPagination.totalPages}
+      />
     {:else}
       <div
         class="flex items-center justify-between border-b border-[#EDE4D8] bg-[#FAF7F2] px-4 py-2 text-[11px] font-medium text-[#8C7665] sm:hidden"
@@ -375,6 +383,13 @@
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        page={data.movementsPagination.page}
+        limit={data.movementsPagination.limit}
+        total={data.movementsPagination.total}
+        totalPages={data.movementsPagination.totalPages}
+      />
     {/if}
   </div>
 </div>

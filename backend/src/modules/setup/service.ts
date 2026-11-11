@@ -1,7 +1,24 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db/index";
-import { auditLogs, sessions, systemSettings, users } from "@/db/schema";
+import {
+  auditLogs,
+  goodsReceiptItems,
+  goodsReceipts,
+  inventoryBalances,
+  inventoryMovements,
+  products,
+  purchaseOrderItems,
+  purchaseOrders,
+  purchaseRequestItems,
+  purchaseRequests,
+  sessions,
+  suppliers,
+  systemSettings,
+  users,
+  warehouses,
+} from "@/db/schema";
 import type { AuthenticatedUser } from "@/modules/auth/model";
+import { recordAuditLog } from "@/utils/audit";
 import { generateSessionToken, hashPassword } from "@/utils/crypto";
 import { AppError } from "@/utils/errors";
 import { logger } from "@/utils/logger";
@@ -313,4 +330,43 @@ export async function updateSystemSettings(
   });
 
   return await getSystemSettings(user);
+}
+
+export async function resetAllMasterData(
+  actor: AuthenticatedUser,
+): Promise<{ success: boolean; message: string }> {
+  if (actor.role !== "APPROVER") {
+    throw AppError.forbidden(
+      "FORBIDDEN",
+      "Only approvers can reset master data",
+    );
+  }
+
+  await db.transaction(async (tx) => {
+    await tx.delete(goodsReceiptItems);
+    await tx.delete(goodsReceipts);
+    await tx.delete(purchaseOrderItems);
+    await tx.delete(purchaseOrders);
+    await tx.delete(purchaseRequestItems);
+    await tx.delete(purchaseRequests);
+    await tx.delete(inventoryMovements);
+    await tx.delete(inventoryBalances);
+    await tx.delete(products);
+    await tx.delete(suppliers);
+    await tx.delete(warehouses);
+  });
+
+  await recordAuditLog({
+    actor,
+    action: "MASTER_DATA_RESET",
+    entityType: "SYSTEM",
+    entityId: actor.id,
+    summary:
+      "Reset and wiped all master data (products, suppliers, warehouses, and related transactions)",
+  });
+
+  return {
+    success: true,
+    message: "All master data has been wiped successfully.",
+  };
 }
