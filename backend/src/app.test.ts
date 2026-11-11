@@ -1,7 +1,10 @@
 import { beforeAll, describe, expect, it } from "bun:test";
+import { eq } from "drizzle-orm";
 import { app, APP_VERSION } from "@/app";
-import { resetDatabaseConnection } from "@/db/index";
+import { db, resetDatabaseConnection } from "@/db/index";
 import { runMigrations } from "@/db/migrate";
+import { auditLogs, sessions, users } from "@/db/schema";
+import { recordAuditLog } from "@/utils/audit";
 import {
   generateBackupCodes,
   generateTotpCode,
@@ -481,6 +484,63 @@ describe("Core Elysia Application", () => {
         }),
       );
       expect(deleteResponse.status).toBe(400);
+    });
+
+    it("successfully rejects a pending registration without foreign key errors when audit logs reference the user", async () => {
+      const [pendingUser] = await db
+        .insert(users)
+        .values({
+          email: "pending-candidate@cafestock.com",
+          name: "Pending Candidate",
+          passwordHash: "dummy-hash",
+          role: "USER",
+          isActive: false,
+        })
+        .returning();
+
+      await db.insert(sessions).values({
+        token: "candidate-session-test-token",
+        userId: pendingUser.id,
+        expiresAt: new Date(Date.now() + 60000),
+      });
+
+      await recordAuditLog({
+        actor: {
+          id: pendingUser.id,
+          name: pendingUser.name,
+          role: pendingUser.role,
+        },
+        action: "USER_OAUTH_REGISTER_OTP_REQUIRED",
+        entityType: "USER",
+        entityId: pendingUser.id,
+        summary: "Pending registration audit log entry",
+      });
+
+      const rejectResponse = await app.handle(
+        new Request(
+          `http://localhost:3000/api/auth/users/${pendingUser.id}/reject`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${adminToken}`,
+            },
+          },
+        ),
+      );
+      expect(rejectResponse.status).toBe(200);
+
+      const [deletedUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, pendingUser.id));
+      expect(deletedUser).toBeUndefined();
+
+      const candidateAuditLogs = await db
+        .select()
+        .from(auditLogs)
+        .where(eq(auditLogs.action, "USER_OAUTH_REGISTER_OTP_REQUIRED"));
+      expect(candidateAuditLogs.length).toBeGreaterThanOrEqual(1);
+      expect(candidateAuditLogs[0].actorId).toBeNull();
     });
   });
 });
